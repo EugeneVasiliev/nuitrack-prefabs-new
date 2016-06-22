@@ -71,7 +71,7 @@ public class TPoseCalibration : MonoBehaviour
         break;
     }
 
-		DontDestroyOnLoad(gameObject);
+    DontDestroyOnLoad(this);
 		if (GameObject.FindObjectsOfType<TPoseCalibration>().Length > 1) //just in case
 		{
 			Destroy(gameObject);
@@ -233,7 +233,6 @@ public class TPoseCalibration : MonoBehaviour
           Debug.Log ("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
           
           return Quaternion.Euler(angleX, angleY, 0f);
-          break;
         }
       default: // right hand's shoulder horizontal, elbow - vertical
         {
@@ -249,10 +248,7 @@ public class TPoseCalibration : MonoBehaviour
           Debug.Log ("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
 
           return Quaternion.Euler(angleX, angleY, 0f);
-
-          break;
         }
     }
-    return Quaternion.identity;
 	}
 }

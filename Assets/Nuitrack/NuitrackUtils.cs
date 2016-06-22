@@ -3,6 +3,11 @@ using System.Collections;
 
 public static class NuitrackUtils
 {
+  public static Vector3 ToVector3(this nuitrack.Vector3 v)
+  {
+    return new Vector3(v.X, v.Y, v.Z);
+  }
+
 	public static Vector3 ToVector3(this nuitrack.Joint joint)
 	{
 		return new Vector3(joint.Real.X, joint.Real.Y, joint.Real.Z);

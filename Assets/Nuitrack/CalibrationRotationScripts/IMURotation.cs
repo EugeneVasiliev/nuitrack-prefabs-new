@@ -15,8 +15,8 @@ public class IMURotation : MonoBehaviour
 		smoothedMagneticHeading = Vector3.zero, 
 		smoothedGravity = Vector3.zero;
 	
-  [SerializeField]float slerpGravityMagneticCoeff = 10f;
-  [SerializeField]float magneticCorrectionRotationCoeff = 10f;
+  [SerializeField]float slerpVectorsCoeff = 20f;
+  [SerializeField]float slerpRotationsCoeff = 0.5f;
 	
 	Quaternion baseRotation = Quaternion.identity;
 	Quaternion rotation = Quaternion.identity;
@@ -26,9 +26,9 @@ public class IMURotation : MonoBehaviour
   [SerializeField]bool magneticCorrection = true;
 
 	bool correctionOn = false;
-  [SerializeField]float magneticCorrectionMinAngleOn = 15f; //minimum angle (between rotation from gravity and magnetic heading and gyro) to turn magnetic correction on
+  [SerializeField]float magneticCorrectionMinAngleOn = 20f; //minimum angle (between rotation from gravity and magnetic heading and gyro) to turn magnetic correction on
   [SerializeField]float magneticCorretcionMaxAngleOff = 3f; //maximum angle (between rotation from gravity and magnetic heading and gyro) to turn magnetic correction off
-  [SerializeField]float magneticCorrectionMinAngularVelocity = 15f; //minimum angular velocity to use magnetic correction (so it won't float when user stays stationary)
+  [SerializeField]float magneticCorrectionMinAngularVelocity = 10f; //minimum angular velocity to use magnetic correction (so it won't float when user stays stationary)
 
   static string ROOM_BASE_ROTATION = "Cookies.RoomBaseRotation"; //Cookies part of config file won't (or at least should not) change on version updates
 
@@ -44,7 +44,7 @@ public class IMURotation : MonoBehaviour
         if (instance == null)
         {
           GameObject container = new GameObject();
-          container.name = "SensorRotation";
+          container.name = "IMURotation";
           instance = container.AddComponent<IMURotation>();
         }
         DontDestroyOnLoad(instance);
@@ -106,7 +106,8 @@ public class IMURotation : MonoBehaviour
     index += sizeof(float);
     w = BitConverter.ToSingle(calibrationInfo, index);
     Quaternion newBaseRotation = new Quaternion(x, y, z, w);
-    baseRotation = newBaseRotation;
+    Vector3 euler = newBaseRotation.eulerAngles;
+    baseRotation = Quaternion.Euler(0f, euler.y, 0f);
     Debug.Log("baseRotation: " + baseRotation.ToString());
   }
   
@@ -124,7 +125,8 @@ public class IMURotation : MonoBehaviour
   
   public void SetBaseRotation(Quaternion additionalRotation)
   {
-    baseRotation = additionalRotation * Quaternion.Inverse(rotation);
+    Vector3 euler = (additionalRotation * Quaternion.Inverse(rotation)).eulerAngles;
+    baseRotation = Quaternion.Euler(0f, euler.y, 0f);//additionalRotation * Quaternion.Inverse(rotation);
     SaveBaseRotation();
   }
 	
@@ -142,38 +144,41 @@ public class IMURotation : MonoBehaviour
 		gyroGravity = new Vector3(gyroGravity.x, gyroGravity.y, -gyroGravity.z);
 		
 
-    smoothedMagneticHeading = Vector3.Slerp(smoothedMagneticHeading, magneticHeading, slerpGravityMagneticCoeff * Time.unscaledDeltaTime);
-    smoothedGravity = Vector3.Slerp(smoothedGravity, gyroGravity, slerpGravityMagneticCoeff * Time.unscaledDeltaTime);
+    smoothedMagneticHeading = Vector3.Slerp(smoothedMagneticHeading, magneticHeading, slerpVectorsCoeff * Time.unscaledDeltaTime);
+    smoothedGravity = Vector3.Slerp(smoothedGravity, gyroGravity, slerpVectorsCoeff * Time.unscaledDeltaTime);
 
-    /*
-    Debug.Log(string.Format("Slerp arg: {0:0.00000}", dampCoeffVectors * Time.unscaledDeltaTime));
 
-    Debug.Log(string.Format("Grav_mag_angle: {0:0.00}; Smooth_grav_mag_angle: {1:0.00}", 
-      Vector3.Angle(magneticHeading, gyroGravity), 
-      Vector3.Angle(smoothedMagneticHeading, smoothedGravity)));
-    */
+//    Debug.Log(string.Format("Slerp arg: {0:0.00000}", dampCoeffVectors * Time.unscaledDeltaTime));
+//
+//    Debug.Log(string.Format("Grav_mag_angle: {0:0.00}; Smooth_grav_mag_angle: {1:0.00}", 
+//      Vector3.Angle(magneticHeading, gyroGravity), 
+//      Vector3.Angle(smoothedMagneticHeading, smoothedGravity)));
     
-		crossProd = Vector3.Cross (smoothedMagneticHeading, smoothedGravity).normalized;
+    crossProd = Vector3.Cross (smoothedGravity, smoothedMagneticHeading).normalized;
 
     if (crossProd == Vector3.zero)
     {
       crossProd = Vector3.forward;
     }
 
-    //Quaternion cardboardNewRotation = Cardboard.SDK.HeadPose.Orientation;
-    //Quaternion deltaRot = Quaternion.Inverse(prevCardboardHeadOrientation) * cardboardNewRotation;
-    //prevCardboardHeadOrientation = cardboardNewRotation;
-
+    //gyroscope integration:
     Quaternion deltaRot = Quaternion.Euler(Vector3.Scale(Input.gyro.rotationRateUnbiased, new Vector3(-1f, -1f, 1f)) * Mathf.Rad2Deg * Time.unscaledDeltaTime);
     //Debug.Log(deltaRot.eulerAngles.ToString("0.00"));
     rotation = rotation * deltaRot;
 	
-    //Debug.Log("Rotation (without base): " + rotation.ToString("0.000"));
+    //gravity correction:
+    Quaternion gravityDiff = Quaternion.FromToRotation(rotation * gyroGravity, Vector3.down);
+    Vector3 eulerDiff = gravityDiff.eulerAngles;
+    Vector3 gravityDiffXZ = new Vector3(eulerDiff.x, 0f, eulerDiff.z);
+    Quaternion correction =  Quaternion.Euler(gravityDiffXZ);
+    rotation = Quaternion.Slerp(rotation, correction * rotation, slerpRotationsCoeff * Time.unscaledDeltaTime);
 
     //angle between current rotation and magnetic:
     if (magneticCorrection)
     {
-      float deltaAngle = Quaternion.Angle(rotation, Quaternion.Inverse(Quaternion.LookRotation(crossProd, -gyroGravity)));
+      Quaternion magneticOrientation = Quaternion.Inverse(Quaternion.LookRotation(crossProd, -gyroGravity));
+
+      float deltaAngle = Quaternion.Angle(rotation, magneticOrientation);
       if (deltaAngle > magneticCorrectionMinAngleOn)
       {
         correctionOn = true;
@@ -183,23 +188,16 @@ public class IMURotation : MonoBehaviour
         correctionOn = false;
       }
 
-      float gyroCorrectionMinSpeed = Mathf.Deg2Rad * magneticCorrectionMinAngularVelocity; //don't correct orientation when angular velocity is lower then that treshold
+      float gyroCorrectionMinSpeed = Mathf.Deg2Rad * magneticCorrectionMinAngularVelocity; //don't correct orientation when angular velocity is lower then treshold
 
       gyroRateUnbiased = Input.gyro.rotationRateUnbiased;
 
       if (correctionOn && (gyroRateUnbiased.magnitude > gyroCorrectionMinSpeed))
       {
-        rotation = Quaternion.RotateTowards(rotation, Quaternion.Inverse(Quaternion.LookRotation(crossProd, -gyroGravity)), Time.unscaledDeltaTime * magneticCorrectionRotationCoeff * deltaAngle);
+        rotation = Quaternion.Slerp(rotation, magneticOrientation, Time.unscaledDeltaTime * slerpRotationsCoeff);
       }
     }
 
     finalRotation = baseRotation * rotation;
-
-    //gravity correction :
-    Quaternion gravityDiff = Quaternion.FromToRotation(finalRotation * gyroGravity, Vector3.down);
-    Vector3 gravityDiffXZ = new Vector3(gravityDiff.x, 0f, gravityDiff.z);
-    Quaternion correction =  Quaternion.Euler(gravityDiffXZ);
-    finalRotation = correction * finalRotation;
-    
   }
 }

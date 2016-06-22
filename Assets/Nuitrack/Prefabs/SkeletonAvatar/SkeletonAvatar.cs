@@ -33,7 +33,8 @@ public class SkeletonAvatar : MonoBehaviour
   };
 
   nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
-  {
+  { //right and left collars are at same point at the moment, so we use only 1 collar here,
+    //quite easy to add rightCollar if it ever changes
     {nuitrack.JointType.Neck,           nuitrack.JointType.Head},
     {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Neck},
     {nuitrack.JointType.LeftCollar,     nuitrack.JointType.LeftShoulder},
@@ -75,20 +76,26 @@ public class SkeletonAvatar : MonoBehaviour
 
     for (int i = 0; i < jointsInfo.Length; i++)
     {
-      GameObject joint = (GameObject)Instantiate(jointPrefab, Vector3.zero, Quaternion.identity);
-      joints.Add(jointsInfo[i], joint);
-      joint.transform.parent = skeletonRoot.transform;
-      joint.SetActive(false);
+      if (jointPrefab != null)
+      {
+        GameObject joint = (GameObject)Instantiate(jointPrefab, Vector3.zero, Quaternion.identity);
+        joints.Add(jointsInfo[i], joint);
+        joint.transform.parent = skeletonRoot.transform;
+        joint.SetActive(false);
+      }
     }
 
     connections = new GameObject[connectionsInfo.GetLength(0)];
 
     for (int i = 0; i < connections.Length; i++)
     {
-      GameObject conn = (GameObject)Instantiate(connectionPrefab, Vector3.zero, Quaternion.identity);
-      connections[i] = conn;
-      conn.transform.parent = skeletonRoot.transform;
-      conn.SetActive(false);
+      if (connectionPrefab != null)
+      {
+        GameObject conn = (GameObject)Instantiate(connectionPrefab, Vector3.zero, Quaternion.identity);
+        connections[i] = conn;
+        conn.transform.parent = skeletonRoot.transform;
+        conn.SetActive(false);
+      }
     }
   }
 
@@ -110,7 +117,7 @@ public class SkeletonAvatar : MonoBehaviour
 
     if (headtransform != null)
     {
-      headtransform.position = 0.001f * ((rotate180 ? q180 : q0) * (CalibrationInfo.SensorOrientation * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
+      headtransform.position = 0.001f * ((rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
     }
 
     if (!skeletonRoot.activeSelf) skeletonRoot.SetActive(true);
@@ -122,7 +129,7 @@ public class SkeletonAvatar : MonoBehaviour
       {
         if (!joints[jointsInfo[i]].activeSelf) joints[jointsInfo[i]].SetActive(true);
 
-        joints[jointsInfo[i]].transform.position = 0.001f * ((rotate180 ? q180 : q0) * (CalibrationInfo.SensorOrientation * j.ToVector3()));
+        joints[jointsInfo[i]].transform.position = 0.001f * ((rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * j.ToVector3()));
 
         //joints[i].Orient.Matrix:
         // 0,       1,      2, 

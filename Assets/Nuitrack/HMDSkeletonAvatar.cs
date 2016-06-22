@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 public class HMDSkeletonAvatar : MonoBehaviour 
 {
-  /*
+  /*TODO: rename class and make it work with rigged models
+   * 
   [SerializeField]Transform headTransform;
 
 	[SerializeField]float lerpFactor = 0.1f;
@@ -91,7 +92,7 @@ public class HMDSkeletonAvatar : MonoBehaviour
     baseRotationOffsets.Add(nuitrack.JointType.RightKnee, kneeRight.transform.rotation);
 	}
 
-	void FixedUpdate ()
+	void Update ()
 	{
 		JointsUpdate();
 	}

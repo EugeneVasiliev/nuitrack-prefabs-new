@@ -37,7 +37,7 @@ public class CurrentUserTracker : MonoBehaviour
 
   void Start ()
   {
-    DontDestroyOnLoad(gameObject);
+    DontDestroyOnLoad(this);
     NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
   }
 

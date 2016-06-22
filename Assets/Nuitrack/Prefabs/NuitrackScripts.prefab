@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   depthModuleOn: 0
-  userTrackerModuleOn: 0
+  userTrackerModuleOn: 1
   skeletonTrackerModuleOn: 1
   gesturesRecognizerModuleOn: 0
   handsTrackerModuleOn: 0
@@ -60,6 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c969da05bae23445a33595e68c68551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trackFloorHeight: 0
 --- !u!114 &11458970
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -97,12 +98,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dde54538125b6d542b50980d325be56f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slerpGravityMagneticCoeff: 5
-  magneticCorrectionRotationCoeff: 5
+  slerpVectorsCoeff: 20
+  slerpRotationsCoeff: 0.5
   magneticCorrection: 1
-  magneticCorrectionMinAngleOn: 10
+  magneticCorrectionMinAngleOn: 20
   magneticCorretcionMaxAngleOff: 3
-  magneticCorrectionMinAngularVelocity: 5
+  magneticCorrectionMinAngularVelocity: 10
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

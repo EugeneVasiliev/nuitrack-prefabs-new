@@ -68,6 +68,7 @@ public class NuitrackManager : MonoBehaviour
   
   void NuitrackInit()
   {
+    CloseUserGen(); //just in case
     nuitrack.Nuitrack.Init();
 
     if (depthModuleOn)
