@@ -7,3 +7,5 @@ permissions / features:
 <uses-permission android:name="android.permission.BLUETOOTH" />
 <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+<category android:name="com.nuitrack.intent.category.VICOVR" />
