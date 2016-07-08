@@ -6,7 +6,11 @@ public class CalibrationInfo : MonoBehaviour
   TPoseCalibration calibration;
 
   static Quaternion sensorOrientation = Quaternion.identity;
+  static Quaternion sensorOrientationMarker = Quaternion.identity;
   public static Quaternion SensorOrientation {get {return sensorOrientation;}}
+
+  [SerializeField]bool useCalibrationSensorOrientation = false;
+  [SerializeField]bool useMarkerSensorOrientation = false;
 
   //floor height requires UserTracker module to work at the moment, 
   //we do not get floor info from sensor yet (currently returns zeroes)
@@ -16,7 +20,7 @@ public class CalibrationInfo : MonoBehaviour
 
   static float floorHeight = 1f;
   public static float FloorHeight {get{return floorHeight;}}
-
+  
   public static void SetSensorHeightManually(float newHeight) //may be used when floor is not tracked / UserTracker not enabled
   {
     floorHeight = newHeight;
@@ -25,9 +29,19 @@ public class CalibrationInfo : MonoBehaviour
   void Start () 
   {
     DontDestroyOnLoad(this);
-    calibration = FindObjectOfType<TPoseCalibration>();
-    if (calibration != null) calibration.onSuccess += Calibration_onSuccess;
-    NuitrackManager.onUserTrackerUpdate += OnUserTrackerUpdate; //needed for floor info
+
+    if (useCalibrationSensorOrientation)
+    {
+      calibration = FindObjectOfType<TPoseCalibration>();
+      if (calibration != null) calibration.onSuccess += Calibration_onSuccess;
+      NuitrackManager.onUserTrackerUpdate += OnUserTrackerUpdate; //needed for floor info
+    }
+
+    if (useMarkerSensorOrientation)
+    {
+      IMUMarkerRotation markerRotation = FindObjectOfType<IMUMarkerRotation>();
+      if (markerRotation != null) markerRotation.onMarkerSensorOrientationUpdate += OnMarkerCorrectionEvent;
+    }
   }
 
   void OnUserTrackerUpdate (nuitrack.UserFrame frame)
@@ -42,7 +56,9 @@ public class CalibrationInfo : MonoBehaviour
     Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
     Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
     Vector3 diff = neck - torso;
-    sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
+    sensorOrientation = Quaternion.Euler(-Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
+
+    //debugTxt.text = sensorOrientation.eulerAngles.ToString("0.00");
 
     //floor height:
     if (trackFloorHeight && (userFrame != null))
@@ -57,4 +73,20 @@ public class CalibrationInfo : MonoBehaviour
     }
   }
 
+  void OnMarkerCorrectionEvent(Quaternion newSensorOrientation)
+  {
+    sensorOrientationMarker = newSensorOrientation;
+    sensorOrientation = Quaternion.Slerp(sensorOrientation, newSensorOrientation, 0.01f);
+  }
+
+  void Update()
+  {
+    const float minAngularSpeedForCorrection = 5f;
+    const float slerpMult = 10f;
+    float angularSpeed = Input.gyro.rotationRateUnbiased.magnitude * Mathf.Rad2Deg;
+    if (angularSpeed > minAngularSpeedForCorrection)
+    {
+      sensorOrientation = Quaternion.Slerp(sensorOrientation, sensorOrientationMarker, Time.unscaledDeltaTime * slerpMult);
+    }
+  }
 }

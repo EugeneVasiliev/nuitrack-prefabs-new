@@ -15,6 +15,7 @@ public class IMUMarkerRotation : MonoBehaviour
 	
   [SerializeField]float slerpVectorsCoeff = 20f;
   [SerializeField]float slerpRotationsCoeff = 0.5f;
+  [SerializeField]float slerpMarkerRotationsCoeff = 0.5f;
   [SerializeField]bool useGyro = true;
 
 	Quaternion baseRotation = Quaternion.identity;
@@ -23,6 +24,13 @@ public class IMUMarkerRotation : MonoBehaviour
 	public Quaternion Rotation {get {return finalRotation;}}
 
   static IMUMarkerRotation instance;
+
+  bool havePrevMarkerRotation = false;
+  Quaternion prevMarkerRotation = Quaternion.identity;
+
+  public delegate void OnMarkerSensorOrientationUpdate(Quaternion newSensorOrientation);
+
+  public event OnMarkerSensorOrientationUpdate onMarkerSensorOrientationUpdate;
 
   public static IMUMarkerRotation Instance
   {
@@ -62,11 +70,10 @@ public class IMUMarkerRotation : MonoBehaviour
 		Rotate();
   }
 
+  [SerializeField]Renderer markerSignalRenderer = null;
+
   void Rotate()
   {
-    //TODO: gravity influence on sensor orientation
-
-
 		gyroGravity = Input.gyro.gravity;
 		gyroGravity = new Vector3(gyroGravity.x, gyroGravity.y, -gyroGravity.z);
 
@@ -76,23 +83,65 @@ public class IMUMarkerRotation : MonoBehaviour
     {
       Quaternion deltaRot = Quaternion.Euler(Vector3.Scale(Input.gyro.rotationRateUnbiased, new Vector3(-1f, -1f, 1f)) * Mathf.Rad2Deg * Time.unscaledDeltaTime);
       rotation = rotation * deltaRot;
+      if (havePrevMarkerRotation) prevMarkerRotation = prevMarkerRotation * deltaRot;
     }
 	
     //gravity correction:
-    /*
     Quaternion gravityDiff = Quaternion.FromToRotation(rotation * gyroGravity, Vector3.down);
     Vector3 eulerDiff = gravityDiff.eulerAngles;
-    Vector3 gravityDiffXZ = new Vector3(eulerDiff.x, 0f, eulerDiff.z);
+    Vector3 gravityDiffXZ = new Vector3(eulerDiff.x, 0f, 0f/*eulerDiff.z*/);
     Quaternion correction =  Quaternion.Euler(gravityDiffXZ);
     rotation = Quaternion.Slerp(rotation, correction * rotation, slerpRotationsCoeff * Time.unscaledDeltaTime);
-    */
 
-    if (MarkerData.haveData[CurrentUserTracker.CurrentUser])
+    const float maxAngularSpeedMarker = 10f;
+    const float minRotationSpeedForCorrection = 10f;
+
+    float rotationSpeed = Input.gyro.rotationRateUnbiased.magnitude * Mathf.Rad2Deg;
+
+    if (MarkerData.haveData[CurrentUserTracker.CurrentUser] && (rotationSpeed < maxAngularSpeedMarker))
     {
-      rotation = MarkerData.markerRotations[CurrentUserTracker.CurrentUser];
+      markerSignalRenderer.enabled = true;
+      MarkerData.haveData[CurrentUserTracker.CurrentUser] = false;
+      prevMarkerRotation = MarkerData.markerRotations[CurrentUserTracker.CurrentUser];
+      UpdateSensorOrientation();
+      if (!havePrevMarkerRotation)
+      {
+        rotation = CalibrationInfo.SensorOrientation * MarkerData.markerRotations[CurrentUserTracker.CurrentUser];
+      }
+      havePrevMarkerRotation = true;
     }
-    //
+    else
+    {
+      markerSignalRenderer.enabled = false;
+      MarkerData.haveData[CurrentUserTracker.CurrentUser] = false;
+    }
+
+    if (havePrevMarkerRotation/* && (rotationSpeed > minRotationSpeedForCorrection) */)
+    {
+      //UpdateSensorOrientation();
+      const float maxSpeedMult = 0.5f;
+      Quaternion slerpResult = Quaternion.Slerp(rotation, Quaternion.Inverse(CalibrationInfo.SensorOrientation) * prevMarkerRotation, Time.unscaledDeltaTime * slerpMarkerRotationsCoeff);
+      debugTxt.text = (Quaternion.Inverse(Quaternion.Inverse(CalibrationInfo.SensorOrientation) * prevMarkerRotation) * rotation).eulerAngles.ToString("0.00") + System.Environment.NewLine + 
+        (Quaternion.Inverse(Quaternion.RotateTowards(rotation, slerpResult, maxSpeedMult * rotationSpeed * Time.unscaledDeltaTime)) * rotation).eulerAngles.ToString("0.00");
+      rotation = Quaternion.RotateTowards(rotation, slerpResult, maxSpeedMult * rotationSpeed * Time.unscaledDeltaTime);
+    }
 
     finalRotation = baseRotation * rotation;
+  }
+
+  //TODO: remove debug UI
+  [SerializeField]UnityEngine.UI.Text debugTxt;
+
+  void UpdateSensorOrientation()
+  {
+    Vector3 rotatedGravity = prevMarkerRotation * gyroGravity;
+    //debugTxt.text = rotatedGravity.ToString("0.00");
+
+    if (onMarkerSensorOrientationUpdate != null)
+    {
+      Quaternion newSensorOrientation =  Quaternion.Euler(Mathf.Atan2(-rotatedGravity.z, -rotatedGravity.y) * Mathf.Rad2Deg, 0f, 0f);
+      //debugTxt.text = newSensorOrientation.eulerAngles.ToString("0.00");
+      onMarkerSensorOrientationUpdate(newSensorOrientation);
+    }
   }
 }
