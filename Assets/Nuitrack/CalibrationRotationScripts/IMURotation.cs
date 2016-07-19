@@ -147,13 +147,6 @@ public class IMURotation : MonoBehaviour
     smoothedMagneticHeading = Vector3.Slerp(smoothedMagneticHeading, magneticHeading, slerpVectorsCoeff * Time.unscaledDeltaTime);
     smoothedGravity = Vector3.Slerp(smoothedGravity, gyroGravity, slerpVectorsCoeff * Time.unscaledDeltaTime);
 
-
-//    Debug.Log(string.Format("Slerp arg: {0:0.00000}", dampCoeffVectors * Time.unscaledDeltaTime));
-//
-//    Debug.Log(string.Format("Grav_mag_angle: {0:0.00}; Smooth_grav_mag_angle: {1:0.00}", 
-//      Vector3.Angle(magneticHeading, gyroGravity), 
-//      Vector3.Angle(smoothedMagneticHeading, smoothedGravity)));
-    
     crossProd = Vector3.Cross (smoothedGravity, smoothedMagneticHeading).normalized;
 
     if (crossProd == Vector3.zero)
@@ -163,14 +156,11 @@ public class IMURotation : MonoBehaviour
 
     //gyroscope integration:
     Quaternion deltaRot = Quaternion.Euler(Vector3.Scale(Input.gyro.rotationRateUnbiased, new Vector3(-1f, -1f, 1f)) * Mathf.Rad2Deg * Time.unscaledDeltaTime);
-    //Debug.Log(deltaRot.eulerAngles.ToString("0.00"));
     rotation = rotation * deltaRot;
 	
     //gravity correction:
-    Quaternion gravityDiff = Quaternion.FromToRotation(rotation * gyroGravity, Vector3.down);
-    Vector3 eulerDiff = gravityDiff.eulerAngles;
-    Vector3 gravityDiffXZ = new Vector3(eulerDiff.x, 0f, eulerDiff.z);
-    Quaternion correction =  Quaternion.Euler(gravityDiffXZ);
+    Vector3 rotatedGravity = rotation * gyroGravity;
+    Quaternion correction  =  Quaternion.Euler(Mathf.Atan2(rotatedGravity.z, -rotatedGravity.y) * Mathf.Rad2Deg, 0f, Mathf.Atan2(-rotatedGravity.x, -rotatedGravity.y) * Mathf.Rad2Deg);
     rotation = Quaternion.Slerp(rotation, correction * rotation, slerpRotationsCoeff * Time.unscaledDeltaTime);
 
     //angle between current rotation and magnetic:

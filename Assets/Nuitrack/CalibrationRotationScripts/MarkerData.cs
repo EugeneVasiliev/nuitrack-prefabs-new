@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
-
 public class MarkerData : MonoBehaviour 
 {
+  #if NUITRACK_MARKER
+
   public static Quaternion[] markerRotations;
   public static bool[] haveData;
 
@@ -13,9 +14,7 @@ public class MarkerData : MonoBehaviour
     markerRotations = new Quaternion[6];
     haveData = new bool[6];
     callback = Callback;
-    nuitrack.NativeImporterMarker.nuitrack_OnMarkerUpdate(callback); //that line makes it crash ("stripping assemblies" option enabled makes it crash, to be a bit more precise)
-    //F/mono    (32335): * Assertion at class.c:4293, condition `class' not met
-    //F/libc    (32335): Fatal signal 11 (SIGSEGV) at 0x00007e4f (code=0), thread 32376 (UnityMain)
+    nuitrack.NativeImporterMarker.nuitrack_OnMarkerUpdate(callback);
 	}
 	
   void Callback(float[] data, int len)
@@ -32,4 +31,6 @@ public class MarkerData : MonoBehaviour
       }
     }
   }
+
+  #endif
 }

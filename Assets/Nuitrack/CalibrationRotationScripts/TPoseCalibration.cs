@@ -87,7 +87,7 @@ public class TPoseCalibration : MonoBehaviour
 	{
 		if (cooldown > 0f)
 		{
-			cooldown -= Time.deltaTime;
+      cooldown -= Time.unscaledDeltaTime;
 		}
 		else
 		{
@@ -118,7 +118,7 @@ public class TPoseCalibration : MonoBehaviour
 						else
 						{
 							if (onProgress != null) onProgress(timer / calibrationTime);
-							timer += Time.deltaTime;
+              timer += Time.unscaledDeltaTime;
 						}
 					}
 				}

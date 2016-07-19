@@ -3,8 +3,8 @@ using System.Collections;
 
 //logic (and number of tracked users) may change from app to app
 //for developer's needs
-//in current case it'll be an ID of first found skeleton from skeleton tracker
-//and will be reset only if we'll have a frame with no such skeleton ID
+//in current case it's an ID of first found skeleton from skeleton tracker
+//and reset only if we have a frame with no current skeleton ID
 
 public class CurrentUserTracker : MonoBehaviour
 {

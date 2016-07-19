@@ -7,7 +7,8 @@ public class SkeletonAvatar : MonoBehaviour
 {
   [SerializeField]GameObject jointPrefab, connectionPrefab;
   [SerializeField]Transform headtransform; //if not null, skeletonAvatar will move it
-  [SerializeField]bool rotate180 = false;
+  [SerializeField]bool rotate180 = true;
+  [SerializeField]bool headInNeck = true;
 
   nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
   {
@@ -117,7 +118,14 @@ public class SkeletonAvatar : MonoBehaviour
 
     if (headtransform != null)
     {
-      headtransform.position = 0.001f * ((rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
+      if (headInNeck)
+      {
+        headtransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
+      }
+      else
+      {
+        headtransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
+      }
     }
 
     if (!skeletonRoot.activeSelf) skeletonRoot.SetActive(true);
@@ -129,19 +137,8 @@ public class SkeletonAvatar : MonoBehaviour
       {
         if (!joints[jointsInfo[i]].activeSelf) joints[jointsInfo[i]].SetActive(true);
 
-        joints[jointsInfo[i]].transform.position = 0.001f * ((rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * j.ToVector3()));
-
-        //joints[i].Orient.Matrix:
-        // 0,       1,      2, 
-        // 3,       4,      5,
-        // 6,       7,      8
-        // -------
-        // right(X),  up(Y),    forward(Z)
-
-        //Vector3 jointRight =  new Vector3(  j.Orient.Matrix[0],  j.Orient.Matrix[3],  j.Orient.Matrix[6] );
-        Vector3 jointUp =       new Vector3(   j.Orient.Matrix[1],  j.Orient.Matrix[4],  j.Orient.Matrix[7] );
-        Vector3 jointForward =  new Vector3(  j.Orient.Matrix[2],  j.Orient.Matrix[5],  j.Orient.Matrix[8] );
-        joints[jointsInfo[i]].transform.rotation = (rotate180 ? q180 : q0) * CalibrationInfo.SensorOrientation * Quaternion.LookRotation(jointForward, jointUp);
+        joints[jointsInfo[i]].transform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f *j.ToVector3()));
+        joints[jointsInfo[i]].transform.rotation = (rotate180 ? q180 : q0) * CalibrationInfo.SensorOrientation * j.ToQuaternionMirrored();
       }
       else
       {

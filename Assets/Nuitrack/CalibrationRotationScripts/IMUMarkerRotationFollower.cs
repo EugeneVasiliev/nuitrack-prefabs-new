@@ -3,6 +3,7 @@ using System.Collections;
 
 public class IMUMarkerRotationFollower : MonoBehaviour 
 {
+  #if NUITRACK_MARKER
   IMUMarkerRotation imuRotation;
 
   void Start()
@@ -14,4 +15,5 @@ public class IMUMarkerRotationFollower : MonoBehaviour
   {
     transform.localRotation = imuRotation.Rotation;
   }
+  #endif
 }

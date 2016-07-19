@@ -30,13 +30,13 @@ public static class NuitrackUtils
         joint.Orient.Matrix[0].ToString() + ",  " + joint.Orient.Matrix[3].ToString() + ",  " + joint.Orient.Matrix[6].ToString() + "; " + 
         joint.Orient.Matrix[1].ToString() + ",  " + joint.Orient.Matrix[4].ToString() + ",  " + joint.Orient.Matrix[7].ToString() + "; " + 
         joint.Orient.Matrix[2].ToString() + ",  " + joint.Orient.Matrix[5].ToString() + ",  " + joint.Orient.Matrix[8].ToString());
-    }*/
+    }*/ 
 
     //Vector3 jointRight =  new Vector3(  joint.Orient.Matrix[0], -joint.Orient.Matrix[3],  joint.Orient.Matrix[6] );   //X(Right) not really needed here
     Vector3 jointUp =       new Vector3( -joint.Orient.Matrix[1],  joint.Orient.Matrix[4], -joint.Orient.Matrix[7] );   //Y(Up)
     Vector3 jointForward =  new Vector3(  joint.Orient.Matrix[2], -joint.Orient.Matrix[5],  joint.Orient.Matrix[8] );   //Z(Forward)
-	//TODO: hack, fixes RightCollar joint info (currently zeroes in rotation matrix and type == None):
-    if (jointForward.magnitude < 0.01f) return Quaternion.identity;/*Debug.Log(joint.Type.ToString() + " forward iz zero.");*/
+	
+    if (jointForward.magnitude < 0.01f) return Quaternion.identity; //should not happen
     return Quaternion.LookRotation(jointForward, jointUp);
   }
 }

@@ -9,6 +9,10 @@ public class TPoseCalibrationUI : MonoBehaviour
   [SerializeField]string tooltipAfterFirstCalibration = "";
   [SerializeField]string calibrationProcessFormat = "Calibration" + System.Environment.NewLine + "{0:0}%";
 
+  [SerializeField]Image calibrationImage;
+  [SerializeField]Sprite spriteCalibrationStart, spriteCalibreationProgress;
+  [SerializeField]Gradient imageGradient;
+
 	float cooldown;
 	static bool calibratedOnce = false;
 
@@ -29,6 +33,7 @@ public class TPoseCalibrationUI : MonoBehaviour
 		}
 
     calibrationStatusText.text = (calibratedOnce ? tooltipAfterFirstCalibration : startTooltip);
+    if (calibratedOnce) calibrationImage.enabled = false;
 	}
 
 	void OnDestroy()
@@ -44,19 +49,22 @@ public class TPoseCalibrationUI : MonoBehaviour
 
 	void onStart()
 	{
-		StopCoroutine(ResetTooltipOnCD());
     calibrationStatusText.text = string.Format(calibrationProcessFormat, 0f);
+    calibrationImage.enabled = true;
+    calibrationImage.sprite = spriteCalibreationProgress;
 	}
 
 	void onProgress (float progress)
 	{
     calibrationStatusText.text = string.Format(calibrationProcessFormat, 100f * progress);
+    calibrationImage.color = imageGradient.Evaluate(progress);
 	}
 
 	void onSuccess(Quaternion q)
 	{
 		if (calibrationStatusText != null) calibrationStatusText.text = "Calibration" + System.Environment.NewLine + "Done";
 		calibratedOnce = true;
+    calibrationImage.enabled = false;
 		StartCoroutine(ResetTooltipOnCD());
 	}
 
@@ -65,10 +73,12 @@ public class TPoseCalibrationUI : MonoBehaviour
 		if (!calibratedOnce)
 		{
       calibrationStatusText.text = startTooltip;
+      calibrationImage.sprite = spriteCalibrationStart;
 		}
     else
     {
       calibrationStatusText.text = tooltipAfterFirstCalibration;
+      calibrationImage.enabled = false;
     }
 	}
 

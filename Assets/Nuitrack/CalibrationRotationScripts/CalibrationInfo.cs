@@ -3,6 +3,7 @@ using System.Collections;
 
 public class CalibrationInfo : MonoBehaviour 
 {
+  //TODO: floor height does not work yet, will be fixed sometime soon...
   TPoseCalibration calibration;
 
   static Quaternion sensorOrientation = Quaternion.identity;
@@ -10,7 +11,10 @@ public class CalibrationInfo : MonoBehaviour
   public static Quaternion SensorOrientation {get {return sensorOrientation;}}
 
   [SerializeField]bool useCalibrationSensorOrientation = false;
+
+  #if NUITRACK_MARKER
   [SerializeField]bool useMarkerSensorOrientation = false;
+  #endif
 
   //floor height requires UserTracker module to work at the moment, 
   //we do not get floor info from sensor yet (currently returns zeroes)
@@ -37,11 +41,13 @@ public class CalibrationInfo : MonoBehaviour
       NuitrackManager.onUserTrackerUpdate += OnUserTrackerUpdate; //needed for floor info
     }
 
+    #if NUITRACK_MARKER
     if (useMarkerSensorOrientation)
     {
       IMUMarkerRotation markerRotation = FindObjectOfType<IMUMarkerRotation>();
       if (markerRotation != null) markerRotation.onMarkerSensorOrientationUpdate += OnMarkerCorrectionEvent;
     }
+    #endif
   }
 
   void OnUserTrackerUpdate (nuitrack.UserFrame frame)
@@ -58,15 +64,13 @@ public class CalibrationInfo : MonoBehaviour
     Vector3 diff = neck - torso;
     sensorOrientation = Quaternion.Euler(-Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
 
-    //debugTxt.text = sensorOrientation.eulerAngles.ToString("0.00");
-
     //floor height:
     if (trackFloorHeight && (userFrame != null))
     {
       
       Vector3 floor = 0.001f * userFrame.Floor.ToVector3();
       Vector3 normal = userFrame.FloorNormal.ToVector3();
-      Debug.Log("Floor: " + floor.ToString("0.00") + "; normal: " + normal.ToString("0.00"));
+      //Debug.Log("Floor: " + floor.ToString("0.00") + "; normal: " + normal.ToString("0.00"));
 
       Plane floorPlane = new Plane(normal, floor);
       floorHeight = floorPlane.GetDistanceToPoint(Vector3.zero);
@@ -81,7 +85,7 @@ public class CalibrationInfo : MonoBehaviour
 
   void Update()
   {
-    const float minAngularSpeedForCorrection = 5f;
+    const float minAngularSpeedForCorrection = 10f;
     const float slerpMult = 10f;
     float angularSpeed = Input.gyro.rotationRateUnbiased.magnitude * Mathf.Rad2Deg;
     if (angularSpeed > minAngularSpeedForCorrection)
