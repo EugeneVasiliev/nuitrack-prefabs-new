@@ -507,6 +507,10 @@ Prefab:
       propertyPath: headDirectionTransform
       value: 
       objectReference: {fileID: 441286871}
+    - target: {fileID: 11484654, guid: 81081a39764407f4285a4203791bdeec, type: 2}
+      propertyPath: headTransform
+      value: 
+      objectReference: {fileID: 675882507}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 81081a39764407f4285a4203791bdeec, type: 2}
   m_IsPrefabParent: 0

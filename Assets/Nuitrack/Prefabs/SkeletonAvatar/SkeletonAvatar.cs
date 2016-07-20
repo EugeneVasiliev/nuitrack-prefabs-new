@@ -6,7 +6,7 @@ using System;
 public class SkeletonAvatar : MonoBehaviour 
 {
   [SerializeField]GameObject jointPrefab, connectionPrefab;
-  [SerializeField]Transform headtransform; //if not null, skeletonAvatar will move it
+  [SerializeField]Transform headTransform; //if not null, skeletonAvatar will move it
   [SerializeField]Transform headDirectionTransform; //part of head preab that rotates 
   [SerializeField]bool rotate180 = true;
   [SerializeField]bool headInNeck = true;
@@ -118,15 +118,15 @@ public class SkeletonAvatar : MonoBehaviour
   {
     if (skeleton == null) return;
 
-    if (headtransform != null)
+    if (headTransform != null)
     {
       if (headInNeck)
       {
-        headtransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
+        headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
       }
       else
       {
-        headtransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
+        headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3()));
       }
     }
 
