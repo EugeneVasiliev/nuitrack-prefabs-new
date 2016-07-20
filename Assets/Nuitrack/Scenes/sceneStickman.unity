@@ -376,6 +376,10 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1408470355}
   m_RootOrder: 3
+--- !u!4 &441286871 stripped
+Transform:
+  m_PrefabParentObject: {fileID: 448670, guid: 558d0be4a5425c14095922623c6a3c24, type: 2}
+  m_PrefabInternal: {fileID: 1699281089}
 --- !u!1 &600206024
 GameObject:
   m_ObjectHideFlags: 0
@@ -499,6 +503,10 @@ Prefab:
       propertyPath: headtransform
       value: 
       objectReference: {fileID: 675882507}
+    - target: {fileID: 11484654, guid: 81081a39764407f4285a4203791bdeec, type: 2}
+      propertyPath: headDirectionTransform
+      value: 
+      objectReference: {fileID: 441286871}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 81081a39764407f4285a4203791bdeec, type: 2}
   m_IsPrefabParent: 0
@@ -838,6 +846,10 @@ Prefab:
     - target: {fileID: 11467618, guid: e999ace05c586574fa1b964016f28531, type: 2}
       propertyPath: rotationSpeedMult.m_RotationOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 11457632, guid: e999ace05c586574fa1b964016f28531, type: 2}
+      propertyPath: trackFloorHeight
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 11467618, guid: e999ace05c586574fa1b964016f28531, type: 2}

@@ -43,8 +43,10 @@ MonoBehaviour:
   jointPrefab: {fileID: 108890, guid: 26c1584006bb7f24e9546a1b3b02d01a, type: 2}
   connectionPrefab: {fileID: 147686, guid: a0a262a76e8c9bf449ab9ccecba1f4a9, type: 2}
   headtransform: {fileID: 0}
+  headDirectionTransform: {fileID: 0}
   rotate180: 1
-  headInNeck: 0
+  headInNeck: 1
+  neckHMDOffset: {x: 0, y: 0.15, z: 0.08}
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

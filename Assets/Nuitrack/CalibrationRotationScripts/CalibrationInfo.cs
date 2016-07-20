@@ -3,7 +3,6 @@ using System.Collections;
 
 public class CalibrationInfo : MonoBehaviour 
 {
-  //TODO: floor height does not work yet, will be fixed sometime soon...
   TPoseCalibration calibration;
 
   static Quaternion sensorOrientation = Quaternion.identity;
@@ -17,7 +16,6 @@ public class CalibrationInfo : MonoBehaviour
   #endif
 
   //floor height requires UserTracker module to work at the moment, 
-  //we do not get floor info from sensor yet (currently returns zeroes)
   [Tooltip("Floor height tracking requires enabled UserTracker module (in NuitrackManager component)")]
   [SerializeField]bool trackFloorHeight = false;
   nuitrack.UserFrame userFrame = null;
@@ -71,9 +69,11 @@ public class CalibrationInfo : MonoBehaviour
       Vector3 floor = 0.001f * userFrame.Floor.ToVector3();
       Vector3 normal = userFrame.FloorNormal.ToVector3();
       //Debug.Log("Floor: " + floor.ToString("0.00") + "; normal: " + normal.ToString("0.00"));
-
-      Plane floorPlane = new Plane(normal, floor);
-      floorHeight = floorPlane.GetDistanceToPoint(Vector3.zero);
+      if (normal.sqrMagnitude > 0.01f) //
+      {
+        Plane floorPlane = new Plane(normal, floor);
+        floorHeight = floorPlane.GetDistanceToPoint(Vector3.zero);
+      }
     }
   }
 

@@ -7,8 +7,10 @@ public class SkeletonAvatar : MonoBehaviour
 {
   [SerializeField]GameObject jointPrefab, connectionPrefab;
   [SerializeField]Transform headtransform; //if not null, skeletonAvatar will move it
+  [SerializeField]Transform headDirectionTransform; //part of head preab that rotates 
   [SerializeField]bool rotate180 = true;
   [SerializeField]bool headInNeck = true;
+  [SerializeField]Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f); //TODO: add offset from neck
 
   nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
   {
@@ -120,7 +122,7 @@ public class SkeletonAvatar : MonoBehaviour
     {
       if (headInNeck)
       {
-        headtransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
+        headtransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
       }
       else
       {
