@@ -1050,14 +1050,6 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 2009450, guid: 558d0be4a5425c14095922623c6a3c24, type: 2}
-      propertyPath: near clip plane
-      value: 0.05
-      objectReference: {fileID: 0}
-    - target: {fileID: 2055950, guid: 558d0be4a5425c14095922623c6a3c24, type: 2}
-      propertyPath: near clip plane
-      value: 0.05
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 558d0be4a5425c14095922623c6a3c24, type: 2}
   m_IsPrefabParent: 0
