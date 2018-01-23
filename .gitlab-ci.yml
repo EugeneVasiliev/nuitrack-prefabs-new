@@ -1,0 +1,9 @@
+before_script:
+
+build_unity_project:
+  script:
+    - '"D:\Program Files\Unity550\Editor\Unity.exe" -batchmode -projectPath="./" -exportPackage "Assets" "./VicoVRSDK.unitypackage" -quit'
+    - exit
+  artifacts:
+    paths:
+      - VicoVRSDK.unitypackage

@@ -8,58 +8,59 @@ using System.Collections;
 
 public class CurrentUserTracker : MonoBehaviour
 {
-  static int currentUser;
-  public static int CurrentUser  { get { return currentUser; } }
+    static int currentUser;
+    public static int CurrentUser  { get { return currentUser; } }
 
-  static nuitrack.Skeleton currentSkeleton;
-  public static nuitrack.Skeleton CurrentSkeleton {get {return currentSkeleton;}}
+    static nuitrack.Skeleton currentSkeleton;
+    public static nuitrack.Skeleton CurrentSkeleton {get {return currentSkeleton;}}
 
-  static CurrentUserTracker instance;
+    static CurrentUserTracker instance;
 
-  public static CurrentUserTracker Instance
-  {
-    get 
+    public static CurrentUserTracker Instance
     {
-      if (instance == null)
-      {
-        instance = FindObjectOfType<CurrentUserTracker>();
-        if (instance == null)
+        get 
         {
-          GameObject container = new GameObject();
-          container.name = "CurrentUserTracker";
-          instance = container.AddComponent<CurrentUserTracker>();
+            if (instance == null)
+            {
+                instance = FindObjectOfType<CurrentUserTracker>();
+                if (instance == null)
+                {
+                    GameObject container = new GameObject();
+                    container.name = "CurrentUserTracker";
+                    instance = container.AddComponent<CurrentUserTracker>();
+                }
+
+                DontDestroyOnLoad(instance);
+            }
+            return instance;
         }
-        DontDestroyOnLoad(instance);
-      }
-      return instance;
     }
-  }
 
-  void Start ()
-  {
-    DontDestroyOnLoad(this);
-    NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
-  }
-
-  void NuitrackManager_onSkeletonTrackerUpdate (nuitrack.SkeletonData skeletonData)
-  {
-    if ((skeletonData == null) || (skeletonData.NumUsers == 0))
+    void Start ()
     {
-      currentUser = 0;
-      currentSkeleton = null;
-      return; 
+        DontDestroyOnLoad(this);
+        NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
     }
 
-    if (currentUser != 0)
+    void NuitrackManager_onSkeletonTrackerUpdate (nuitrack.SkeletonData skeletonData)
     {
-      currentSkeleton = skeletonData.GetSkeletonByID (currentUser);
-      currentUser = (currentSkeleton == null) ? 0 : currentUser;
-    }
+        if ((skeletonData == null) || (skeletonData.NumUsers == 0))
+        {
+            currentUser = 0;
+            currentSkeleton = null;
+            return; 
+        }
 
-    if (currentUser == 0)
-    {
-      currentUser = skeletonData.Skeletons[0].ID;
-      currentSkeleton = skeletonData.Skeletons[0];
+        if (currentUser != 0)
+        {
+            currentSkeleton = skeletonData.GetSkeletonByID (currentUser);
+            currentUser = (currentSkeleton == null) ? 0 : currentUser;
+        }
+
+        if (currentUser == 0)
+        {
+            currentUser = skeletonData.Skeletons[0].ID;
+            currentSkeleton = skeletonData.Skeletons[0];
+        }
     }
-  }
 }

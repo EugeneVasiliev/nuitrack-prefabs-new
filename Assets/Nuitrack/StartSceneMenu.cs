@@ -1,16 +1,16 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.SceneManagement;
 
 public class StartSceneMenu : MonoBehaviour 
 {
-  public void LoadScene1()
-  {
-    SceneManager.LoadScene(1);
-  }
+    private void Start()
+    {
+        //UnityEngine.VR.VRSettings.enabled = false;
+    }
 
-  public void LoadScene2()
-  {
-    SceneManager.LoadScene(2);
-  }
+    public void LoadScene(int levelBuildIndex)
+    {
+        //UnityEngine.VR.VRSettings.enabled = true;
+        SceneManager.LoadScene(levelBuildIndex);
+    }
 }
