@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
 using nuitrack;
 
 public class BackTextureCreator : MonoBehaviour {
@@ -13,6 +12,8 @@ public class BackTextureCreator : MonoBehaviour {
 	Color32[] newTexture32;
 	Color[] newTexture;
 	float gray;
+
+    DepthFrame depthFrame;
 
 	public Texture GetRGBTexture{ 
 		get { 
@@ -30,8 +31,9 @@ public class BackTextureCreator : MonoBehaviour {
 	Dictionary<ushort, Color> UsersColor;
 
 	void Start () {
-		NuitrackManager.onDepthUpdate += DepthUpdate;
-		if(userColorizeEnable)
+        NuitrackManager.onDepthUpdate += DepthUpdate;
+        NuitrackManager.onColorUpdate += ColorUpdate;
+        if (userColorizeEnable)
 			NuitrackManager.onUserTrackerUpdate += ColorizeUser;
 		UsersColor = new Dictionary<ushort,Color> ();
 		UsersColor.Add (0, new Color(0,0,0,0));
@@ -43,8 +45,9 @@ public class BackTextureCreator : MonoBehaviour {
 	}
 	void OnDestroy()
 	{
-		NuitrackManager.onDepthUpdate -= DepthUpdate;
-		if(userColorizeEnable)
+		NuitrackManager.onColorUpdate -= ColorUpdate;
+        NuitrackManager.onDepthUpdate -= DepthUpdate;
+        if (userColorizeEnable)
 			NuitrackManager.onUserTrackerUpdate -= ColorizeUser;
 	}
 
@@ -80,10 +83,16 @@ public class BackTextureCreator : MonoBehaviour {
 
 	}
 
-	void DepthUpdate(DepthFrame frame)
+    void DepthUpdate(DepthFrame frame)
+    {
+        depthFrame = frame;
+    }
+
+	void ColorUpdate(ColorFrame frame)
 	{
 		int cols = frame.Cols;
 		int rows = frame.Rows;
+        
 		if ((newTexture32 == null) || (newTexture32.Length != (cols * rows)) ) 
 		{
 			newTexture32 = new Color32[cols * rows];
@@ -95,15 +104,21 @@ public class BackTextureCreator : MonoBehaviour {
 				wall.GetComponent<MeshRenderer> ().material.mainTexture = tex;
 		}
 		Color32 pix;
-		for (int i = 0; i < rows; i++) {
+		for (int i = 0, ptr = 0; i < rows; i++, ptr += cols) {
 			for (int j = 0; j < cols; j++) {
-				int place = 3 * (i * cols + j);
+				
 				try{
-					pix = new Color32 (frame.rgb [place + 2], frame.rgb [place + 1], frame.rgb [place + 0], 255);
-					newTexture32 [i * cols + (cols - 1 - j)] = pix;
+                    if(frame != null)
+					    pix = new Color32 (frame[i, j].Red, frame[i, j].Green, frame[i, j].Blue, 255);
+                    else
+                    {
+                        int depth = depthFrame[i, j] / 64;
+                        pix = new Color32((byte)depth, (byte)depth, (byte)depth, 255);
+                    }
+                    newTexture32 [ptr + (cols - 1 - j)] = pix;
 				}
 				catch {
-					Debug.LogError ("index out of frame" + place + " " + cols + " " + rows);
+					Debug.LogError ("index out of frame" + cols + " " + rows);
 					return;
 				}
 			}

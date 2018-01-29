@@ -7,10 +7,10 @@ public class SkeletonAvatar : MonoBehaviour
 {
     [SerializeField]GameObject jointPrefab = null, connectionPrefab = null;
     [SerializeField]Transform headTransform; //if not null, skeletonAvatar will move it
-    //[SerializeField]Transform headDirectionTransform; //part of head preab that rotates 
+    [SerializeField]Transform headDirectionTransform; //part of head preab that rotates 
     [SerializeField]bool rotate180 = true;
     //[SerializeField]bool headInNeck = true;
-    //[SerializeField]Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f); //TODO: add offset from neck
+    [SerializeField]Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f); //TODO: add offset from neck
     [SerializeField] Vector3 startPoint;
     TPoseCalibration tPC;
     Vector3 basePivotOffset;
@@ -127,8 +127,13 @@ public class SkeletonAvatar : MonoBehaviour
             //if (headInNeck)
             //    headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
             //else
-                headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.None).ToVector3())) + basePivotOffset;
-                basePivot = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3())) + basePivotOffset;
+			#if UNITY_IOS
+			headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3())) + basePivotOffset;
+			#else
+			headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.None).ToVector3())) + basePivotOffset;
+			#endif
+                
+				basePivot = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3())) + basePivotOffset;
         }
 
         if (!skeletonRoot.activeSelf) skeletonRoot.SetActive(true);
