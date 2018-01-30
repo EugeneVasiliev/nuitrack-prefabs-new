@@ -121,7 +121,7 @@ public class CamRotation : MonoBehaviour {
 
                 Quaternion correction = yPartRotation * Quaternion.Inverse(currentRotation);
                 float delta = Mathf.Atan2((correction * Vector3.forward).x, (correction * Vector3.forward).z) * Mathf.Rad2Deg;
-                Quaternion corrected = yCorrection.localRotation * correction;
+                Quaternion corrected = yCorrection.localRotation * correction * Quaternion.Euler(0, 180, 0);
                 float slerpCoef = 0.01f;
 
                 if (Mathf.Abs(delta) > 40.0)
