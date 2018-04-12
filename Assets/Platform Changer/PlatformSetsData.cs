@@ -17,7 +17,6 @@ public class PlatformSets
     public string name; // for array naming
     public Platform platformName;
     public bool VRSupported = false;
-    public bool multithreadedRendering = false;
     public string nameProduct = "Product Name";
     public string bundleID = "Com.CompanyName.ProductName";
     public TextAsset manifest;

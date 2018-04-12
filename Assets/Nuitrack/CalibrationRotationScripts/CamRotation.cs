@@ -9,11 +9,11 @@ public class CamRotation : MonoBehaviour {
 
     bool firstCheck = false;
 
+    [SerializeField] Transform headBase;
+    [SerializeField] Transform yCorrection;
     [SerializeField]Transform vrCamera;
 
     [Header("GearVR Camera settings")]
-    [SerializeField] Transform headBase;
-    [SerializeField] Transform yCorrection;
     [SerializeField] Transform gearvrCamera;
 
 	[Header("IOS Camera settings")]

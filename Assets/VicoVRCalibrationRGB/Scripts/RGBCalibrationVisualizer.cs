@@ -34,8 +34,14 @@ public class RGBCalibrationVisualizer : MonoBehaviour {
 
     void OnEnable()
 	{
-		#if UNITY_ANDROID
-		if (NuitrackLoader.initState != NuitrackInitState.INIT_OK)
+#if !VICOVR_POINTER
+        if (needController)
+            Debug.LogError("Attention! If you realy need to use VicoVR controller add VICOVR_POINTER in Player Settings => Scripting Define Symbols. " +
+                "Else uncheck NeedController in RGBCalibrationVisualizer");
+#endif
+
+#if UNITY_ANDROID
+        if (NuitrackLoader.initState != NuitrackInitState.INIT_OK)
         {
 			gameObject.SetActive (false);
 			return;
@@ -57,8 +63,9 @@ public class RGBCalibrationVisualizer : MonoBehaviour {
 		SensorDisconnectChecker.SensorReconnected += HideConnectionProblem;
 
 		StartCoroutine (StartStreamingC ());
-
+#if VICOVR_POINTER
         PointerPassing.OnCalibration += ControllerCalibration;
+#endif
     }
 
     void ControllerCalibration(int handID, float progress)

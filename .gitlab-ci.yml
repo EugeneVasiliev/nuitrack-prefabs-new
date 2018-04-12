@@ -2,8 +2,8 @@ before_script:
 
 build_unity_project:
   script:
-    - '"C:\Program Files\Unity550\Editor\Unity.exe" -batchmode -projectPath="./" -exportPackage "Assets" "./VicoVRSDK.unitypackage" -quit'
-    - exit
+    - '"C:\Program Files\Unity2017.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets" -logFile %cd%/build_log.txt %cd%/NuitrackSDK.unitypackage'
   artifacts:
     paths:
-      - VicoVRSDK.unitypackage
+      - NuitrackSDK.unitypackage
+    expire_in: 5d

@@ -20,6 +20,7 @@ public class NuitrackManager : MonoBehaviour
     handsTrackerModuleOn = true;
 
     static nuitrack.DepthSensor depthSensor;
+    public static nuitrack.DepthSensor DepthSensor { get { return depthSensor; } }
     static nuitrack.ColorSensor colorSensor;
     static nuitrack.UserTracker userTracker;
     static nuitrack.SkeletonTracker skeletonTracker;
@@ -45,9 +46,6 @@ public class NuitrackManager : MonoBehaviour
 
     public delegate void OnNewGestureHandler(nuitrack.Gesture gesture);
     public static event OnNewGestureHandler onNewGesture;
-
-	public static bool NoSensor;
-	public static bool arcadeMode;
 
     static nuitrack.UserHands currentHands;
     public static nuitrack.UserHands СurrentHands { get { return currentHands; } }
@@ -94,7 +92,7 @@ public class NuitrackManager : MonoBehaviour
 
         //	Debug.Log ("NuitrackStart");
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
     if (initState == NuitrackInitState.INIT_OK)
 #endif
         NuitrackInit();
@@ -295,7 +293,7 @@ public class NuitrackManager : MonoBehaviour
 					Application.Quit ();
 		}
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (NuitrackLoader.initState == NuitrackInitState.INIT_OK)
 #endif
             if (!pauseState)
