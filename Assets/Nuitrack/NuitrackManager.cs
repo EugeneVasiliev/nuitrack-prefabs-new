@@ -19,6 +19,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
+    [SerializeField] bool wifiConnectFromEditor = false;
+
     static nuitrack.DepthSensor depthSensor;
     public static nuitrack.DepthSensor DepthSensor { get { return depthSensor; } }
     static nuitrack.ColorSensor colorSensor;
@@ -171,6 +173,9 @@ public class NuitrackManager : MonoBehaviour
         #if UNITY_IOS
 			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
         #else
+        if(Application.isEditor && wifiConnectFromEditor)
+            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+        else
             nuitrack.Nuitrack.Init();
         #endif
         Debug.Log("Init OK");

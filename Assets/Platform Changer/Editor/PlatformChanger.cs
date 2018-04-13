@@ -76,7 +76,7 @@ public class PlatformChanger : EditorWindow {
             ChangePlatform();
             PlayerSettings.virtualRealitySupported = GetPlatform().VRSupported;
             PlayerSettings.productName = GetPlatform().nameProduct;
-            PlayerSettings.applicationIdentifier = GetPlatform().bundleID;
+			PlayerSettings.applicationIdentifier = GetPlatform().bundleID;
             PlayerPrefs.SetString("Platform", GetPlatform().platformName.ToString());
             QualitySettings.antiAliasing = 2;
             UnityEditorInternal.VR.VREditor.SetVREnabledDevicesOnTargetGroup(BuildTargetGroup.Android, GetPlatform().vrSDK);
@@ -93,7 +93,7 @@ public class PlatformChanger : EditorWindow {
             GUILayout.TextField("Press [Change Platform] button");
 
         GUILayout.TextField("VR support: " + PlayerSettings.virtualRealitySupported);
-        GUILayout.TextField("Bundle Id: " + PlayerSettings.applicationIdentifier);
+		GUILayout.TextField("Bundle Id: " + PlayerSettings.applicationIdentifier);
         GUILayout.TextField("Name: " + PlayerSettings.productName);
     }
 

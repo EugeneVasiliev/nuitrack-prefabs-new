@@ -4,7 +4,9 @@ using System.Collections.Generic;
 
 public class NuitrackAvatarAdvanced : MonoBehaviour
 {
-    [SerializeField] Transform headTransform; //if not null, skeletonAvatar will move it
+	[SerializeField] Transform headTransform; //if not null, skeletonAvatar will move it
+	[Tooltip("If platform not android, head joint (nuitrack.JointType.None) not work")]
+	[SerializeField] Transform simulatedHeadJoint; 
     Vector3 startPoint; //"Waist" model bone position on start
 
     TPoseCalibration tPC;
@@ -15,7 +17,6 @@ public class NuitrackAvatarAdvanced : MonoBehaviour
 
     /// <summary> Model bones </summary>
     Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
-
     Quaternion q180 = Quaternion.Euler(0f, 180f, 0f);
     Quaternion q0 = Quaternion.identity;
 
@@ -113,8 +114,14 @@ public class NuitrackAvatarAdvanced : MonoBehaviour
 
     private void LateUpdate()
     {
+		#if UNITY_ANDROID
         if (headTransform != null)
             headTransform.position = jointsRigged[nuitrack.JointType.None].bone.position;
+		#else
+		if (headTransform != null)
+			headTransform.position = simulatedHeadJoint.position;
+		#endif
+
     }
 
     void OnDisable()
