@@ -26,6 +26,8 @@ Shader "Custom/CustomMesh"
 			#pragma vertex vert
 			#pragma fragment frag
 
+			//Not working on IOS
+			#if !SHADER_API_METAL  
 			uniform float fX;
 			uniform float fY;
 
@@ -89,8 +91,9 @@ Shader "Custom/CustomMesh"
             	if ((abs(z) < 1) || (abs(z - zRight) > max(z, zRight) * _CutoffDiff) || 
             		(abs(z - zUp) > max(z, zUp) * _CutoffDiff) || 
             		(abs(z - zRightUp) > max(z, zRightUp) * _CutoffDiff)) o.color.a = 0;
-
+        		
                 o.vertex = UnityObjectToClipPos(newVertexPos);
+
             	return o;
             }
 
@@ -99,6 +102,7 @@ Shader "Custom/CustomMesh"
             	clip(i.color.a - 0.999);
             	return i.color;
             }
+			#endif
 		    ENDCG
 	    }
 	}

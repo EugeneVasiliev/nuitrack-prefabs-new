@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using nuitrack.issues;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -174,6 +176,7 @@ public class NuitrackManager : MonoBehaviour
 			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
         #else
         if(Application.isEditor && wifiConnectFromEditor)
+            //nuitrack.Nuitrack.Init();
             nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
         else
             nuitrack.Nuitrack.Init();
@@ -192,7 +195,7 @@ public class NuitrackManager : MonoBehaviour
 
         handTracker = nuitrack.HandTracker.Create();
 
-		nuitrack.Nuitrack.Run();
+        nuitrack.Nuitrack.Run();
         Debug.Log("Run OK");
 
         ChangeModulsState (
@@ -339,9 +342,6 @@ public class NuitrackManager : MonoBehaviour
             gesturesRecognizerModuleOn,
 			userTrackerModuleOn
 		);
-
-//		StartCoroutine (DMStart ());
-
 	}
 
     public void CloseUserGen()
@@ -352,9 +352,7 @@ public class NuitrackManager : MonoBehaviour
         if (skeletonTracker != null) skeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
         if (gestureRecognizer != null) gestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
         if (handTracker != null) handTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
-        //		Debug.Log ("preRelease");
         nuitrack.Nuitrack.Release();
-        //		Debug.Log ("postRelease");
         	
         depthSensor = null;
         colorSensor = null;

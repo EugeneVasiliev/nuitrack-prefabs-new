@@ -94,7 +94,11 @@ public class NuitrackModules : MonoBehaviour
 			//*
 			if (!nuitrackInitialized)
 			{
-				nuitrack.Nuitrack.Init();
+            #if UNITY_IOS
+			    nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+            #else
+                nuitrack.Nuitrack.Init();
+            #endif
                 Debug.Log("init ok");
 				depthSensorInit = nuitrack.DepthSensor.Create();
                 colorSensorInit = nuitrack.ColorSensor.Create();
