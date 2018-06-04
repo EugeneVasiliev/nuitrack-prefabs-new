@@ -37,7 +37,7 @@ public class RGBCalibrationVisualizer : MonoBehaviour {
     void OnEnable()
 	{
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID
         if (NuitrackLoader.initState != NuitrackInitState.INIT_OK)
         {
 			gameObject.SetActive (false);
