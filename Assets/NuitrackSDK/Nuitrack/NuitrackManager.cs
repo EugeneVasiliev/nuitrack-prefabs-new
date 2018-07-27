@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using nuitrack.issues;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
 public class InitEvent : UnityEvent<NuitrackInitState>
 {
 }
+
+enum WifiConnectFromPC
+{
+    none, VicoVR, TVico,
+}
+
 public class NuitrackManager : MonoBehaviour
 {
     public NuitrackInitState InitState { get { return NuitrackLoader.initState; } }
@@ -22,8 +23,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [Tooltip("Only skeleton")]
-    [SerializeField] bool wifiConnectPC = false;
+    [Tooltip("Only skeleton. PC and Unity Editor")]
+    [SerializeField] WifiConnectFromPC wifiConnectFromPC = WifiConnectFromPC.none;
 
     public static bool sensorConnected = false;
 
@@ -182,9 +183,20 @@ public class NuitrackManager : MonoBehaviour
 #if UNITY_IOS
 			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
 #else
-        if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnectPC)
-            //nuitrack.Nuitrack.Init();
-            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+        if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnectFromPC != WifiConnectFromPC.none)
+        {
+            if (wifiConnectFromPC == WifiConnectFromPC.VicoVR)
+            {
+                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+            }
+
+            if (wifiConnectFromPC == WifiConnectFromPC.TVico)
+            {
+                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
+            }
+        }
         else
             nuitrack.Nuitrack.Init();
 #endif
