@@ -36,14 +36,12 @@ public class RGBCalibrationVisualizer : MonoBehaviour {
 
     void OnEnable()
 	{
-
-#if UNITY_ANDROID
-        if (NuitrackLoader.initState != NuitrackInitState.INIT_OK)
+        if (NuitrackLoader.initState != NuitrackInitState.INIT_OK && Application.platform != RuntimePlatform.IPhonePlayer)
         {
 			gameObject.SetActive (false);
 			return;
 		}
-		#endif
+
 		if (autoFindGvrHead) {
 			progressText.GetComponent<MeshRenderer> ().enabled = false;
 

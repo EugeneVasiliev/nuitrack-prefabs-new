@@ -6,7 +6,7 @@ public class InitEvent : UnityEvent<NuitrackInitState>
 {
 }
 
-enum WifiConnectFromPC
+enum WifiConnect
 {
     none, VicoVR, TVico,
 }
@@ -23,18 +23,23 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [Tooltip("Only skeleton. PC and Unity Editor")]
-    [SerializeField] WifiConnectFromPC wifiConnectFromPC = WifiConnectFromPC.none;
+    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
+    [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
 
     public static bool sensorConnected = false;
 
     static nuitrack.DepthSensor depthSensor;
     public static nuitrack.DepthSensor DepthSensor { get { return depthSensor; } }
     static nuitrack.ColorSensor colorSensor;
+    public static nuitrack.ColorSensor ColorSensor { get { return colorSensor; } }
     static nuitrack.UserTracker userTracker;
+    public static nuitrack.UserTracker UserTracker { get { return userTracker; } }
     static nuitrack.SkeletonTracker skeletonTracker;
+    public static nuitrack.SkeletonTracker SkeletonTracker { get { return skeletonTracker; } }
     static nuitrack.GestureRecognizer gestureRecognizer;
+    public static nuitrack.GestureRecognizer GestureRecognizer { get { return gestureRecognizer; } }
     static nuitrack.HandTracker handTracker;
+    public static nuitrack.HandTracker HandTracker { get { return handTracker; } }
 
     static nuitrack.DepthFrame depthFrame;
     public static nuitrack.DepthFrame DepthFrame { get { return depthFrame; } }
@@ -181,17 +186,29 @@ public class NuitrackManager : MonoBehaviour
     {
         //    CloseUserGen(); //just in case
 #if UNITY_IOS
+		if (wifiConnect == WifiConnect.VicoVR)
+		{
 			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+		}
+		else if (wifiConnect == WifiConnect.TVico)
+		{
+			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
+		}
+		else
+			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+
 #else
-        if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnectFromPC != WifiConnectFromPC.none)
+        if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnect != WifiConnect.none)
         {
-            if (wifiConnectFromPC == WifiConnectFromPC.VicoVR)
+            if (wifiConnect == WifiConnect.VicoVR)
             {
                 nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
                 nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
             }
 
-            if (wifiConnectFromPC == WifiConnectFromPC.TVico)
+            if (wifiConnect == WifiConnect.TVico)
             {
                 nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
                 nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");

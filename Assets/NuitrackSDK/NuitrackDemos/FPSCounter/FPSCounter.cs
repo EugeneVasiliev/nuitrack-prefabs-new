@@ -53,7 +53,7 @@ public class FPSCounter : MonoBehaviour
 				avg_fps = frames / timer;
 
 
-				tm.text = /*"avg: " + */"Rendering FPS: " + avg_fps.ToString("0")/*"; min: " + min_fps.ToString("0")*/;
+				tm.text = /*"avg: " + */"" + avg_fps.ToString("0")/*"; min: " + min_fps.ToString("0")*/;
 
 				frames = 0;
 				min_fps = 0f;
