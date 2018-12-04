@@ -54,8 +54,6 @@ public class SimpleSkeletonAvatar3d : MonoBehaviour {
 
     GameObject[] connections;
     Dictionary<nuitrack.JointType, GameObject> joints;
-    Quaternion q180 = Quaternion.Euler(0f, 180f, 0f);
-    Quaternion q0 = Quaternion.identity;
 
     void Start()
     {

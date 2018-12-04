@@ -55,8 +55,6 @@ public class SimpleSkeletonAvatar : MonoBehaviour {
 
     GameObject[] connections;
     Dictionary<nuitrack.JointType, GameObject> joints;
-    Quaternion q180 = Quaternion.Euler(0f, 180f, 0f);
-    Quaternion q0 = Quaternion.identity;
 
     void Start()
     {
@@ -65,19 +63,6 @@ public class SimpleSkeletonAvatar : MonoBehaviour {
 
     void CreateSkeletonParts()
     {
-        joints = new Dictionary<nuitrack.JointType, GameObject>();
-
-        for (int i = 0; i < jointsInfo.Length; i++)
-        {
-            if (jointPrefab != null)
-            {
-                GameObject joint = Instantiate(jointPrefab, Vector3.zero, Quaternion.identity);
-                joints.Add(jointsInfo[i], joint);
-                joint.transform.parent = transform;
-                joint.SetActive(false);
-            }
-        }
-
         connections = new GameObject[connectionsInfo.GetLength(0)];
 
         for (int i = 0; i < connections.Length; i++)
@@ -86,8 +71,21 @@ public class SimpleSkeletonAvatar : MonoBehaviour {
             {
                 GameObject conn = Instantiate(connectionPrefab, Vector3.zero, Quaternion.identity);
                 connections[i] = conn;
-                conn.transform.parent = transform;
+                conn.transform.SetParent(transform);
                 conn.SetActive(false);
+            }
+        }
+
+        joints = new Dictionary<nuitrack.JointType, GameObject>();
+
+        for (int i = 0; i < jointsInfo.Length; i++)
+        {
+            if (jointPrefab != null)
+            {
+                GameObject joint = Instantiate(jointPrefab, Vector3.zero, Quaternion.identity);
+                joints.Add(jointsInfo[i], joint);
+                joint.transform.SetParent(transform);
+                joint.SetActive(false);
             }
         }
     }

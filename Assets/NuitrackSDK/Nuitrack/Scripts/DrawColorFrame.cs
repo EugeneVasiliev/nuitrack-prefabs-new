@@ -47,7 +47,6 @@ public class DrawColorFrame : MonoBehaviour
 
         colorTexture = new Texture2D(cols, rows, TextureFormat.RGB24, false);
         colorTexture.filterMode = FilterMode.Bilinear;
-        colorTexture.wrapMode = TextureWrapMode.Mirror;
         colorTexture.Apply();
         ImageMaterial.mainTexture = colorTexture;
         Background.material = ImageMaterial;
