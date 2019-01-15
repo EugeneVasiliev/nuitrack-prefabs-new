@@ -1,14 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleSkeletonAvatar : MonoBehaviour {
-
+public class SimpleSkeletonAvatar : MonoBehaviour
+{
     public bool autoProcessing = true;
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
 
     nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
-        {
+    {
         nuitrack.JointType.Head,
         nuitrack.JointType.Neck,
         nuitrack.JointType.LeftCollar,
@@ -28,11 +27,11 @@ public class SimpleSkeletonAvatar : MonoBehaviour {
         nuitrack.JointType.RightKnee,
         nuitrack.JointType.LeftAnkle,
         nuitrack.JointType.RightAnkle
-        };
+    };
 
     nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
-    { //right and left collars are at same point at the moment, so we use only 1 collar here,
-        //quite easy to add rightCollar if it ever changes
+    { //Right and left collars are currently located at the same point, that's why we use only 1 collar,
+        //it's easy to add rightCollar, if it ever changes
         {nuitrack.JointType.Neck,           nuitrack.JointType.Head},
         {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Neck},
         {nuitrack.JointType.LeftCollar,     nuitrack.JointType.LeftShoulder},
@@ -63,73 +62,73 @@ public class SimpleSkeletonAvatar : MonoBehaviour {
 
     void CreateSkeletonParts()
     {
-        connections = new GameObject[connectionsInfo.GetLength(0)];
-
-        for (int i = 0; i < connections.Length; i++)
-        {
-            if (connectionPrefab != null)
-            {
-                GameObject conn = Instantiate(connectionPrefab, Vector3.zero, Quaternion.identity);
-                connections[i] = conn;
-                conn.transform.SetParent(transform);
-                conn.SetActive(false);
-            }
-        }
-
         joints = new Dictionary<nuitrack.JointType, GameObject>();
 
         for (int i = 0; i < jointsInfo.Length; i++)
         {
             if (jointPrefab != null)
             {
-                GameObject joint = Instantiate(jointPrefab, Vector3.zero, Quaternion.identity);
-                joints.Add(jointsInfo[i], joint);
-                joint.transform.SetParent(transform);
+                GameObject joint = Instantiate(jointPrefab, transform, true);
                 joint.SetActive(false);
+                joints.Add(jointsInfo[i], joint);
+            }
+        }
+
+        connections = new GameObject[connectionsInfo.GetLength(0)];
+
+        for (int i = 0; i < connections.Length; i++)
+        {
+            if (connectionPrefab != null)
+            {
+                GameObject connection = Instantiate(connectionPrefab, transform, true);
+                connection.SetActive(false);
+                connections[i] = connection;
             }
         }
     }
 
     void Update()
     {
-        if (CurrentUserTracker.CurrentSkeleton != null && autoProcessing) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+        if (autoProcessing)
+            ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
     }
 
     public void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
-        if (skeleton == null) return;
-
-        if (!gameObject.activeSelf) gameObject.SetActive(true);
+        if (skeleton == null)
+            return;
 
         for (int i = 0; i < jointsInfo.Length; i++)
         {
             nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
             if (j.Confidence > 0.5f)
             {
-                if (!joints[jointsInfo[i]].activeSelf) joints[jointsInfo[i]].SetActive(true);
-
+                joints[jointsInfo[i]].SetActive(true);
                 joints[jointsInfo[i]].transform.position = new Vector2(j.Proj.X * Screen.width, Screen.height - j.Proj.Y * Screen.height);
             }
             else
             {
-                if (joints[jointsInfo[i]].activeSelf) joints[jointsInfo[i]].SetActive(false);
+                joints[jointsInfo[i]].SetActive(false);
             }
         }
 
         for (int i = 0; i < connectionsInfo.GetLength(0); i++)
         {
-            if (joints[connectionsInfo[i, 0]].activeSelf && joints[connectionsInfo[i, 1]].activeSelf)
-            {
-                if (!connections[i].activeSelf) connections[i].SetActive(true);
+            GameObject startJoint = joints[connectionsInfo[i, 0]];
+            GameObject endJoint = joints[connectionsInfo[i, 1]];
 
-                Vector3 diff = joints[connectionsInfo[i, 1]].transform.position - joints[connectionsInfo[i, 0]].transform.position;
-                connections[i].transform.position = joints[connectionsInfo[i, 0]].transform.position;
-                connections[i].transform.right = joints[connectionsInfo[i, 1]].transform.position - connections[i].transform.position;
-                connections[i].transform.localScale = new Vector3(diff.magnitude, 1f,  1f);
+            if (startJoint.activeSelf && endJoint.activeSelf)
+            {
+                connections[i].SetActive(true);
+
+                connections[i].transform.position = startJoint.transform.position;
+                connections[i].transform.right = endJoint.transform.position - startJoint.transform.position;
+                float distance = Vector3.Distance(endJoint.transform.position, startJoint.transform.position);
+                connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
             }
             else
             {
-                if (connections[i].activeSelf) connections[i].SetActive(false);
+                connections[i].SetActive(false);
             }
         }
     }

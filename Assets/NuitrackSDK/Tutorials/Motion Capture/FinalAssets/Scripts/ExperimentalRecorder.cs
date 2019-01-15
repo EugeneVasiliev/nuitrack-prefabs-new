@@ -1,12 +1,15 @@
 ﻿#if UNITY_EDITOR
 
 using UnityEngine;
+#if UNITY_2017_4 || UNITY_2018_2
 using UnityEditor.Experimental.Animations;
+#endif
 
 public class ExperimentalRecorder : IRecordable
 {
+#if UNITY_2017_4 || UNITY_2018_2
     GameObjectRecorder m_Recorder;
-
+#endif
     public ExperimentalRecorder(GameObject rootObject)
     {
 #if UNITY_2017_4
@@ -17,8 +20,8 @@ public class ExperimentalRecorder : IRecordable
 
 #elif UNITY_2018_2
 
-        m_Recorder = new GameObjectRecorder(gameObject);
-        m_Recorder.BindComponentsOfType<Transform>(gameObject, true);
+        m_Recorder = new GameObjectRecorder(rootObject);
+        m_Recorder.BindComponentsOfType<Transform>(rootObject, true);
 
 #else
         PrintErrorVersion();

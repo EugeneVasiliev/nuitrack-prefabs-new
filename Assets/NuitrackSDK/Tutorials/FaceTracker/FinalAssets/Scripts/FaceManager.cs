@@ -73,7 +73,8 @@ public class FaceManager : MonoBehaviour
 
                     faceControllers[i].transform.position = new Vector2(head.Proj.X * Screen.width, Screen.height - head.Proj.Y * Screen.height);
                     //stretch the face to fit the rectangle
-                    if (currentFace.rectangle != null) faceControllers[i].transform.localScale = new Vector2(currentFace.rectangle.width * Screen.width, currentFace.rectangle.height * Screen.height);
+                    if (currentFace.rectangle != null)
+                        faceControllers[i].transform.localScale = new Vector2(currentFace.rectangle.width * Screen.width, currentFace.rectangle.height * Screen.height);
                 }
             }
             else

@@ -41,7 +41,7 @@ public static class NuitrackUtils
     #region ToTexture2D
 
     /// <summary>
-    /// Get UnityEngine.Texture2D from nuitrack.ColorFrame
+    /// Get UnityEngine.Texture2D from nuitrack.ColorFrame (TextureFormat.RGB24)
     /// </summary>
     /// <param name="frame">Original nuitrack.ColorFrame</param>
     /// <returns>Unity Texture2D</returns>
@@ -59,6 +59,8 @@ public static class NuitrackUtils
         Texture2D rgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
         rgbTexture.LoadRawTextureData(sourceData);
         rgbTexture.Apply();
+
+        Resources.UnloadUnusedAssets();
 
         return rgbTexture;
     }
@@ -103,6 +105,8 @@ public static class NuitrackUtils
         segmentTexture.LoadRawTextureData(outSegment);
         segmentTexture.Apply();
 
+        Resources.UnloadUnusedAssets();
+
         return segmentTexture;
     }
 
@@ -133,6 +137,8 @@ public static class NuitrackUtils
         Texture2D depthTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
         depthTexture.LoadRawTextureData(outDepth);
         depthTexture.Apply();
+
+        Resources.UnloadUnusedAssets();
 
         return depthTexture;
     }

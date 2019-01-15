@@ -2,27 +2,24 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class SkeletonController : MonoBehaviour {
-
+public class SkeletonController : MonoBehaviour
+{
     [Range(0, 6)]
-    public int skeletonCount = 6;         //maximum skeletons 6
+    public int skeletonCount = 6;         //Max number of skeletons tracked by Nuitrack
     [SerializeField] SimpleSkeletonAvatar skeletonAvatar;
 
     List<SimpleSkeletonAvatar> avatars = new List<SimpleSkeletonAvatar>();
 
-    SkeletonData skeletonData;
-
     void OnEnable()
     {
-        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkelUpdate;
+        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
     }
 
     void Start()
     {
         for (int i = 0; i < skeletonCount; i++)
         {
-            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject);
-            newAvatar.transform.parent = transform;
+            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform, true);
             SimpleSkeletonAvatar simpleSkeleton = newAvatar.GetComponent<SimpleSkeletonAvatar>();
             simpleSkeleton.autoProcessing = false;
             avatars.Add(simpleSkeleton);
@@ -31,16 +28,11 @@ public class SkeletonController : MonoBehaviour {
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
     }
 
-    void OnSkelUpdate(SkeletonData skelData)
-    {
-        skeletonData = skelData;
-    }
-
-    void Update()
+    void OnSkeletonUpdate(SkeletonData skeletonData)
     {
         for (int i = 0; i < avatars.Count; i++)
         {
-            if (skeletonData != null && i < skeletonData.Skeletons.Length && skeletonData.Skeletons.Length != 0)
+            if (i < skeletonData.Skeletons.Length)
             {
                 avatars[i].gameObject.SetActive(true);
                 avatars[i].ProcessSkeleton(skeletonData.Skeletons[i]);

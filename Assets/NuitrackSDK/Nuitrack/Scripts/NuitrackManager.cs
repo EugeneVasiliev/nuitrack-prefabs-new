@@ -25,6 +25,7 @@ public class NuitrackManager : MonoBehaviour
 
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
+    [SerializeField] bool runInBackground = false;
 
     public static bool sensorConnected = false;
 
@@ -88,6 +89,7 @@ public class NuitrackManager : MonoBehaviour
                     container.name = "NuitrackManager";
                     instance = container.AddComponent<NuitrackManager>();
                 }
+                
                 DontDestroyOnLoad(instance);
             }
             return instance;
@@ -108,7 +110,7 @@ public class NuitrackManager : MonoBehaviour
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         Application.targetFrameRate = 60;
-
+        Application.runInBackground = runInBackground;
         //	Debug.Log ("NuitrackStart");
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -184,7 +186,8 @@ public class NuitrackManager : MonoBehaviour
 
     void NuitrackInit()
     {
-        //    CloseUserGen(); //just in case
+        //Debug.Log("Application.runInBackground " + Application.runInBackground);
+        //CloseUserGen(); //just in case
 #if UNITY_IOS
 		if (wifiConnect == WifiConnect.VicoVR)
 		{
@@ -306,6 +309,7 @@ public class NuitrackManager : MonoBehaviour
 
     void OnApplicationPause(bool pauseStatus)
     {
+        //Debug.Log("pauseStatus " + pauseStatus);
         if (pauseStatus)
         {
             ChangeModulsState(
@@ -317,6 +321,7 @@ public class NuitrackManager : MonoBehaviour
                 false
             );
             pauseState = true;
+            CloseUserGen();
         }
         else
         {
@@ -328,6 +333,8 @@ public class NuitrackManager : MonoBehaviour
                 gesturesRecognizerModuleOn,
                 userTrackerModuleOn
             );
+            if(pauseState)
+                NuitrackInit();
             pauseState = false;
         }
     }
@@ -407,6 +414,7 @@ public class NuitrackManager : MonoBehaviour
         userFrame = null;
         skeletonData = null;
         handTrackerData = null;
+        Debug.Log("CloseUserGen");
     }
 
     void OnDestroy()
