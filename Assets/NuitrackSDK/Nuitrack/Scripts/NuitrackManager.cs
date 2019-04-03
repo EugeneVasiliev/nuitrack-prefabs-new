@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
@@ -75,6 +76,9 @@ public class NuitrackManager : MonoBehaviour
     bool prevColor = false;
     bool prevGest = false;
     bool prevUser = false;
+
+    bool pauseState = false;
+    bool firstTime = false; //in order to prevent double NuitrackInit() calls on startup (in Awake and in OnApplicationPause)
 
     public static NuitrackManager Instance
     {
@@ -305,7 +309,6 @@ public class NuitrackManager : MonoBehaviour
             currentHands = null;
         }
     }
-    bool pauseState = false;
 
     void OnApplicationPause(bool pauseStatus)
     {
@@ -317,10 +320,22 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            if (pauseState)
-                StartNuitrack();
-            pauseState = false;
+            if(firstTime)
+                StartCoroutine(RestartNuitrack());
+
+            firstTime = true;
         }
+    }
+
+    IEnumerator RestartNuitrack()
+    {
+        while (pauseState)
+        {
+            StartNuitrack();
+            pauseState = false;
+            yield return null;
+        }
+        yield return null;
     }
 
     public void StartNuitrack()
