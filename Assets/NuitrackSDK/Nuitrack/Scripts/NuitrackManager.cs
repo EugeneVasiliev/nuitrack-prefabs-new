@@ -312,31 +312,33 @@ public class NuitrackManager : MonoBehaviour
         //Debug.Log("pauseStatus " + pauseStatus);
         if (pauseStatus)
         {
-            ChangeModulsState(
-                false,
-                false,
-                false,
-                false,
-                false,
-                false
-            );
+            StopNuitrack();
             pauseState = true;
-            CloseUserGen();
         }
         else
         {
-            ChangeModulsState(
-                skeletonTrackerModuleOn,
-                handsTrackerModuleOn,
-                depthModuleOn,
-                colorModuleOn,
-                gesturesRecognizerModuleOn,
-                userTrackerModuleOn
-            );
-            if(pauseState)
-                NuitrackInit();
+            if (pauseState)
+                StartNuitrack();
             pauseState = false;
         }
+    }
+
+    public void StartNuitrack()
+    {
+        NuitrackInit();
+    }
+
+    public void StopNuitrack()
+    {
+        ChangeModulsState(
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        );
+        CloseUserGen();
     }
 
     void Update()
