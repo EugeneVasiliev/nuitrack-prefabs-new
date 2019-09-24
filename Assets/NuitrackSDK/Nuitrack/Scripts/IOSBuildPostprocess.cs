@@ -1,4 +1,5 @@
-#if UNITY_EDITOR AND UNITY_IOS
+#if UNITY_EDITOR
+#if UNITY_IOS
 
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,13 +15,13 @@ public static class IOSBuildPostprocess
     {
         if(buildTarget == BuildTarget.iOS)
         {
-            // Update configuration 
+            // Update configuration
             string projectPath = path + "/Unity-iPhone.xcodeproj/project.pbxproj";
 
             PBXProject pbxProject = new PBXProject();
             pbxProject.ReadFromFile(projectPath);
 
-            string target = pbxProject.TargetGuidByName("Unity-iPhone");            
+            string target = pbxProject.TargetGuidByName("Unity-iPhone");
             pbxProject.SetBuildProperty(target, "ENABLE_BITCODE", "NO");
 
             pbxProject.WriteToFile (projectPath);
@@ -30,7 +31,7 @@ public static class IOSBuildPostprocess
             PlistDocument plist = new PlistDocument();
             plist.ReadFromString(File.ReadAllText(plistPath));
             PlistElementDict rootDict = plist.root;
-           
+
             PlistElementArray bgModes = rootDict.CreateArray("UISupportedExternalAccessoryProtocols");
             bgModes.AddString("io.structure.depth");
             bgModes.AddString("io.structure.infrared");
@@ -42,4 +43,5 @@ public static class IOSBuildPostprocess
     }
 }
 
+#endif
 #endif
