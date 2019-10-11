@@ -30,8 +30,33 @@ typedef struct {
     const char* version;
 } SDKVersion;
 
-/** Returns a string specifying the current SDK version */
-SDKVersion currentSDKVersion(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    /** Returns a string specifying the current SDK version */
+    SDKVersion currentSDKVersion(void);
+
+    /** Launch the Calibrator app or prompt the user to install it.
+
+        An iOS app using the Structure Sensor should present its users with an opportunity to call this method when the following conditions are simultaneously met:
+
+        - The sensor doesn't have a `calibrationType` with value `CalibrationTypeDeviceSpecific`.
+        - A registered depth stream is required by the application.
+        - The iOS device is supported by the Calibrator app.
+
+        @warning For this method to function, your app bundle's info plist must contain the following entry:
+
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+        <string>structure-sensor-calibrator</string>
+        </array>
+
+        @note See the calibration overlay sample code for more details.
+    */
+    bool launchCalibratorAppOrGoToAppStore(void);
+#ifdef __cplusplus
+};
+#endif
 
 //------------------------------------------------------------------------------
 #pragma mark - Sensor Controller Constants
@@ -161,6 +186,15 @@ typedef NS_ENUM(NSInteger, STCalibrationType)
     STCalibrationTypeDeviceSpecific,
 };
 
+typedef NS_ENUM(NSInteger, STStreamPreset)
+{
+    STStreamPresetDefault = 0,
+    STStreamPresetBodyScanning = 1,
+    STStreamPresetOutdoor = 2,
+    STStreamPresetRoomScanning = 3,
+    STStreamPresetCloseRange = 4,
+};
+
 //------------------------------------------------------------------------------
 
 // Dictionary keys for `[STSensorController startStreamingWithOptions:error:]`.
@@ -169,6 +203,12 @@ extern NSString* const kSTFrameSyncConfigKey;
 extern NSString* const kSTHoleFilterEnabledKey;
 extern NSString* const kSTHighGainEnabledKey;
 extern NSString* const kSTColorCameraFixedLensPositionKey;
+
+extern NSString* const kSTInfraredSensorAutoExposureModeKey;
+extern NSString* const kSTInfraredSensorManualExposureKey;
+extern NSString* const kSTInfraredSensorManualGainKey;
+
+extern NSString* const kSTDepthStreamPresetKey;
 
 //------------------------------------------------------------------------------
 #pragma mark - STDepthFrame
@@ -232,6 +272,25 @@ This matrix can be used to render a scene by simulating the same camera properti
  */
 - (STIntrinsics) intrinsics;
 
+/** Test if valid extrinsics exist
+
+    This method will tell you if valid extrinsics for a bracket calibration currently exist for a given frame.
+
+    This can be used to tell whether it's possible to register this frame to another iOS color frame.
+*/
+- (BOOL) hasValidExtrinsics;
+
+/** Get the extrinsics relating the iOS camera to the depth sensor.
+ 
+ The transformation matrix returned here is in the reference frame of the iOS camera. The coordinate frame is right handed: X right, Y down, Z out. Equivalently, this matrix can transform a 3D point expressed in the Structure Sensor depth stream coordinate system to the iOS camera coordinate system using the following operation
+ 
+ 3DPoint_IniOSFrame = iOSColorFromDepthExtrinsics * 3DPoint_InDepthFrame
+ 
+ @return a 4x4 GLKMatrix in _column_ major order, with the correct extrinsics for the current sensor and lens configuration. This value does not change when streaming registered depth, as it reports the mechanical transform between the depth stream and the iOS camera. Will return a NAN matrix when uncalibrated.
+ */
+- (GLKMatrix4) iOSColorFromDepthExtrinsics;
+
+
 /** Get the rigid body transformation (RBT) between the iOS color camera and the depth image viewpoint.
  
 When using an un-registered mode, this transform is the same as [STSensorController colorCameraPoseInSensorCoordinateFrame:].
@@ -242,13 +301,13 @@ The coordinate frame is right handed: X right, Y down, Z out. Equivalently, this
  
 @param matrix4x4 This output parameter should be a pointer to 16 floating point values in _column_ major order. This is the default ordering of GLKMatrix4.
 */
-- (void)colorCameraPoseInDepthCoordinateFrame:(float *)matrix4x4;
+- (void)colorCameraPoseInDepthCoordinateFrame:(float *)matrix4x4 __deprecated_msg("use STDepthFrame:iOSColorFromDepthExtrinsics: instead.");
 
 /** Improve the accuracy of the depth data. Recommended for long-range data.
 
 This function has a significant runtime cost. For instance, on iPad Air 2 it can take up to 5 milliseconds to complete.
 
-@return FALSE if the correction could not be applied. This can happen when using hardware registered depth or a sensor with an old firwmare.
+@return FALSE if the correction could not be applied. This can happen when using hardware registered depth or a sensor with an old firmware.
 */
 - (BOOL)applyExpensiveCorrection;
 
@@ -604,9 +663,10 @@ An iOS app using the Structure Sensor should present its users with an opportuni
     </array>
 
 @note See the calibration overlay sample code for more details.
+@note This method is deprecated in favor of the direct C-function call.
 
 */
-+ (BOOL)launchCalibratorAppOrGoToAppStore;
++ (BOOL)launchCalibratorAppOrGoToAppStore __deprecated_msg("use launchCalibratorAppOrGoToAppStore(void) instead.");
 
 /** Return a boolean indicating whether an (at least) approximate depth-color calibration will be available when the sensor is connected to the current device.
 
@@ -636,7 +696,7 @@ This method can dynamically overwrite the `kSTHighGainEnabledKey` option specifi
 
 @param matrix4x4 This output parameter should be a pointer to 16 floating point values in _column_ major order. This is the default ordering of GLKMatrix4.
 */
-- (void)colorCameraPoseInSensorCoordinateFrame:(float *)matrix4x4;
+- (void)colorCameraPoseInSensorCoordinateFrame:(float *)matrix4x4 __deprecated_msg("use STDepthFrame:iOSColorFromDepthExtrinsics: instead.");
 
 @end
 

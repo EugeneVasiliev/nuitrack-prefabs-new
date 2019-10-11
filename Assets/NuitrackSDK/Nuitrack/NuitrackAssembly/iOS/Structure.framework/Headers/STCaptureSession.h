@@ -47,6 +47,14 @@ extern NSString* const kSTCaptureSessionPropertyIOSCameraWhiteBalanceRedGainValu
 extern NSString* const kSTCaptureSessionPropertyIOSCameraWhiteBalanceGreenGainValueKey;
 extern NSString* const kSTCaptureSessionPropertyIOSCameraWhiteBalanceBlueGainValueKey;
 
+// Keys for sensor-specific setting modes
+extern NSString* const kSTCaptureSessionPropertySensorIRExposureModeKey;
+
+// Keys to specify values for sensor-specific setting modes
+extern NSString* const kSTCaptureSessionPropertySensorIRExposureValueKey;
+extern NSString* const kSTCaptureSessionPropertySensorIRAnalogGainValueKey;
+extern NSString* const kSTCaptureSessionPropertySensorIRDigitalGainValueKey;
+
 // Dictionary keys to get corresponding sample entry objects from the dictionary
 // passed to [STCaptureSessionDelegate captureSession:didOutputSample:type:]
 extern NSString* const kSTCaptureSessionSampleEntryIOSColorFrame;
@@ -57,6 +65,13 @@ extern NSString* const kSTCaptureSessionSampleEntryGyroData;
 extern NSString* const kSTCaptureSessionSampleEntryAccelData;
 extern NSString* const kSTCaptureSessionSampleEntryControllerGyroData;
 extern NSString* const kSTCaptureSessionSampleEntryControllerAccelData;
+
+// Structure Sensor Mark II iOS keys
+extern NSString* const kSTCaptureSessionOptionDepthStreamPresetKey;
+
+extern NSString* const kSTCaptureSessionOptionInfraredSensorAutoExposureModeKey;
+extern NSString* const kSTCaptureSessionOptionInfraredSensorManualExposureKey;
+extern NSString* const kSTCaptureSessionOptionInfraredSensorManualGainKey;
 
 //------------------------------------------------------------------------------
 #pragma mark - STCaptureSessionDelegate API
@@ -321,6 +336,10 @@ named kSTCaptureSessionPropertyXXX.
   - Specifies what mode to set the color camera white balance to.
   - `NSInteger` integral value equal to one of the `STCaptureSessionIOSCameraWhiteBalanceMode` constants.
   - Defaults to auto white balance.
+- `kSTCaptureSessionPropertySensorIRExposureModeKey` :
+  - Specifies what mode to set the IR sensor exposure to (Mark II sensors only, currently).
+  - `NSInteger` integral value equal to one of the `STCaptureSessionSensorIRExposureMode` constants.
+  - Defaults to a locked exposure determined by the sensor depth preset that is chosen.
 
 The following properties represent the values to use when locking one or more of
 the above color camera properties to a custom value. The units represent what one
@@ -345,6 +364,13 @@ would typically use when using the standard AVCaptureDevice API.
 - `kSTCaptureSessionPropertyIOSCameraWhiteBalanceBlueGainValueKey` :
   - Specifies the value of the blue gain value for white balance.
   - `NSFloat` float value in the range of [1.0 maxWhiteBalanceGain] for the blue gain.
+- `kSTCaptureSessionPropertySensorIRExposureValueKey` :
+  - Specifies the what length of time (in seconds) to set for the IR / Depth exposure (Mark II only)
+  - `NSFloat` float value equal to the time in seconds to use as the target IR / Depth exposure
+- `kSTCaptureSessionPropertySensorIRAnalogGainValueKey` :
+  - Specifies what analog gain mode (1x, 2x, 4x, 8x) to set on the IR sensor (Mark II only)
+  - `NSInteger` integral value equal to one of the `STCaptureSessionSensorAnalogGainMode` constants.
+  - Defaults to `STCaptureSessionSensorAnalogGainMode8_0` for an 8x IR gain.
 
 See also:
 
@@ -352,6 +378,8 @@ See also:
  - <STCaptureSessionIOSCameraExposureMode>
  - <STCaptureSessionIOSCameraISOMode>
  - <STCaptureSessionIOSCameraWhiteBalanceMode>
+ - <STCaptureSessionSensorIRExposureMode>
+ - <STCaptureSessionSensorAnalogGainMode>
 */
 @property(nonatomic,retain) NSDictionary* properties;
 
@@ -545,6 +573,13 @@ color camera frames at).
   - Real-time effects can for example be dropped frames, missed events, etc.
   - `BOOL` value, true if-and-only-if you want to simulate real-time effects of playback while streaming.
   - Defaults to `@NO`.
+- `kSTCaptureSessionOptionDepthStreamPresetKey`
+  - Specifies a depth sensor preset to optimize the depth range, exposure, and other settings to optimize for specific use cases.
+  - e.g. Optimize for close-range depth when using the body-scanning preset, or optimize the sensor for mid-to-long range depth when using the room-scanning preset
+  - `NSInteger` integral value specifying one of the `STCaptureSessionPreset` constants.
+  - Defaults to the default preset.
+
+
 
 @param options A dictionary containing the sensor and device configuration for the capture session.
 */
@@ -578,17 +613,22 @@ See also:
 
 //------------------------------------------------------------------------------
 #pragma mark - Helper methods for STCaptureSession color camera properties
-
 /// @name Helper methods for STCaptureSession color camera properties
 
-/// Returns an NSDictionary to be set in `_captureSession.properties` that locks
-/// all properties to their current values.
-NSDictionary* STCaptureSessionPropertiesLockAllColorCameraPropertiesToCurrent(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    /// Returns an NSDictionary to be set in `_captureSession.properties` that locks
+    /// all properties to their current values.
+    NSDictionary* STCaptureSessionPropertiesLockAllColorCameraPropertiesToCurrent(void);
 
-/// Returns an NSDictionary to be set in `_captureSession.properties` that locks
-/// all properties to their current values, but with a provided target exposure.
-NSDictionary* STCaptureSessionPropertiesLockAllColorCameraPropertiesToCurrentWithTargetExposure(float targetExposure);
+    /// Returns an NSDictionary to be set in `_captureSession.properties` that locks
+    /// all properties to their current values, but with a provided target exposure.
+    NSDictionary* STCaptureSessionPropertiesLockAllColorCameraPropertiesToCurrentWithTargetExposure(float targetExposure);
 
-/// Returns an NSDictionary to be set in `_captureSession.properties` that sets
-/// exposure and white balance to auto mode.
-NSDictionary* STCaptureSessionPropertiesSetColorCameraAutoExposureISOAndWhiteBalance(void);
+    /// Returns an NSDictionary to be set in `_captureSession.properties` that sets
+    /// exposure and white balance to auto mode.
+    NSDictionary* STCaptureSessionPropertiesSetColorCameraAutoExposureISOAndWhiteBalance(void);
+#ifdef __cplusplus
+};
+#endif

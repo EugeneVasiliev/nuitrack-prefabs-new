@@ -43,8 +43,6 @@ The archive will also embed the MTL and JPEG file if the mesh has a texture.
 /** Reference to face-vertex triangle mesh data.
 
 Stores mesh data as a collection of vertices and faces. STMesh objects are references, and access to the underlying data should be protected by locks in case multiple threads may be accessing it.
-
-Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes larger than 65535 faces have to be split into smaller sub-meshes. STMesh is therefore a reference to a collection of partial meshes, each of them having less than 65k faces.
 */
 @interface STMesh : NSObject
 
@@ -108,7 +106,7 @@ Since OpenGL ES only supports 16 bits unsigned short for face indices, meshes la
 */
 - (GLKVector2 *)meshPerVertexUVTextureCoords:(int)meshIndex;
 
-/** Pointer to a contiguous chunk of `(3 * numberOfMeshFaces:meshIndex)` 16 bits `unsigned short` values representing vertex indices. Each face is represented by three vertex indices.
+/** Pointer to a contiguous chunk of `(3 * numberOfMeshFaces:meshIndex)` 32 bits `unsigned int` values representing vertex indices. Each face is represented by three vertex indices.
 
 @param meshIndex Index to the partial mesh.
 */
@@ -120,7 +118,7 @@ The pixel buffer is encoded using `kCVPixelFormatType_420YpCbCr8BiPlanarFullRang
 */
 - (CVPixelBufferRef)meshYCbCrTexture;
 
-/** Pointer to a contiguous chunk of `(2 * numberOfMeshLines:meshIndex)` 16 bits `unsigned short` values representing vertex indices.
+/** Pointer to a contiguous chunk of `(2 * numberOfMeshLines:meshIndex)` 32 bits `unsigned int` values representing vertex indices.
 
 Each line is represented by two vertex indices. These lines can be used for wireframe rendering, using GL_LINES.
 
@@ -380,7 +378,13 @@ typedef struct
 }
 STTrackerHints;
 
-STTrackerHints STTrackerHints_init (void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    STTrackerHints STTrackerHints_init (void);
+#ifdef __cplusplus
+};
+#endif
 
 /** A STTracker instance tracks the 3D position of the Structure Sensor.
 
@@ -509,6 +513,18 @@ Sample usage:
 */
 - (void)updateCameraPoseWithMotion:(CMDeviceMotion *)motionData;
 
+/** Update the current pose estimates with the raw gyroscope data.
+
+    @param motionData Provided raw gyroscope data.
+*/
+- (void)updateCameraPoseWithGyro:(CMGyroData *)motionData;
+
+/** Update the current pose estimates with the raw accelerometer data.
+
+    @param motionData Provided raw accelerometer data.
+*/
+- (void)updateCameraPoseWithAccel:(CMAccelerometerData *)motionData;
+
 /// Return the most recent camera pose estimate.
 - (GLKMatrix4)lastFrameCameraPose;
 
@@ -539,6 +555,7 @@ Currently, only `kSTTrackerQualityKey` and `kSTTrackerBackgroundProcessingEnable
 extern NSString* const kSTMapperVolumeResolutionKey;
 extern NSString* const kSTMapperVolumeBoundsKey;
 extern NSString* const kSTMapperVolumeHasSupportPlaneKey;
+extern NSString* const kSTMapperVolumeCutBelowSupportPlaneKey;
 extern NSString* const kSTMapperEnableLiveWireFrameKey;
 extern NSString* const kSTMapperDepthIntegrationFarThresholdKey;
 extern NSString* const kSTMapperLegacyKey;
@@ -578,8 +595,12 @@ Initialize with a given scene and volume resolution.
   - Specifies whether the volume cuboid has been initialized on top of a support plane.
   - `NSNumber` boolean value.
   - Defaults to `@NO`.
-  - If the mapper is aware that the volume is on top of a support plane, it will adapt the pipeline to be more robust and scan only the object.
+  - If the mapper is aware that the volume is on top of a support plane, it will adapt the pipeline to be more robust, and scan only the object if `kSTMapperVolumeHasSupportPlaneKey` is set to YES.
   - This value is typically set from `STCameraPoseInitializer.hasSupportPlane`.
+- `kSTMapperVolumeCutBelowSupportPlaneKey`:
+  - Specified whether the support plane should be kept out of the scan.
+  - `NSNumber` boolean value.
+  - Defaults to `@YES`.
 - `kSTMapperEnableLiveWireFrameKey`:
   - Specifies whether the mapper should automatically build a wireframe mesh in the background when new depth frames are provided.
   - `NSNumber` boolean value.

@@ -230,6 +230,16 @@ typedef NS_OPTIONS(NSUInteger, STCaptureSessionSensorChargerState)
     STCaptureSessionSensorChargerStateUnknown      = 1 << 1,
 };
 
+/// Indicates the capture preset for configurable sensor options on the Structure Sensor Mark II
+typedef NS_ENUM(NSInteger, STCaptureSessionPreset)
+{
+    STCaptureSessionPresetDefault = 0,
+    STCaptureSessionPresetBodyScanning = 1,
+    STCaptureSessionPresetOutdoor = 2,
+    STCaptureSessionPresetRoomScanning = 3,
+    STCaptureSessionPresetCloseRange = 4,
+};
+
 /// Indicates the focus mode to be used by the iOS color camera.
 typedef NS_ENUM(NSInteger, STCaptureSessionIOSCameraFocusMode)
 {
@@ -304,4 +314,41 @@ typedef NS_ENUM(NSInteger, STCaptureSessionIOSCameraWhiteBalanceMode)
 
     /// Lock the white balance gains to their current red, green, and blue gain values.
     STCaptureSessionIOSCameraWhiteBalanceModeLockedToCurrent,
+};
+
+/// Indicates the exposure mode setting used by the Structure Sensor Pro.
+typedef NS_ENUM(NSInteger, STCaptureSessionSensorExposureMode)
+{
+    /// Invalid mode, cannot be used.
+    STCaptureSessionSensorExposureModeInvalid = -1,
+
+    /// Auto exposure is enabled and will continuously function.
+    STCaptureSessionSensorExposureModeAuto = 0,
+
+    /// Auto exposure is disabled, and a custom exposure will be set.
+    STCaptureSessionSensorExposureModeLockedToCustom = 1,
+
+    /// Auto exposure is locked to whatever the current exposure value is.
+    STCaptureSessionSensorExposureModeLockedToCurrent = 2,
+
+    /// Auto exposure will run for a short period, and then lock itself once stable.
+    STCaptureSessionSensorExposureModeAutoAdjustAndLock = 3,
+
+    /// Auto exposure is disabled, and the exposure is set to a custom value defined by the depth stream preset.
+    STCaptureSessionSensorExposureModeDefinedByPreset = 4,
+};
+
+typedef NS_ENUM(NSInteger, STCaptureSessionSensorAnalogGainMode)
+{
+    /// Default (no) gain applied.
+    STCaptureSessionSensorAnalogGainMode1_0 = 1,
+
+    /// Analog gain of 2x
+    STCaptureSessionSensorAnalogGainMode2_0 = 2,
+
+    /// Analog gain of 4x
+    STCaptureSessionSensorAnalogGainMode4_0 = 4,
+
+    /// Analog gain of 8x
+    STCaptureSessionSensorAnalogGainMode8_0 = 8,
 };

@@ -24,19 +24,6 @@ public static class IOSBuildPostprocess
             string target = pbxProject.TargetGuidByName("Unity-iPhone");
 
             pbxProject.SetBuildProperty(target, "ENABLE_BITCODE", "NO");
-            pbxProject.AddBuildProperty(target, "OTHER_LDFLAGS", "-Xlinker -export_dynamic");
-
-            pbxProject.AddFrameworkToProject(target,"AVFoundation.framework", false);
-            pbxProject.AddFrameworkToProject(target,"VideoToolbox.framework", false);
-            pbxProject.AddFrameworkToProject(target,"MetalPerformanceShaders.framework", false);
-            pbxProject.AddFrameworkToProject(target,"CoreMedia.framework", false);
-            pbxProject.AddFrameworkToProject(target,"ExternalAccessory.framework", false);
-            pbxProject.AddFrameworkToProject(target,"CoreMotion.framework", false);
-            pbxProject.AddFrameworkToProject(target,"CoreImage.framework", false);
-            pbxProject.AddFrameworkToProject(target,"Accelerate.framework", false);
-            pbxProject.AddFrameworkToProject(target,"ImageIO.framework", false);
-            pbxProject.AddFrameworkToProject(target,"UIKit.framework", false);
-            pbxProject.AddFrameworkToProject(target,"libz.tbd", false);
 
             pbxProject.WriteToFile (projectPath);
 
