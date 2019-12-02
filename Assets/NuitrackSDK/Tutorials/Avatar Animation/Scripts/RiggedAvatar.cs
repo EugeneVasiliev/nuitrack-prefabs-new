@@ -15,7 +15,7 @@ public class RiggedAvatar : MonoBehaviour
         for (int i = 0; i < modelJoints.Length; i++)
         {
             modelJoints[i].baseRotOffset = modelJoints[i].bone.rotation;
-            jointsRigged.Add(modelJoints[i].jointType, modelJoints[i]);
+            jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
         }
     }
 
@@ -39,6 +39,7 @@ public class RiggedAvatar : MonoBehaviour
 
             //Calculate the model bone rotation: take the mirrored joint orientation, add a basic rotation of the model bone, invert movement along the Z axis
             Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
+
             modelJoint.bone.rotation = jointOrient;
         }
     }
