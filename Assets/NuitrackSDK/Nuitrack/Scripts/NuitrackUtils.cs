@@ -192,5 +192,34 @@ public static class NuitrackUtils
         return nuitrackToUnity[nuitrackJoint];
     }
 
+    static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
+        {JointType.LeftShoulder, JointType.RightShoulder},
+        {JointType.RightShoulder, JointType.LeftShoulder},
+        {JointType.LeftElbow, JointType.RightElbow},
+        {JointType.RightElbow, JointType.LeftElbow},
+        {JointType.LeftWrist, JointType.RightWrist},
+        {JointType.RightWrist, JointType.LeftWrist},
+        {JointType.LeftFingertip, JointType.RightFingertip},
+        {JointType.RightFingertip, JointType.LeftFingertip},
+
+        {JointType.LeftHip, JointType.RightHip},
+        {JointType.RightHip, JointType.LeftHip},
+        {JointType.LeftKnee, JointType.RightKnee},
+        {JointType.RightKnee, JointType.LeftKnee},
+        {JointType.LeftAnkle, JointType.RightAnkle},
+        {JointType.RightAnkle, JointType.LeftAnkle},
+    };
+
+    public static JointType TryGetMirrored(this JointType joint)
+    {
+        JointType mirroredJoint = joint;
+        if (NuitrackManager.DepthSensor.IsMirror() && mirroredJoints.ContainsKey(joint))
+        {
+            mirroredJoints.TryGetValue(joint, out mirroredJoint);
+        }
+
+        return mirroredJoint;
+    }
+
     #endregion
 }
