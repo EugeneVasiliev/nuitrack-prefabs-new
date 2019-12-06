@@ -44,16 +44,33 @@ public class UserTrackerVisMesh : MonoBehaviour
 
 	void Start () 
   {
-    nuitrackModules = FindObjectOfType<NuitrackModules>();
-    nuitrack.OutputMode mode = nuitrackModules.DepthSensor.GetOutputMode();
-    //sensor = nuitrackModules.DepthSensor;
-    int xRes = mode.XRes;
-    int yRes = mode.YRes;
+        StartCoroutine(WaitInit());
+    }
 
-    InitMeshes(xRes, yRes, mode.HFOV);
-	}
-	
-  void InitMeshes(int cols, int rows, float hfov)
+    IEnumerator WaitInit()
+    {
+        nuitrackModules = FindObjectOfType<NuitrackModules>();
+
+        while (!nuitrackModules.nuitrackInitialized)
+        {
+            yield return null;
+        }
+
+        Initialize();
+    }
+
+    private void Initialize()
+    {
+        nuitrackModules = FindObjectOfType<NuitrackModules>();
+        nuitrack.OutputMode mode = nuitrackModules.DepthSensor.GetOutputMode();
+        //sensor = nuitrackModules.DepthSensor;
+        int xRes = mode.XRes;
+        int yRes = mode.YRes;
+
+        InitMeshes(xRes, yRes, mode.HFOV);
+    }
+
+    void InitMeshes(int cols, int rows, float hfov)
   {
     depthColors = new Color[cols * rows];
     rgbColors = new Color[cols * rows];
@@ -158,6 +175,10 @@ public class UserTrackerVisMesh : MonoBehaviour
 	void Update () 
   {
     bool haveNewFrame = false;
+
+    if (!nuitrackModules.nuitrackInitialized)
+        return;
+
     if ((nuitrackModules.DepthFrame != null) && active)
     {
       if (depthFrame != null)
@@ -177,6 +198,9 @@ public class UserTrackerVisMesh : MonoBehaviour
 
   void HideVisualization()
   {
+    if (visualizationParts == null)
+        return;
+
     for (int i = 0; i < visualizationParts.Length; i++)
     {
       if (visualizationParts[i].activeSelf) visualizationParts[i].SetActive(false);
