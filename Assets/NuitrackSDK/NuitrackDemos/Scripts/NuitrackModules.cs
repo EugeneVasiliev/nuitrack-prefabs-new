@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Threading;
 
 public class NuitrackModules : MonoBehaviour 
 {
@@ -57,12 +58,17 @@ public class NuitrackModules : MonoBehaviour
 
 	ExceptionsLogger exceptionsLogger;
 
-  [SerializeField]TextMesh perfomanceInfoText;
+    [SerializeField]TextMesh perfomanceInfoText;
 
-  //const string debugPath = "/home/stranger/repo/depth_scanner/data/nuitrack/nuitrack.config";
-  const string debugPath = "../../data/nuitrack.config";
+    public bool asyncInit = false;
 
-  bool nuitrackInitialized = false;
+    bool _threadRunning;
+    Thread _thread;
+
+    //const string debugPath = "/home/stranger/repo/depth_scanner/data/nuitrack/nuitrack.config";
+    const string debugPath = "../../data/nuitrack.config";
+
+    [HideInInspector] public bool nuitrackInitialized = false;
 
   void Awake () 
   {
@@ -81,7 +87,21 @@ public class NuitrackModules : MonoBehaviour
 	bool prevHand = false;
 	bool prevGesture = false;
 
-	public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
+    void ThreadedWork()
+    {
+        _threadRunning = true;
+        bool workDone = false;
+
+        while (_threadRunning && !workDone)
+        {
+            InitTrackers(currentDepth, currentColor, currentUser, currentSkeleton, currentHands, currentGestures);
+        }
+        _threadRunning = false;
+    }
+
+    bool currentDepth, currentColor, currentUser, currentSkeleton, currentHands, currentGestures;
+
+    public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
 	{
 		try
 		{
@@ -92,138 +112,169 @@ public class NuitrackModules : MonoBehaviour
 			//      if (gestureRecognizer != null) gestureRecognizer.OnNewGesturesEvent -= GesturesUpdate;
 
 			//*
-			if (!nuitrackInitialized)
-			{
-                nuitrack.Nuitrack.Init();
 
-                Debug.Log("init ok");
-				depthSensorInit = nuitrack.DepthSensor.Create();
-                colorSensorInit = nuitrack.ColorSensor.Create();
-                userTrackerInit = nuitrack.UserTracker.Create();
-				skeletonTrackerInit = nuitrack.SkeletonTracker.Create();
-				handTrackerInit = nuitrack.HandTracker.Create();
-				gestureRecognizerInit = nuitrack.GestureRecognizer.Create();
-
-				nuitrack.Nuitrack.Run ();
-                Debug.Log("run ok");
-                nuitrackInitialized = true;
-			}
-//			*/
-
-			depthFrame = null;
-            colorFrame = null;
-            userFrame = null;
-			skeletonData = null;
-			handTrackerData = null;
-			gesturesData = null;
-			//
-			//      depthSensor = null;
-			//      userTracker = null;
-			//      skeletonTracker = null;
-			//      handTracker = null;
-			//      gestureRecognizer = null;
-
-			//if (issuesProcessor != null) Destroy(issuesProcessor);
-
-			if (prevDepth != depthOn)
-			{
-				prevDepth = depthOn;
-				if (depthOn)
-				{
-					depthSensor = depthSensorInit;
-					depthSensorInit.OnUpdateEvent += DepthUpdate;
-				}
-				else
-				{
-					depthSensorInit.OnUpdateEvent -= DepthUpdate;
-					depthSensor = null;
-				}
-			}
-
-            if (prevColor != colorOn)
+            if (asyncInit)
             {
-                prevColor = colorOn;
-                if (colorOn)
+                if (nuitrackInitialized)
                 {
-                    colorSensor = colorSensorInit;
-                    colorSensorInit.OnUpdateEvent += ColorUpdate;
+                    InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn);
                 }
                 else
                 {
-                    colorSensorInit.OnUpdateEvent -= ColorUpdate;
-                    colorSensor = null;
+                    currentDepth = depthOn;
+                    currentColor = colorOn;
+                    currentUser = userOn;
+                    currentSkeleton = skeletonOn;
+                    currentHands = handsOn;
+                    currentGestures = gesturesOn;
+                    if (!_threadRunning)
+                    {
+                        _thread = new Thread(ThreadedWork);
+                        _thread.Start();
+                    }
                 }
             }
+            else
+            {
+                InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn);
+            }
+            //			*/
 
-            if (prevUser != userOn)
-			{
-				prevUser = userOn;
-				if (userOn)
-				{
-					userTracker = userTrackerInit;
-					userTrackerInit.OnUpdateEvent += UserUpdate;
-				}
-
-				else
-				{
-					userTrackerInit.OnUpdateEvent -= UserUpdate;
-					userTracker = null;
-				}
-			}
-
-			if (skeletonOn != prevSkel)
-			{
-				prevSkel = skeletonOn;
-				if (skeletonOn)
-				{
-					skeletonTracker = skeletonTrackerInit;
-					skeletonTrackerInit.OnSkeletonUpdateEvent += SkeletonsUpdate;
-				}
-				else
-				{
-					skeletonTrackerInit.OnSkeletonUpdateEvent -= SkeletonsUpdate;
-					skeletonTracker = null;
-				}
-			}
-
-			if (prevHand != handsOn)
-			{
-				prevHand = handsOn;
-				if (handsOn)
-				{
-					handTracker = handTrackerInit;
-					handTrackerInit.OnUpdateEvent += HandTrackerUpdate;
-				}
-				else
-				{
-					handTrackerInit.OnUpdateEvent -= HandTrackerUpdate;
-					handTracker = null;
-				}
-			}
-
-			if (prevGesture != gesturesOn)
-			{
-				prevGesture = gesturesOn;
-				if (gesturesOn)
-				{
-					gestureRecognizer = gestureRecognizerInit;
-					gestureRecognizerInit.OnNewGesturesEvent += GesturesUpdate;
-				}
-				else
-				{
-					gestureRecognizerInit.OnNewGesturesEvent -= GesturesUpdate;
-					gestureRecognizer = null;
-				}
-
-			}
-			//issuesProcessor = (GameObject)Instantiate(issuesProcessorPrefab);
-		}
+            //issuesProcessor = (GameObject)Instantiate(issuesProcessorPrefab);
+        }
 		catch (Exception ex)
 		{
 			exceptionsLogger.AddEntry(ex.ToString());
 		}
 	}
 
+    private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
+    {
+        if (!nuitrackInitialized)
+        {
+            nuitrack.Nuitrack.Init();
+            Debug.Log("init ok");
+            depthSensorInit = nuitrack.DepthSensor.Create();
+            colorSensorInit = nuitrack.ColorSensor.Create();
+            userTrackerInit = nuitrack.UserTracker.Create();
+            skeletonTrackerInit = nuitrack.SkeletonTracker.Create();
+            handTrackerInit = nuitrack.HandTracker.Create();
+            gestureRecognizerInit = nuitrack.GestureRecognizer.Create();
+
+            nuitrack.Nuitrack.Run();
+            Debug.Log("run ok");
+            nuitrackInitialized = true;
+        }
+
+        depthFrame = null;
+        colorFrame = null;
+        userFrame = null;
+        skeletonData = null;
+        handTrackerData = null;
+        gesturesData = null;
+        //
+        //      depthSensor = null;
+        //      userTracker = null;
+        //      skeletonTracker = null;
+        //      handTracker = null;
+        //      gestureRecognizer = null;
+
+        //if (issuesProcessor != null) Destroy(issuesProcessor);
+
+        if (prevDepth != depthOn)
+        {
+            prevDepth = depthOn;
+            if (depthOn)
+            {
+                depthSensor = depthSensorInit;
+                depthSensorInit.OnUpdateEvent += DepthUpdate;
+            }
+            else
+            {
+                depthSensorInit.OnUpdateEvent -= DepthUpdate;
+                depthSensor = null;
+            }
+        }
+
+        if (prevColor != colorOn)
+        {
+            prevColor = colorOn;
+            if (colorOn)
+            {
+                colorSensor = colorSensorInit;
+                colorSensorInit.OnUpdateEvent += ColorUpdate;
+            }
+            else
+            {
+                colorSensorInit.OnUpdateEvent -= ColorUpdate;
+                colorSensor = null;
+            }
+        }
+
+        if (prevUser != userOn)
+        {
+            prevUser = userOn;
+            if (userOn)
+            {
+                userTracker = userTrackerInit;
+                userTrackerInit.OnUpdateEvent += UserUpdate;
+            }
+
+            else
+            {
+                userTrackerInit.OnUpdateEvent -= UserUpdate;
+                userTracker = null;
+            }
+        }
+
+        if (skeletonOn != prevSkel)
+        {
+            prevSkel = skeletonOn;
+            if (skeletonOn)
+            {
+                skeletonTracker = skeletonTrackerInit;
+                skeletonTrackerInit.OnSkeletonUpdateEvent += SkeletonsUpdate;
+            }
+            else
+            {
+                skeletonTrackerInit.OnSkeletonUpdateEvent -= SkeletonsUpdate;
+                skeletonTracker = null;
+            }
+        }
+
+        if (prevHand != handsOn)
+        {
+            prevHand = handsOn;
+            if (handsOn)
+            {
+                handTracker = handTrackerInit;
+                handTrackerInit.OnUpdateEvent += HandTrackerUpdate;
+            }
+            else
+            {
+                handTrackerInit.OnUpdateEvent -= HandTrackerUpdate;
+                handTracker = null;
+            }
+        }
+
+        if (prevGesture != gesturesOn)
+        {
+            prevGesture = gesturesOn;
+            if (gesturesOn)
+            {
+                gestureRecognizer = gestureRecognizerInit;
+                gestureRecognizerInit.OnNewGesturesEvent += GesturesUpdate;
+            }
+            else
+            {
+                gestureRecognizerInit.OnNewGesturesEvent -= GesturesUpdate;
+                gestureRecognizer = null;
+            }
+
+        }
+
+        StopThread();
+    }
 
 	public void InitModules()
 	{
@@ -346,4 +397,19 @@ public class NuitrackModules : MonoBehaviour
 	{
 		gesturesData = _gestureUpdateData;
 	}
+
+    void OnDisable()
+    {
+        StopThread();
+    }
+
+    void StopThread()
+    {
+        if (_threadRunning)
+        {
+            _threadRunning = false;
+
+            _thread.Join();
+        }
+    }
 }
