@@ -60,7 +60,11 @@ public class NuitrackModules : MonoBehaviour
 
     [SerializeField]TextMesh perfomanceInfoText;
 
+#if UNITY_IOS
+    public const bool asyncInit = true;
+#else
     public bool asyncInit = false;
+#endif
 
     bool _threadRunning;
     Thread _thread;
