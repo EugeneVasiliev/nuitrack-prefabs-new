@@ -118,7 +118,6 @@ public class UserTrackerVisualization: MonoBehaviour
     
     issuesProcessor = IssuesProcessor.Instance;
     nuitrackModules = FindObjectOfType<NuitrackModules>();
-    print(nuitrackModules.DepthSensor);
     nuitrack.OutputMode mode = nuitrackModules.DepthSensor.GetOutputMode();
     frameStep = mode.XRes / hRes;
     if (frameStep <= 0) frameStep = 1; // frameStep should be greater then 0
