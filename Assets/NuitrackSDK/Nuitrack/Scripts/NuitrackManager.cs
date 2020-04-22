@@ -204,7 +204,7 @@ public class NuitrackManager : MonoBehaviour
 			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
 		}
 		else
-			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+			nuitrack.Nuitrack.Init();
 
 #else
         if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnect != WifiConnect.none)

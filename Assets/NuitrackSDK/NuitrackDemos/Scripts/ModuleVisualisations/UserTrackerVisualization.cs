@@ -66,15 +66,40 @@ public class UserTrackerVisualization: MonoBehaviour
     active = _active;
   }
 
-  public void SetShaderProperties(Color newZeroColor, bool showBorders)
-  {
-    if (!initialized) Initialize();
-    userCols[0] = newZeroColor;
-    userCurrentCols[0] = newZeroColor;
-    occludedUserCols[0] = newZeroColor;
-    visualizationMaterial.SetColor("_SegmZeroColor", newZeroColor);
-    visualizationMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
-  }
+    public void SetShaderProperties(Color newZeroColor, bool showBorders)
+    {
+        StartCoroutine(WaitSetShaderProperties(newZeroColor, showBorders));
+    }
+
+    IEnumerator WaitSetShaderProperties(Color newZeroColor, bool showBorders)
+    {
+        nuitrackModules = FindObjectOfType<NuitrackModules>();
+
+        while (!nuitrackModules.nuitrackInitialized)
+        {
+            yield return null;
+        }
+
+        if (!initialized) Initialize();
+
+        userCols[0] = newZeroColor;
+        userCurrentCols[0] = newZeroColor;
+        occludedUserCols[0] = newZeroColor;
+        visualizationMaterial.SetColor("_SegmZeroColor", newZeroColor);
+        visualizationMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
+    }
+
+    IEnumerator WaitInit()
+    {
+        nuitrackModules = FindObjectOfType<NuitrackModules>();
+
+        while (!nuitrackModules.nuitrackInitialized)
+        {
+            yield return null;
+        }
+
+        Initialize();
+    }
 
   void Initialize()
   {
@@ -107,10 +132,10 @@ public class UserTrackerVisualization: MonoBehaviour
     );
   }
 
-  void Start () 
-  {
-    if (!initialized) Initialize();
-	}
+    void Start () 
+    {
+        StartCoroutine(WaitInit());
+    }
 	
 	#region Mesh generation and mesh update methods
   void InitMeshes(int cols, int rows, float hfov)
