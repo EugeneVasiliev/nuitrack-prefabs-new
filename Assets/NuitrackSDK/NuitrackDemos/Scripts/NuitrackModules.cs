@@ -383,28 +383,28 @@ public class NuitrackModules : MonoBehaviour
 	void DepthUpdate(nuitrack.DepthFrame _depthFrame)
 	{
 		depthFrame = (nuitrack.DepthFrame)_depthFrame.ShallowClone();
-		int sizeOfArray = _depthFrame.Rows * _depthFrame.Cols * Marshal.SizeOf(typeof(UInt16));
 		if (!_depthFrameDataInitialized)
 		{
+			int sizeOfArray = _depthFrame.Rows * _depthFrame.Cols * Marshal.SizeOf(typeof(UInt16));
 			depthFrameData = new byte[sizeOfArray];
 			_depthFrameDataInitialized = true;
 		}
-		depthFrame.SetDataPtr(depthFrameData, depthFrameData.Length);
-		depthFrame.CopyDataFrom(_depthFrame.Data, sizeOfArray);
+		depthFrame.SetDataPtr(depthFrameData);
+		depthFrame.CopyDataFrom(_depthFrame.Data);
 		//depthFrame = (nuitrack.DepthFrame)_depthFrame.DeepClone();
 	}
 
     void ColorUpdate(nuitrack.ColorFrame _colorFrame)
     {
 		colorFrame = (nuitrack.ColorFrame)_colorFrame.ShallowClone();
-		int sizeOfArray = _colorFrame.Rows * _colorFrame.Cols * Marshal.SizeOf(typeof(nuitrack.Color3));
 		if (!_colorFrameDataInitialized)
 		{
+			int sizeOfArray = _colorFrame.Rows * _colorFrame.Cols * Marshal.SizeOf(typeof(nuitrack.Color3));
 			colorFrameData = new byte[sizeOfArray];
 			_colorFrameDataInitialized = true;
 		}
-		colorFrame.SetDataPtr(colorFrameData, colorFrameData.Length);
-		colorFrame.CopyDataFrom(_colorFrame.Data, sizeOfArray);
+		colorFrame.SetDataPtr(colorFrameData);
+		colorFrame.CopyDataFrom(_colorFrame.Data);
 		//colorFrame = (nuitrack.ColorFrame)_colorFrame.DeepClone();
 		//Debug.Log(colorFrame.Timestamp.ToString());
     }
@@ -412,14 +412,14 @@ public class NuitrackModules : MonoBehaviour
     void UserUpdate(nuitrack.UserFrame _userFrame)
 	{
 		userFrame = (nuitrack.UserFrame)_userFrame.ShallowClone();
-		int sizeOfArray = _userFrame.Rows * _userFrame.Cols * Marshal.SizeOf(typeof(UInt16));
 		if (!_userFrameDataInitialized)
 		{
+			int sizeOfArray = _userFrame.Rows * _userFrame.Cols * Marshal.SizeOf(typeof(UInt16));
 			userFrameData = new byte[sizeOfArray];
 			_userFrameDataInitialized = true;
 		}
-		userFrame.SetDataPtr(userFrameData, userFrameData.Length);
-		userFrame.CopyDataFrom(_userFrame.Data, sizeOfArray);
+		userFrame.SetDataPtr(userFrameData);
+		userFrame.CopyDataFrom(_userFrame.Data);
 		//userFrame = (nuitrack.UserFrame)_userFrame.DeepClone();
 	}
 
