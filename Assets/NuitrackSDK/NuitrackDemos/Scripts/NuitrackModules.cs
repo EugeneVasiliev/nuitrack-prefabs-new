@@ -80,7 +80,7 @@ public class NuitrackModules : MonoBehaviour
     NuitrackInitState state = NuitrackLoader.InitNuitrackLibraries();
     if (state != NuitrackInitState.INIT_OK)
     {
-      exceptionsLogger.AddEntry("Nuitrack native libraries iniialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
+      exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
     }
   }
 
@@ -371,36 +371,36 @@ public class NuitrackModules : MonoBehaviour
 		}
 	}
 
-	void DepthUpdate(nuitrack.DepthFrame _depthFrame)
-	{
-		depthFrame = _depthFrame;
-	}
+    void DepthUpdate(nuitrack.DepthFrame _depthFrame)
+    {
+        using (depthFrame = (nuitrack.DepthFrame)_depthFrame.Clone());
+    }
 
     void ColorUpdate(nuitrack.ColorFrame _colorFrame)
     {
-        colorFrame = _colorFrame;
+        using (colorFrame = (nuitrack.ColorFrame)_colorFrame.Clone());
         //Debug.Log(colorFrame.Timestamp.ToString());
     }
-    
+
     void UserUpdate(nuitrack.UserFrame _userFrame)
-	{
-		userFrame = _userFrame;
-	}
+    {
+        using (userFrame = (nuitrack.UserFrame)_userFrame.Clone());
+    }
 
-	void SkeletonsUpdate(nuitrack.SkeletonData _skeletonData)
-	{
-		skeletonData = _skeletonData;
-	}
+    void SkeletonsUpdate(nuitrack.SkeletonData _skeletonData)
+    {
+        using (skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone());
+    }
 
-	void HandTrackerUpdate (nuitrack.HandTrackerData _handTrackerData)
-	{
-		handTrackerData = _handTrackerData;
-	}
+    void HandTrackerUpdate (nuitrack.HandTrackerData _handTrackerData)
+    {
+        using (handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone());
+    }
 
-	void GesturesUpdate (nuitrack.GestureData _gestureUpdateData)
-	{
-		gesturesData = _gestureUpdateData;
-	}
+    void GesturesUpdate (nuitrack.GestureData _gestureUpdateData)
+    {
+        using (gesturesData = (nuitrack.GestureData)_gestureUpdateData.Clone());
+    }
 
     void OnDisable()
     {
