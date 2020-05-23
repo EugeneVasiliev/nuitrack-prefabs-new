@@ -373,33 +373,33 @@ public class NuitrackModules : MonoBehaviour
 
     void DepthUpdate(nuitrack.DepthFrame _depthFrame)
     {
-        using (depthFrame = (nuitrack.DepthFrame)_depthFrame.Clone());
+        depthFrame = (nuitrack.DepthFrame)_depthFrame.Clone();
     }
 
     void ColorUpdate(nuitrack.ColorFrame _colorFrame)
     {
-        using (colorFrame = (nuitrack.ColorFrame)_colorFrame.Clone());
+        colorFrame = (nuitrack.ColorFrame)_colorFrame.Clone();
         //Debug.Log(colorFrame.Timestamp.ToString());
     }
 
     void UserUpdate(nuitrack.UserFrame _userFrame)
     {
-        using (userFrame = (nuitrack.UserFrame)_userFrame.Clone());
+        userFrame = (nuitrack.UserFrame)_userFrame.Clone();
     }
 
     void SkeletonsUpdate(nuitrack.SkeletonData _skeletonData)
     {
-        using (skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone());
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
     }
 
     void HandTrackerUpdate (nuitrack.HandTrackerData _handTrackerData)
     {
-        using (handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone());
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
     }
 
     void GesturesUpdate (nuitrack.GestureData _gestureUpdateData)
     {
-        using (gesturesData = (nuitrack.GestureData)_gestureUpdateData.Clone());
+        gesturesData = (nuitrack.GestureData)_gestureUpdateData.Clone();
     }
 
     void OnDisable()

@@ -253,52 +253,41 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
     {
-        using (depthFrame = (nuitrack.DepthFrame)frame.Clone())
-        {
-            //Debug.Log("Depth Update");
-            onDepthUpdate?.Invoke(depthFrame);
-        }
+        depthFrame = (nuitrack.DepthFrame)frame.Clone();
+        //Debug.Log("Depth Update");
+        onDepthUpdate?.Invoke(depthFrame);
     }
 
     void HandleOnColorSensorUpdateEvent(nuitrack.ColorFrame frame)
     {
-        using (colorFrame = (nuitrack.ColorFrame)frame.Clone())
-        {
-            //Debug.Log("Color Update");
-            onColorUpdate?.Invoke(colorFrame);
-        }
+        colorFrame = (nuitrack.ColorFrame)frame.Clone();
+        //Debug.Log("Color Update");
+        onColorUpdate?.Invoke(colorFrame);
     }
 
     void HandleOnUserTrackerUpdateEvent(nuitrack.UserFrame frame)
     {
-        using (userFrame = (nuitrack.UserFrame)frame.Clone())
-        {
-            onUserTrackerUpdate?.Invoke(userFrame);
-        }
+        userFrame = (nuitrack.UserFrame)frame.Clone();
+        onUserTrackerUpdate?.Invoke(userFrame);
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
     {
-        using (skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone())
-        {
-            //Debug.Log("Skeleton Update ");
-            sensorConnected = true;
-            onSkeletonTrackerUpdate?.Invoke(skeletonData);
-        }
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
+        //Debug.Log("Skeleton Update ");
+        sensorConnected = true;
+        onSkeletonTrackerUpdate?.Invoke(skeletonData);
     }
 
-    private void OnNewGestures(nuitrack.GestureData _gestures)
+    private void OnNewGestures(nuitrack.GestureData gestures)
     {
-        using (nuitrack.GestureData gestures = _gestures)
+        if (gestures.NumGestures > 0)
         {
-            if (gestures.NumGestures > 0)
+            if (onNewGesture != null)
             {
-                if (onNewGesture != null)
+                for (int i = 0; i < gestures.Gestures.Length; i++)
                 {
-                    for (int i = 0; i < gestures.Gestures.Length; i++)
-                    {
-                        onNewGesture(gestures.Gestures[i]);
-                    }
+                    onNewGesture(gestures.Gestures[i]);
                 }
             }
         }
@@ -306,20 +295,18 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnHandsUpdateEvent(nuitrack.HandTrackerData _handTrackerData)
     {
-        using (handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone())
-        {
-            onHandsTrackerUpdate?.Invoke(handTrackerData);
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
+        onHandsTrackerUpdate?.Invoke(handTrackerData);
 
-            //Debug.Log ("Grabbed hands");
-            if (handTrackerData == null) return;
-            if (CurrentUserTracker.CurrentUser != 0)
-            {
-                currentHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
-            }
-            else
-            {
-                currentHands = null;
-            }
+        //Debug.Log ("Grabbed hands");
+        if (handTrackerData == null) return;
+        if (CurrentUserTracker.CurrentUser != 0)
+        {
+            currentHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
+        }
+        else
+        {
+            currentHands = null;
         }
     }
 
