@@ -4,8 +4,7 @@ public class PointCloud : MonoBehaviour
 {
     [SerializeField] Material depthMat = null, colorMat = null; //materials for depth and color output
 
-    nuitrack.DepthFrame depthFrame = null;
-    nuitrack.ColorFrame colorFrame = null;
+    ulong lastFrameID = ulong.MaxValue;
 
     [SerializeField] int hRes;
     int frameStep;
@@ -18,7 +17,7 @@ public class PointCloud : MonoBehaviour
     Color[] depthColors;
     Color[] rgbColors;
     GameObject[] points;
-    
+
     bool initialized = false;
 
     void Start()
@@ -74,17 +73,17 @@ public class PointCloud : MonoBehaviour
 
     void Update()
     {
-        bool haveNewFrame = false;
-
-        if ((NuitrackManager.DepthFrame != null))
+        if (NuitrackManager.DepthFrame != null)
         {
-            if (depthFrame != null)
+            nuitrack.DepthFrame depthFrame = NuitrackManager.DepthFrame;
+            nuitrack.ColorFrame colorFrame = NuitrackManager.ColorFrame;
+
+            bool haveNewFrame = (lastFrameID != depthFrame.ID);
+            if (haveNewFrame)
             {
-                haveNewFrame = (depthFrame != NuitrackManager.DepthFrame);
+                ProcessFrame(depthFrame, colorFrame);
+                lastFrameID = depthFrame.ID;
             }
-            depthFrame = NuitrackManager.DepthFrame;
-            colorFrame = NuitrackManager.ColorFrame;
-            if (haveNewFrame) ProcessFrame(depthFrame, colorFrame);
         }
     }
 
@@ -101,7 +100,7 @@ public class PointCloud : MonoBehaviour
 
                 //take from the rgb frame a color and put it into an array rgbColors
                 Color rgbCol = defaultColor;
-                if (colorFrame != null) 
+                if (colorFrame != null)
                     rgbCol = new Color32(colorFrame[i, j].Red, colorFrame[i, j].Green, colorFrame[i, j].Blue, 255);
                 rgbColors[pointIndex] = rgbCol;
 

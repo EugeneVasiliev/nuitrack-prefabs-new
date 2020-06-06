@@ -6,10 +6,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 {
     NuitrackModules nuitrackModules;
 
-    //nuitrack.DepthSensor sensor;
-    nuitrack.DepthFrame depthFrame = null;
-    nuitrack.ColorFrame colorFrame = null;
-    nuitrack.UserFrame userFrame = null;
+    ulong lastFrameID = ulong.MaxValue;
 
     //  List<int[]> triangles;
     //  List<Vector3[]> vertices;
@@ -174,21 +171,21 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     void Update()
     {
-        bool haveNewFrame = false;
-
         if (!nuitrackModules.nuitrackInitialized)
             return;
 
         if ((nuitrackModules.DepthFrame != null) && active)
         {
-            if (depthFrame != null)
+            nuitrack.DepthFrame depthFrame = nuitrackModules.DepthFrame;
+            nuitrack.ColorFrame colorFrame = nuitrackModules.ColorFrame;
+            nuitrack.UserFrame userFrame = nuitrackModules.UserFrame;
+
+            bool haveNewFrame = (lastFrameID != depthFrame.ID);
+            if (haveNewFrame)
             {
-                haveNewFrame = (depthFrame != nuitrackModules.DepthFrame);
+                ProcessFrame(depthFrame, colorFrame, userFrame);
+                lastFrameID = depthFrame.ID;
             }
-            depthFrame = nuitrackModules.DepthFrame;
-            colorFrame = nuitrackModules.ColorFrame;
-            userFrame = nuitrackModules.UserFrame;
-            if (haveNewFrame) ProcessFrame(depthFrame, colorFrame, userFrame);
         }
         else
         {

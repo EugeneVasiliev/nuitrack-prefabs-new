@@ -102,7 +102,7 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
-        //  NuitrackLoader.InitNuitrackLibraries();
+        //NuitrackLoader.InitNuitrackLibraries();
         initState = NuitrackLoader.InitNuitrackLibraries();
         {
             if (initEvent != null)
@@ -115,7 +115,7 @@ public class NuitrackManager : MonoBehaviour
 
         Application.targetFrameRate = 60;
         Application.runInBackground = runInBackground;
-        //	Debug.Log ("NuitrackStart");
+        //Debug.Log ("NuitrackStart");
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     if (initState == NuitrackInitState.INIT_OK)
@@ -125,7 +125,7 @@ public class NuitrackManager : MonoBehaviour
 
     void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
-        //	Debug.Log ("" + skel + hand + depth + gest + user);
+        //Debug.Log ("" + skel + hand + depth + gest + user);
         if (skeletonTracker == null)
             return;
         if (prevSkel != skel)
@@ -253,6 +253,8 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
     {
+        if (depthFrame != null)
+            depthFrame.Dispose();
         depthFrame = (nuitrack.DepthFrame)frame.Clone();
         //Debug.Log("Depth Update");
         onDepthUpdate?.Invoke(depthFrame);
@@ -260,6 +262,8 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnColorSensorUpdateEvent(nuitrack.ColorFrame frame)
     {
+        if (colorFrame != null)
+            colorFrame.Dispose();
         colorFrame = (nuitrack.ColorFrame)frame.Clone();
         //Debug.Log("Color Update");
         onColorUpdate?.Invoke(colorFrame);
@@ -267,12 +271,16 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnUserTrackerUpdateEvent(nuitrack.UserFrame frame)
     {
+        if (userFrame != null)
+            userFrame.Dispose();
         userFrame = (nuitrack.UserFrame)frame.Clone();
         onUserTrackerUpdate?.Invoke(userFrame);
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
     {
+        if (skeletonData != null)
+            skeletonData.Dispose();
         skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         //Debug.Log("Skeleton Update ");
         sensorConnected = true;
@@ -295,6 +303,8 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnHandsUpdateEvent(nuitrack.HandTrackerData _handTrackerData)
     {
+        if (handTrackerData != null)
+            handTrackerData.Dispose();
         handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
         onHandsTrackerUpdate?.Invoke(handTrackerData);
 
