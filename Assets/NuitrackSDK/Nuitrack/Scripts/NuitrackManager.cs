@@ -93,7 +93,7 @@ public class NuitrackManager : MonoBehaviour
                     container.name = "NuitrackManager";
                     instance = container.AddComponent<NuitrackManager>();
                 }
-                
+
                 DontDestroyOnLoad(instance);
             }
             return instance;
@@ -125,7 +125,7 @@ public class NuitrackManager : MonoBehaviour
 
     void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
-        //		Debug.Log ("" + skel + hand + depth + gest + user);
+        //	Debug.Log ("" + skel + hand + depth + gest + user);
         if (skeletonTracker == null)
             return;
         if (prevSkel != skel)
@@ -253,7 +253,7 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
     {
-        //        Debug.Log("Depth Update");
+        //Debug.Log("Depth Update");
         depthFrame = frame;
         if (onDepthUpdate != null) onDepthUpdate(depthFrame);
     }
@@ -320,7 +320,7 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            if(firstTime)
+            if (firstTime)
                 StartCoroutine(RestartNuitrack());
 
             firstTime = true;
@@ -374,9 +374,9 @@ public class NuitrackManager : MonoBehaviour
 
     public void DepthModuleClose()
     {
-        //		Debug.Log ("changeModuls: start");
-        //		if (!depthModuleOn)
-        //			return;
+        //Debug.Log ("changeModuls: start");
+        //if (!depthModuleOn)
+        //    return;
         depthModuleOn = false;
         userTrackerModuleOn = false;
         colorModuleOn = false;
@@ -388,13 +388,13 @@ public class NuitrackManager : MonoBehaviour
             gesturesRecognizerModuleOn,
             userTrackerModuleOn
         );
-        //		Debug.Log ("changeModuls: end");
+        //Debug.Log ("changeModuls: end");
     }
 
     public void DepthModuleStart()
     {
-        //		if (depthModuleOn)
-        //			return;
+        //if (depthModuleOn)
+        //    return;
         depthModuleOn = true;
         userTrackerModuleOn = true;
         colorModuleOn = true;

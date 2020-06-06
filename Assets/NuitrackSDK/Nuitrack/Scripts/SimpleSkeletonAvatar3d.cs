@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleSkeletonAvatar3d : MonoBehaviour {
-
+public class SimpleSkeletonAvatar3d : MonoBehaviour
+{
     public bool autoProcessing = true;
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
 
