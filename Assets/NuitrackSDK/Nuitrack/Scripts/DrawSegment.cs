@@ -25,7 +25,7 @@ public class DrawSegment : MonoBehaviour
 
         nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
         cols = mode.XRes / renderStep;
-        rows = mode.YRes/ renderStep;
+        rows = mode.YRes / renderStep;
 
         Debug.Log(cols);
         imageRect = new Rect(0, 0, cols, rows);
@@ -50,10 +50,10 @@ public class DrawSegment : MonoBehaviour
         int pixelid = 0;
         int pointer = 0;
 
-        for (int i = 0; i < (frame.Cols * frame.Rows); i+= renderStep)
+        for (int i = 0; i < (frame.Cols * frame.Rows); i += renderStep)
         {
             Color32 currentColor = new Color32(0, 0, 0, 0);
-            
+
             if (frame[i] == userId)
                 currentColor = colorsList[frame[i]];
 

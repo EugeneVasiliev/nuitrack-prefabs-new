@@ -9,9 +9,10 @@ class PressureBone
     public Vector3 minAngle = Vector3.zero, maxAngle = Vector3.one;
 }
 
-public class HandPressure : MonoBehaviour {
-
-    [SerializeField][Range(0, 1)]
+public class HandPressure : MonoBehaviour
+{
+    [SerializeField]
+    [Range(0, 1)]
     float pressure;
     float pressSpeed = 20;
     [SerializeField] PressureBone[] bones;
@@ -20,14 +21,16 @@ public class HandPressure : MonoBehaviour {
 
     float minPressure = .5f, maxPressure = 1.0f;
 
-    void Start () {
+    void Start()
+    {
 
     }
 
-	void Update () {
+    void Update()
+    {
         //Debug.Log(NuitrackManager.СurrentHands);
 
-        if(Application.platform != RuntimePlatform.WindowsEditor)
+        if (Application.platform != RuntimePlatform.WindowsEditor)
         {
             if (NuitrackManager.СurrentHands != null)
             {
