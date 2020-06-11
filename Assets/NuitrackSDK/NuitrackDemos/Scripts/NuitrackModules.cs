@@ -80,7 +80,7 @@ public class NuitrackModules : MonoBehaviour
         NuitrackInitState state = NuitrackLoader.InitNuitrackLibraries();
         if (state != NuitrackInitState.INIT_OK)
         {
-            exceptionsLogger.AddEntry("Nuitrack native libraries iniialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
+            exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
         }
     }
 
@@ -373,33 +373,45 @@ public class NuitrackModules : MonoBehaviour
 
     void DepthUpdate(nuitrack.DepthFrame _depthFrame)
     {
-        depthFrame = _depthFrame;
+        if (depthFrame != null)
+            depthFrame.Dispose();
+        depthFrame = (nuitrack.DepthFrame)_depthFrame.Clone();
     }
 
     void ColorUpdate(nuitrack.ColorFrame _colorFrame)
     {
-        colorFrame = _colorFrame;
+        if (colorFrame != null)
+            colorFrame.Dispose();
+        colorFrame = (nuitrack.ColorFrame)_colorFrame.Clone();
         //Debug.Log(colorFrame.Timestamp.ToString());
     }
 
     void UserUpdate(nuitrack.UserFrame _userFrame)
     {
-        userFrame = _userFrame;
+        if (userFrame != null)
+            userFrame.Dispose();
+        userFrame = (nuitrack.UserFrame)_userFrame.Clone();
     }
 
     void SkeletonsUpdate(nuitrack.SkeletonData _skeletonData)
     {
-        skeletonData = _skeletonData;
+        if (skeletonData != null)
+            skeletonData.Dispose();
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
     }
 
     void HandTrackerUpdate(nuitrack.HandTrackerData _handTrackerData)
     {
-        handTrackerData = _handTrackerData;
+        if (handTrackerData != null)
+            handTrackerData.Dispose();
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
     }
 
     void GesturesUpdate(nuitrack.GestureData _gestureUpdateData)
     {
-        gesturesData = _gestureUpdateData;
+        if (gesturesData != null)
+            gesturesData.Dispose();
+        gesturesData = (nuitrack.GestureData)_gestureUpdateData.Clone();
     }
 
     void OnDisable()

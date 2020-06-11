@@ -102,7 +102,7 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
-        //  NuitrackLoader.InitNuitrackLibraries();
+        //NuitrackLoader.InitNuitrackLibraries();
         initState = NuitrackLoader.InitNuitrackLibraries();
         {
             if (initEvent != null)
@@ -115,7 +115,7 @@ public class NuitrackManager : MonoBehaviour
 
         Application.targetFrameRate = 60;
         Application.runInBackground = runInBackground;
-        //	Debug.Log ("NuitrackStart");
+        //Debug.Log ("NuitrackStart");
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     if (initState == NuitrackInitState.INIT_OK)
@@ -125,7 +125,7 @@ public class NuitrackManager : MonoBehaviour
 
     void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
-        //	Debug.Log ("" + skel + hand + depth + gest + user);
+        //Debug.Log ("" + skel + hand + depth + gest + user);
         if (skeletonTracker == null)
             return;
         if (prevSkel != skel)
@@ -253,30 +253,38 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
     {
+        if (depthFrame != null)
+            depthFrame.Dispose();
+        depthFrame = (nuitrack.DepthFrame)frame.Clone();
         //Debug.Log("Depth Update");
-        depthFrame = frame;
-        if (onDepthUpdate != null) onDepthUpdate(depthFrame);
+        onDepthUpdate?.Invoke(depthFrame);
     }
 
     void HandleOnColorSensorUpdateEvent(nuitrack.ColorFrame frame)
     {
+        if (colorFrame != null)
+            colorFrame.Dispose();
+        colorFrame = (nuitrack.ColorFrame)frame.Clone();
         //Debug.Log("Color Update");
-        colorFrame = frame;
-        if (onColorUpdate != null) onColorUpdate(colorFrame);
+        onColorUpdate?.Invoke(colorFrame);
     }
 
     void HandleOnUserTrackerUpdateEvent(nuitrack.UserFrame frame)
     {
-        userFrame = frame;
-        if (onUserTrackerUpdate != null) onUserTrackerUpdate(userFrame);
+        if (userFrame != null)
+            userFrame.Dispose();
+        userFrame = (nuitrack.UserFrame)frame.Clone();
+        onUserTrackerUpdate?.Invoke(userFrame);
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
     {
-        sensorConnected = true;
+        if (skeletonData != null)
+            skeletonData.Dispose();
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         //Debug.Log("Skeleton Update ");
-        skeletonData = _skeletonData;
-        if (onSkeletonTrackerUpdate != null) onSkeletonTrackerUpdate(skeletonData);
+        sensorConnected = true;
+        onSkeletonTrackerUpdate?.Invoke(skeletonData);
     }
 
     private void OnNewGestures(nuitrack.GestureData gestures)
@@ -295,8 +303,10 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnHandsUpdateEvent(nuitrack.HandTrackerData _handTrackerData)
     {
-        handTrackerData = _handTrackerData;
-        if (onHandsTrackerUpdate != null) onHandsTrackerUpdate(handTrackerData);
+        if (handTrackerData != null)
+            handTrackerData.Dispose();
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
+        onHandsTrackerUpdate?.Invoke(handTrackerData);
 
         //Debug.Log ("Grabbed hands");
         if (handTrackerData == null) return;
@@ -417,7 +427,12 @@ public class NuitrackManager : MonoBehaviour
         if (skeletonTracker != null) skeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
         if (gestureRecognizer != null) gestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
         if (handTracker != null) handTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
-        nuitrack.Nuitrack.Release();
+
+        depthFrame = null;
+        colorFrame = null;
+        userFrame = null;
+        skeletonData = null;
+        handTrackerData = null;
 
         depthSensor = null;
         colorSensor = null;
@@ -426,11 +441,7 @@ public class NuitrackManager : MonoBehaviour
         gestureRecognizer = null;
         handTracker = null;
 
-        depthFrame = null;
-        colorFrame = null;
-        userFrame = null;
-        skeletonData = null;
-        handTrackerData = null;
+        nuitrack.Nuitrack.Release();
         Debug.Log("CloseUserGen");
     }
 
