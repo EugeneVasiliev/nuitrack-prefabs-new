@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using JointType = nuitrack.JointType;
 
@@ -37,6 +38,7 @@ public static class NuitrackUtils
 
     #endregion
 
+    private static byte[] colorDataArray = null;
 
     #region ToTexture2D
 
@@ -47,17 +49,22 @@ public static class NuitrackUtils
     /// <returns>Unity Texture2D</returns>
     public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
     {
-        byte[] sourceData = frame.Data;
-
-        for (int i = 0; i < sourceData.Length; i += 3)
+        int datasize = frame.DataSize;
+        if (colorDataArray == null || colorDataArray.Length != datasize)
         {
-            byte temp = sourceData[i];
-            sourceData[i] = sourceData[i + 2];
-            sourceData[i + 2] = temp;
+            colorDataArray = new byte[datasize];
+        }
+        Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
+
+        for (int i = 0; i < datasize; i += 3)
+        {
+            byte temp = colorDataArray[i];
+            colorDataArray[i] = colorDataArray[i + 2];
+            colorDataArray[i + 2] = temp;
         }
 
         Texture2D rgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-        rgbTexture.LoadRawTextureData(sourceData);
+        rgbTexture.LoadRawTextureData(colorDataArray);
         rgbTexture.Apply();
 
         Resources.UnloadUnusedAssets();
@@ -118,10 +125,10 @@ public static class NuitrackUtils
     /// <returns>Unity Texture2D</returns>
     public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, float contrast = 0.9f)
     {
-        byte[] outDepth = new byte[(frame.Data.Length / 2) * 3];
+        byte[] outDepth = new byte[(frame.DataSize / 2) * 3];
         int de = 1 + 255 - (int)(contrast * 255);
 
-        for (int i = 0; i < frame.Data.Length / 2; i++)
+        for (int i = 0; i < frame.DataSize / 2; i++)
         {
             byte depth = (byte)(frame[i] / de);
 

@@ -4,7 +4,8 @@ using System.IO;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class PlatformChanger : EditorWindow {
+public class PlatformChanger : EditorWindow
+{
     public PlatformSets[] platformSets;
     public Platform targetPlatform;
 
