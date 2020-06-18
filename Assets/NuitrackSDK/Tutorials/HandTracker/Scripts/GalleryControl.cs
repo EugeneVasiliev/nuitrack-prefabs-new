@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+using System.Collections;
 using System.Collections.Generic;
 
 public class GalleryControl : MonoBehaviour
@@ -39,15 +40,15 @@ public class GalleryControl : MonoBehaviour
     [Header("View")]
     [SerializeField] RectTransform viewRect;
 
-    Dictionary<ImageItem, Vector2> defaultPositions = new Dictionary<ImageItem, Vector2>();
-
-    Vector2 startRectAnchor;
-    Vector2 startPosition;
+    Vector2 viewRectAnchor;
+    Vector2 startRectSize;
+    Vector2 startAnchorPosition;
     Quaternion startRotation;
     Vector2 startScale;
 
     [Range(0.1f, 16f)]
     [SerializeField] float animationSpeed = 2;
+    [SerializeField] AnimationCurve animationCurve;
 
     ImageItem selectedItem = null;
 
@@ -56,10 +57,12 @@ public class GalleryControl : MonoBehaviour
 
     int currentPage = 0;
 
-    void Start()
+    IEnumerator Start()
     {
-        pageSize = new Vector2(Screen.width, Screen.height);
-        defaultSize = new Vector2(Screen.width / colsNumber, Screen.height / rowsNumber);
+        yield return null;
+
+        pageSize = scrollRect.viewport.rect.size;
+        defaultSize = new Vector2(pageSize.x / colsNumber, pageSize.y / rowsNumber);
 
         Vector2 halfAdd = new Vector2(defaultSize.x / 2, -defaultSize.y / 2);
 
@@ -77,26 +80,22 @@ public class GalleryControl : MonoBehaviour
                 GameObject currentItem = Instantiate(imageItemPrefab);
                 currentItem.transform.SetParent(content.transform, false);
 
-                RectTransform currentRect = currentItem.GetComponent<RectTransform>();
-                currentRect.sizeDelta = defaultSize;
+                ImageItem currentImageItem = currentItem.GetComponent<ImageItem>();
+                currentImageItem.Rect.sizeDelta = defaultSize;
 
                 float X = pageSize.x * p + defaultSize.x * (i % colsNumber);
                 float Y = defaultSize.y * (i / colsNumber);
 
-                currentRect.anchoredPosition = new Vector2(X, -Y) + halfAdd;
+                currentImageItem.Rect.anchoredPosition = new Vector2(X, -Y) + halfAdd;
 
-                Image currentImage = currentItem.GetComponent<Image>();
-                currentImage.sprite = spriteCollection[imageIndex];
+                currentImageItem.image.sprite = spriteCollection[imageIndex];
                 imageIndex++;
 
-                ImageItem currentImageItem = currentItem.GetComponent<ImageItem>();
                 currentImageItem.OnClick += CurrentImageItem_OnClick;
-
-                defaultPositions.Add(currentImageItem, currentItem.transform.localPosition);
             }
         }
 
-        content.sizeDelta = new Vector2(Screen.width * numberOfPages, Screen.height);
+        content.sizeDelta = new Vector2(pageSize.x * numberOfPages, pageSize.y);
 
         if (numberOfPages > 1)
             scrollStep = 1f / (numberOfPages - 1);
@@ -122,8 +121,9 @@ public class GalleryControl : MonoBehaviour
 
             selectedItem.transform.SetParent(viewRect, true);
 
-            startPosition = selectedItem.transform.localPosition;
-            startRectAnchor = selectedItem.image.rectTransform.sizeDelta;
+            startAnchorPosition = selectedItem.Rect.anchoredPosition;
+            startRectSize = selectedItem.Rect.sizeDelta;
+            viewRectAnchor = startAnchorPosition;
         }
     }
 
@@ -136,11 +136,13 @@ public class GalleryControl : MonoBehaviour
                 if (t < 1)
                 {
                     t += Time.deltaTime * animationSpeed;
+                    float shift = animationCurve.Evaluate(t);
 
-                    canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 0, t);
+                    canvasGroup.alpha = Mathf.Lerp(1, 0, shift);
 
-                    selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(startRectAnchor, pageSize, t);
-                    selectedItem.transform.localPosition = Vector2.Lerp(startPosition, Vector2.zero, t);
+                    selectedItem.Rect.sizeDelta = Vector2.Lerp(startRectSize, pageSize, shift);
+                    Vector2 pageAnchorPosition = new Vector2(pageSize.x / 2, -pageSize.y / 2);
+                    selectedItem.Rect.anchoredPosition = Vector2.Lerp(startAnchorPosition, pageAnchorPosition, shift);
                 }
 
                 break;
@@ -149,17 +151,18 @@ public class GalleryControl : MonoBehaviour
 
                 if (animated)
                 {
-                    if (t > 0)
+                    if (t < 1)
                     {
-                        t -= Time.deltaTime * animationSpeed;
+                        t += Time.deltaTime * animationSpeed;
+                        float shift = animationCurve.Evaluate(t);
 
-                        canvasGroup.alpha = Mathf.Lerp(1, canvasGroup.alpha, t);
+                        canvasGroup.alpha = Mathf.Lerp(0, 1, shift);
 
-                        selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(defaultSize, startRectAnchor, t);
+                        selectedItem.Rect.sizeDelta = Vector2.Lerp(startRectSize, defaultSize, shift);
 
-                        selectedItem.transform.localPosition = Vector2.Lerp(defaultPositions[selectedItem], startPosition, t);
-                        selectedItem.transform.localRotation = Quaternion.Lerp(Quaternion.identity, startRotation, t);
-                        selectedItem.transform.localScale = Vector3.Lerp(Vector3.one, startScale, t);
+                        selectedItem.Rect.anchoredPosition = Vector2.Lerp(startAnchorPosition, viewRectAnchor, shift);
+                        selectedItem.Rect.localRotation = Quaternion.Lerp(startRotation, Quaternion.identity, shift);
+                        selectedItem.Rect.localScale = Vector3.Lerp(startScale, Vector3.one, shift);
                     }
                     else
                     {
@@ -206,12 +209,13 @@ public class GalleryControl : MonoBehaviour
                 {
                     currentViewMode = ViewMode.Preview;
                     animated = true;
+                    t = 0;
 
-                    startRectAnchor = selectedItem.image.rectTransform.sizeDelta;
+                    startRectSize = selectedItem.Rect.sizeDelta;
 
-                    startPosition = selectedItem.transform.localPosition;
-                    startRotation = selectedItem.transform.localRotation;
-                    startScale = selectedItem.transform.localScale;
+                    startAnchorPosition = selectedItem.Rect.anchoredPosition;
+                    startRotation = selectedItem.Rect.localRotation;
+                    startScale = selectedItem.Rect.localScale;
                 }
                 break;
         }

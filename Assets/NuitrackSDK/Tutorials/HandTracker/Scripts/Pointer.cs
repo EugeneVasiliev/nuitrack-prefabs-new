@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+using System.Collections.Generic;
 
 public class Pointer : MonoBehaviour
 {
@@ -10,7 +11,10 @@ public class Pointer : MonoBehaviour
     [SerializeField]
     Hands currentHand;
 
-    [Header ("Visualization")]
+    [Header("Visualization")]
+    [SerializeField]
+    RectTransform parentRectTransform;
+
     [SerializeField]
     RectTransform baseRect;
 
@@ -40,9 +44,12 @@ public class Pointer : MonoBehaviour
     float dragSensitivity = 5f;
 
     private void Start()
-    {      
+    {
         NuitrackManager.onHandsTrackerUpdate += NuitrackManager_onHandsTrackerUpdate;
         dragSensitivity *= dragSensitivity;
+
+        if (parentRectTransform == null)
+            parentRectTransform = GetComponentInChildren<RectTransform>();
     }
 
     private void OnDestroy()
@@ -61,15 +68,17 @@ public class Pointer : MonoBehaviour
 
             if (userHands != null)
             {
+                Vector2 pageSize = parentRectTransform.rect.size;
+
                 if (currentHand == Hands.right && userHands.RightHand != null)
                 {
-                    baseRect.anchoredPosition = new Vector2(userHands.RightHand.Value.X * Screen.width, -userHands.RightHand.Value.Y * Screen.height);
+                    baseRect.anchoredPosition = new Vector2(userHands.RightHand.Value.X * pageSize.x, -userHands.RightHand.Value.Y * pageSize.y);
                     active = true;
                     press = userHands.RightHand.Value.Click;
                 }
                 else if (currentHand == Hands.left && userHands.LeftHand != null)
                 {                    
-                    baseRect.anchoredPosition = new Vector2(userHands.LeftHand.Value.X * Screen.width, -userHands.LeftHand.Value.Y * Screen.height);
+                    baseRect.anchoredPosition = new Vector2(userHands.LeftHand.Value.X * pageSize.x, -userHands.LeftHand.Value.Y * pageSize.y);
                     active = true;
                     press = userHands.LeftHand.Value.Click;
                 }

@@ -57,20 +57,20 @@ public class ImageItem : Selectable, IDragHandler
         if(OneTouch)
         {
             Vector3 currentCenter = touches[0].position;
-            transform.localPosition = startPosition + (currentCenter - startCenter);
+            Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
         }
         else if(MultiTouch)
         {
             Vector3 currentCenter = (touches[0].position + touches[1].position) / 2;
-            transform.localPosition = startPosition + (currentCenter - startCenter);
+            Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
 
             float currentHandDistance = (touches[0].position - touches[1].position).magnitude;
-            transform.localScale = startScale * Mathf.Abs(currentHandDistance / startHandDistance);
+            Rect.localScale = startScale * Mathf.Abs(currentHandDistance / startHandDistance);
 
             Vector3 pointRelativeToZero = touches[1].position - touches[0].position;
             float angle = Mathf.Atan2(pointRelativeToZero.x, pointRelativeToZero.y) * Mathf.Rad2Deg;
 
-            transform.localRotation = startRotation * Quaternion.Euler(0, 0, startAngle - angle);
+            Rect.localRotation = startRotation * Quaternion.Euler(0, 0, startAngle - angle);
         }
     }
 
@@ -89,9 +89,9 @@ public class ImageItem : Selectable, IDragHandler
             startAngle = Mathf.Atan2(pointRelativeToZero.x, pointRelativeToZero.y) * Mathf.Rad2Deg;
         }
 
-        startScale = transform.localScale;
-        startPosition = transform.localPosition;
-        startRotation = transform.localRotation;
+        startScale = Rect.localScale;
+        startPosition = Rect.anchoredPosition;
+        startRotation = Rect.localRotation;
     }
 
     bool MultiTouch
@@ -107,6 +107,14 @@ public class ImageItem : Selectable, IDragHandler
         get
         {
             return touches.Count == 1;
+        }
+    }
+
+    public RectTransform Rect
+    {
+        get
+        {
+            return image.rectTransform;
         }
     }
 }
