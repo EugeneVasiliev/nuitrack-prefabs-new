@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+using System.Collections.Generic;
+
 public class GalleryControl : MonoBehaviour
 {
     enum ViewMode { Preview, View };
@@ -25,7 +27,7 @@ public class GalleryControl : MonoBehaviour
     Vector2 pageSize;
     int numberOfPages = 0;
 
-    Vector2 defaultSize;   
+    Vector2 defaultSize;
 
     [Header("Scroll")]
 
@@ -37,7 +39,12 @@ public class GalleryControl : MonoBehaviour
     [Header("View")]
     [SerializeField] RectTransform viewRect;
 
-    Vector2 defaultPosition;
+    Dictionary<ImageItem, Vector2> defaultPositions = new Dictionary<ImageItem, Vector2>();
+
+    Vector2 startRectAnchor;
+    Vector2 startPosition;
+    Quaternion startRotation;
+    Vector2 startScale;
 
     [Range(0.1f, 16f)]
     [SerializeField] float animationSpeed = 2;
@@ -46,7 +53,7 @@ public class GalleryControl : MonoBehaviour
 
     bool animated = false;
     float t = 0;
- 
+
     int currentPage = 0;
 
     void Start()
@@ -84,6 +91,8 @@ public class GalleryControl : MonoBehaviour
 
                 ImageItem currentImageItem = currentItem.GetComponent<ImageItem>();
                 currentImageItem.OnClick += CurrentImageItem_OnClick;
+
+                defaultPositions.Add(currentImageItem, currentItem.transform.localPosition);
             }
         }
 
@@ -92,7 +101,7 @@ public class GalleryControl : MonoBehaviour
         if (numberOfPages > 1)
             scrollStep = 1f / (numberOfPages - 1);
 
-        NuitrackManager.onNewGesture += NuitrackManager_onNewGesture;        
+        NuitrackManager.onNewGesture += NuitrackManager_onNewGesture;
     }
 
     private void OnDestroy()
@@ -102,7 +111,7 @@ public class GalleryControl : MonoBehaviour
 
     private void CurrentImageItem_OnClick(ImageItem currentItem)
     {
-        if (currentViewMode == ViewMode.Preview)
+        if (currentViewMode == ViewMode.Preview && !animated)
         {
             t = 0;
             currentViewMode = ViewMode.View;
@@ -112,7 +121,9 @@ public class GalleryControl : MonoBehaviour
             selectedItem.interactable = false;
 
             selectedItem.transform.SetParent(viewRect, true);
-            defaultPosition = selectedItem.transform.localPosition;
+
+            startPosition = selectedItem.transform.localPosition;
+            startRectAnchor = selectedItem.image.rectTransform.sizeDelta;
         }
     }
 
@@ -128,8 +139,8 @@ public class GalleryControl : MonoBehaviour
 
                     canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 0, t);
 
-                    selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(selectedItem.image.rectTransform.sizeDelta, pageSize, t);
-                    selectedItem.transform.localPosition = Vector2.Lerp(selectedItem.transform.localPosition, Vector2.zero, t);
+                    selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(startRectAnchor, pageSize, t);
+                    selectedItem.transform.localPosition = Vector2.Lerp(startPosition, Vector2.zero, t);
                 }
 
                 break;
@@ -144,11 +155,11 @@ public class GalleryControl : MonoBehaviour
 
                         canvasGroup.alpha = Mathf.Lerp(1, canvasGroup.alpha, t);
 
-                        selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(defaultSize, selectedItem.image.rectTransform.sizeDelta, t);
+                        selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(defaultSize, startRectAnchor, t);
 
-                        selectedItem.transform.localPosition = Vector2.Lerp(defaultPosition, selectedItem.transform.localPosition, t);
-                        selectedItem.transform.localRotation = Quaternion.Lerp(Quaternion.identity, selectedItem.transform.localRotation, t);
-                        selectedItem.transform.localScale = Vector3.Lerp(Vector3.one, selectedItem.transform.localScale, t);
+                        selectedItem.transform.localPosition = Vector2.Lerp(defaultPositions[selectedItem], startPosition, t);
+                        selectedItem.transform.localRotation = Quaternion.Lerp(Quaternion.identity, startRotation, t);
+                        selectedItem.transform.localScale = Vector3.Lerp(Vector3.one, startScale, t);
                     }
                     else
                     {
@@ -164,6 +175,15 @@ public class GalleryControl : MonoBehaviour
 
                 break;
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeLeft });
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeRight });
+
+        if (Input.GetKeyDown(KeyCode.Backspace))
+            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeUp });
     }
 
     private void NuitrackManager_onNewGesture(nuitrack.Gesture gesture)
@@ -186,6 +206,12 @@ public class GalleryControl : MonoBehaviour
                 {
                     currentViewMode = ViewMode.Preview;
                     animated = true;
+
+                    startRectAnchor = selectedItem.image.rectTransform.sizeDelta;
+
+                    startPosition = selectedItem.transform.localPosition;
+                    startRotation = selectedItem.transform.localRotation;
+                    startScale = selectedItem.transform.localScale;
                 }
                 break;
         }
