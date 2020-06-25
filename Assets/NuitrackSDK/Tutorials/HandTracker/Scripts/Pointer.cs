@@ -1,8 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-using System.Collections.Generic;
 
 public class Pointer : MonoBehaviour
 {
@@ -11,7 +10,7 @@ public class Pointer : MonoBehaviour
     [SerializeField]
     Hands currentHand;
 
-    [Header("Visualization")]
+    [Header ("Visualization")]
     [SerializeField]
     RectTransform parentRectTransform;
 
@@ -44,12 +43,9 @@ public class Pointer : MonoBehaviour
     float dragSensitivity = 5f;
 
     private void Start()
-    {
+    {      
         NuitrackManager.onHandsTrackerUpdate += NuitrackManager_onHandsTrackerUpdate;
         dragSensitivity *= dragSensitivity;
-
-        if (parentRectTransform == null)
-            parentRectTransform = GetComponentInChildren<RectTransform>();
     }
 
     private void OnDestroy()

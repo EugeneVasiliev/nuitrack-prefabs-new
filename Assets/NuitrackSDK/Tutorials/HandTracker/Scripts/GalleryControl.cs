@@ -2,7 +2,6 @@
 using UnityEngine.UI;
 
 using System.Collections;
-using System.Collections.Generic;
 
 public class GalleryControl : MonoBehaviour
 {
@@ -28,7 +27,7 @@ public class GalleryControl : MonoBehaviour
     Vector2 pageSize;
     int numberOfPages = 0;
 
-    Vector2 defaultSize;
+    Vector2 defaultSize;   
 
     [Header("Scroll")]
 
@@ -54,7 +53,7 @@ public class GalleryControl : MonoBehaviour
 
     bool animated = false;
     float t = 0;
-
+ 
     int currentPage = 0;
 
     IEnumerator Start()
@@ -100,7 +99,7 @@ public class GalleryControl : MonoBehaviour
         if (numberOfPages > 1)
             scrollStep = 1f / (numberOfPages - 1);
 
-        NuitrackManager.onNewGesture += NuitrackManager_onNewGesture;
+        NuitrackManager.onNewGesture += NuitrackManager_onNewGesture;        
     }
 
     private void OnDestroy()
@@ -178,15 +177,6 @@ public class GalleryControl : MonoBehaviour
 
                 break;
         }
-
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeLeft });
-
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeRight });
-
-        if (Input.GetKeyDown(KeyCode.Backspace))
-            NuitrackManager_onNewGesture(new nuitrack.Gesture() { Type = nuitrack.GestureType.GestureSwipeUp });
     }
 
     private void NuitrackManager_onNewGesture(nuitrack.Gesture gesture)
