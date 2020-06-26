@@ -10,7 +10,7 @@ public class UserTrackerVisualization : MonoBehaviour
     NuitrackModules nuitrackModules;
     IssuesProcessor issuesProcessor;
 
-    ulong lastFrameID = ulong.MaxValue;
+    ulong lastFrameTimestamp = ulong.MaxValue;
 
     [SerializeField] int hRes;
     int frameStep;
@@ -287,11 +287,11 @@ public class UserTrackerVisualization : MonoBehaviour
             nuitrack.ColorFrame colorFrame = nuitrackModules.ColorFrame;
             nuitrack.UserFrame userFrame = nuitrackModules.UserFrame;
 
-            bool haveNewFrame = (lastFrameID != depthFrame.ID);
+            bool haveNewFrame = (lastFrameTimestamp != depthFrame.Timestamp);
             if (haveNewFrame)
             {
                 ProcessFrame(depthFrame, colorFrame, userFrame);
-                lastFrameID = depthFrame.ID;
+                lastFrameTimestamp = depthFrame.Timestamp;
             }
         }
         else
