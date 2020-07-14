@@ -5,11 +5,8 @@ using UnityEngine.UI;
 
 using System.Collections.Generic;
 
-public class ImageItem : Selectable, IDragHandler
+public class ImageItem : Button, IDragHandler
 {
-    public delegate void Click(ImageItem currentItem);
-    public event Click OnClick;
-
     List<PointerEventData> touches = new List<PointerEventData>();
 
     Vector3 startCenter;
@@ -20,6 +17,14 @@ public class ImageItem : Selectable, IDragHandler
 
     float startAngle;
     Quaternion startRotation;
+
+    [SerializeField]
+    [Range(0.1f, 10)]
+    float minScale = 0.5f;
+
+    [SerializeField]
+    [Range(0.1f, 10)]
+    float maxScale = 5;
 
     public override void OnPointerExit(PointerEventData eventData)
     {
@@ -43,7 +48,7 @@ public class ImageItem : Selectable, IDragHandler
         touches.Remove(eventData);
         UpdateInitialState();
 
-        OnClick(this);
+        onClick.Invoke();
         InstantClearState();
 
         base.OnPointerUp(eventData);
@@ -51,10 +56,9 @@ public class ImageItem : Selectable, IDragHandler
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (interactable || !eventData.dragging)
-            return;
+        print("Drag!! " + touches.Count);
 
-        if(OneTouch)
+        if (OneTouch)
         {
             Vector3 currentCenter = touches[0].position;
             Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
@@ -65,7 +69,7 @@ public class ImageItem : Selectable, IDragHandler
             Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
 
             float currentHandDistance = (touches[0].position - touches[1].position).magnitude;
-            Rect.localScale = startScale * Mathf.Abs(currentHandDistance / startHandDistance);
+            Rect.localScale = startScale * Mathf.Clamp(Mathf.Abs(currentHandDistance / startHandDistance), minScale, maxScale);
 
             Vector3 pointRelativeToZero = touches[1].position - touches[0].position;
             float angle = Mathf.Atan2(pointRelativeToZero.x, pointRelativeToZero.y) * Mathf.Rad2Deg;

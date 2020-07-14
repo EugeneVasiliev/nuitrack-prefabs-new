@@ -90,7 +90,7 @@ public class GalleryControl : MonoBehaviour
                 currentImageItem.image.sprite = spriteCollection[imageIndex];
                 imageIndex++;
 
-                currentImageItem.OnClick += CurrentImageItem_OnClick;
+                currentImageItem.onClick.AddListener(delegate { CurrentImageItem_OnClick(currentImageItem); });
             }
         }
 
@@ -116,7 +116,7 @@ public class GalleryControl : MonoBehaviour
             selectedItem = currentItem;
 
             canvasGroup.interactable = false;
-            selectedItem.interactable = false;
+            //selectedItem.interactable = false;
 
             selectedItem.transform.SetParent(viewRect, true);
 
@@ -166,7 +166,7 @@ public class GalleryControl : MonoBehaviour
                     else
                     {
                         selectedItem.transform.SetParent(content, true);
-                        selectedItem.interactable = true;
+                        //selectedItem.interactable = true;
                         canvasGroup.interactable = true;
                         selectedItem = null;
                         animated = false;
