@@ -2,6 +2,10 @@
 using UnityEngine;
 using UnityEngine.Events;
 
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+using UnityEngine.Android;
+#endif
+
 [System.Serializable]
 public class InitEvent : UnityEvent<NuitrackInitState>
 {
@@ -102,6 +106,19 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+            Permission.RequestUserPermission(Permission.CoarseLocation);
+
+#endif
+
         //NuitrackLoader.InitNuitrackLibraries();
         initState = NuitrackLoader.InitNuitrackLibraries();
         {
