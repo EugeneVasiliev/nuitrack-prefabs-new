@@ -101,6 +101,10 @@ public class UserTrackerVisualization : MonoBehaviour
 
     void Initialize()
     {
+        print("!!!!!!!!!!!");
+        if (initialized)
+            return;
+
         initialized = true;
         occludedUserCols = new Color[userCols.Length];
         userCurrentCols = new Color[userCols.Length];
