@@ -101,7 +101,6 @@ public class UserTrackerVisualization : MonoBehaviour
 
     void Initialize()
     {
-        print("!!!!!!!!!!!");
         if (initialized)
             return;
 
