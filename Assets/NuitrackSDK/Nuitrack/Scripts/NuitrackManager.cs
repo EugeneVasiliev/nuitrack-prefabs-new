@@ -401,7 +401,18 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
-        NuitrackInit();
+        if (asyncInit)
+        {
+            if (!_threadRunning)
+            {
+                _thread = new Thread(ThreadedWork);
+                _thread.Start();
+            }
+        }
+        else
+        {
+            NuitrackInit();
+        }
     }
 
     public void StopNuitrack()
@@ -507,6 +518,7 @@ public class NuitrackManager : MonoBehaviour
 
         nuitrack.Nuitrack.Release();
         Debug.Log("CloseUserGen");
+        nuitrackInitialized = false;
     }
 
     void OnDestroy()
