@@ -119,14 +119,10 @@ public class NuitrackManager : MonoBehaviour
 
 #endif
 
-        //NuitrackLoader.InitNuitrackLibraries();
-        if(wifiConnect == WifiConnect.none)
+        initState = NuitrackLoader.InitNuitrackLibraries();
+        if (initEvent != null)
         {
-            initState = NuitrackLoader.InitNuitrackLibraries();
-            if (initEvent != null)
-            {
-                initEvent.Invoke(initState);
-            }
+            initEvent.Invoke(initState);
         }
 
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
