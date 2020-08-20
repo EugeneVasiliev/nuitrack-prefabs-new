@@ -241,38 +241,19 @@ public class NuitrackManager : MonoBehaviour
             return;
         //Debug.Log("Application.runInBackground " + Application.runInBackground);
         //CloseUserGen(); //just in case
-#if UNITY_IOS
-		if (wifiConnect == WifiConnect.VicoVR)
-		{
-			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
-		}
-		else if (wifiConnect == WifiConnect.TVico)
-		{
-			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
-		}
-		else
-			nuitrack.Nuitrack.Init();
-
-#else
-        if (Application.platform == RuntimePlatform.WindowsPlayer && wifiConnect != WifiConnect.none)
+        if (wifiConnect == WifiConnect.VicoVR)
         {
-            if (wifiConnect == WifiConnect.VicoVR)
-            {
-                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
-            }
-
-            if (wifiConnect == WifiConnect.TVico)
-            {
-                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
-            }
+            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+        }
+        else if (wifiConnect == WifiConnect.TVico)
+        {
+            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
         }
         else
             nuitrack.Nuitrack.Init();
-#endif
+
         Debug.Log("Init OK");
 
         depthSensor = nuitrack.DepthSensor.Create();
