@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 public class HandTrackerVisualization : MonoBehaviour
 {
-    NuitrackModules nuitrackModules;
     nuitrack.HandTrackerData handTrackerData = null;
     [SerializeField] Transform handsContainer;
     [SerializeField] GameObject handUIPrefab;
@@ -15,7 +14,6 @@ public class HandTrackerVisualization : MonoBehaviour
 
     void Start()
     {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
         hands = new Dictionary<int, Image[]>();
     }
 
@@ -23,11 +21,8 @@ public class HandTrackerVisualization : MonoBehaviour
     {
         if (NuitrackManager.HandTrackerData != null)
         {
-            if (handTrackerData != NuitrackManager.HandTrackerData)
-            {
-                handTrackerData = NuitrackManager.HandTrackerData;
-                ProcessHands(handTrackerData);
-            }
+            handTrackerData = NuitrackManager.HandTrackerData;
+            ProcessHands(handTrackerData);
         }
         else
         {
