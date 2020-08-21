@@ -1,20 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 
 public class WristsPositionsDebug : MonoBehaviour
 {
-    NuitrackModules nuitrackModules;
     [SerializeField] Text debugTxt;
-
-    void Start()
-    {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-    }
 
     void Update()
     {
-        nuitrack.SkeletonData skd = nuitrackModules.SkeletonData;
+        nuitrack.SkeletonData skd = NuitrackManager.SkeletonData;
         if (skd != null)
         {
             float lz = skd.Skeletons[0].GetJoint(nuitrack.JointType.LeftWrist).Real.Z;

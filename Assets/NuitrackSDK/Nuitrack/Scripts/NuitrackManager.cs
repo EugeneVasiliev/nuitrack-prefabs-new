@@ -171,7 +171,7 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
-    void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
+    public void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
         //Debug.Log ("" + skel + hand + depth + gest + user);
         if (skeletonTracker == null)

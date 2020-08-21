@@ -21,11 +21,11 @@ public class HandTrackerVisualization : MonoBehaviour
 
     void Update()
     {
-        if (nuitrackModules.HandTrackerData != null)
+        if (NuitrackManager.HandTrackerData != null)
         {
-            if (handTrackerData != nuitrackModules.HandTrackerData)
+            if (handTrackerData != NuitrackManager.HandTrackerData)
             {
-                handTrackerData = nuitrackModules.HandTrackerData;
+                handTrackerData = NuitrackManager.HandTrackerData;
                 ProcessHands(handTrackerData);
             }
         }

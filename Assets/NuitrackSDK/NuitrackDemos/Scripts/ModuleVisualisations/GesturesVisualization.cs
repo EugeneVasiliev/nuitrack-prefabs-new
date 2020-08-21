@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Text;
 using System;
 
 public class GesturesVisualization : MonoBehaviour
@@ -17,11 +15,11 @@ public class GesturesVisualization : MonoBehaviour
 
     void Update()
     {
-        if (nuitrackModules.GesturesData != null)
+        if (NuitrackManager.GestureRecognizer != null)
         {
-            if (gesturesData != nuitrackModules.GesturesData)
+            if (gesturesData != NuitrackManager.GestureRecognizer.GetGestureData())
             {
-                gesturesData = nuitrackModules.GesturesData;
+                gesturesData = NuitrackManager.GestureRecognizer.GetGestureData();
                 ProcessGesturesData(gesturesData);
             }
         }
