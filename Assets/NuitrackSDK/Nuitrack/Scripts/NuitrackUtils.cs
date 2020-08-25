@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using JointType = nuitrack.JointType;
 
@@ -38,7 +37,6 @@ public static class NuitrackUtils
 
     #endregion
 
-    private static byte[] colorDataArray = null;
 
     #region ToTexture2D
 
@@ -46,30 +44,24 @@ public static class NuitrackUtils
     /// Get UnityEngine.Texture2D from nuitrack.ColorFrame (TextureFormat.RGB24)
     /// </summary>
     /// <param name="frame">Original nuitrack.ColorFrame</param>
-    /// <returns>Unity Texture2D</returns>
-    public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
+    /// <param name="dstTexture2D">Destination texture (can be null)</param>
+    public static void ToTexture2D(nuitrack.ColorFrame frame, ref Texture2D dstTexture2D)
     {
-        int datasize = frame.DataSize;
-        if (colorDataArray == null || colorDataArray.Length != datasize)
+        if (dstTexture2D == null || dstTexture2D.width != frame.Cols || dstTexture2D.height != frame.Rows)
+            dstTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+
+        dstTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
+
+        byte[] rawData = dstTexture2D.GetRawTextureData();
+        for (int i = 0; i < rawData.Length; i += 3)
         {
-            colorDataArray = new byte[datasize];
-        }
-        Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
-
-        for (int i = 0; i < datasize; i += 3)
-        {
-            byte temp = colorDataArray[i];
-            colorDataArray[i] = colorDataArray[i + 2];
-            colorDataArray[i + 2] = temp;
+            byte temp = rawData[i];
+            rawData[i] = rawData[i + 2];
+            rawData[i + 2] = temp;
         }
 
-        Texture2D rgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-        rgbTexture.LoadRawTextureData(colorDataArray);
-        rgbTexture.Apply();
-
-        Resources.UnloadUnusedAssets();
-
-        return rgbTexture;
+        dstTexture2D.LoadRawTextureData(rawData);
+        dstTexture2D.Apply();
     }
 
     static Color32 transparentColor = Color.clear;
