@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using JointType = nuitrack.JointType;
 
@@ -74,31 +75,39 @@ public static class NuitrackUtils
 
     #endregion
 
+
     #region ToTexture2D
+
+    private static byte[] colorDataArray = null;
 
     /// <summary>
     /// Get UnityEngine.Texture2D from nuitrack.ColorFrame (TextureFormat.RGB24)
     /// </summary>
-    /// <param name="frame">Source nuitrack.ColorFrame</param>
-    /// <param name="dstTexture2D">Destination texture (can be null)</param>
-    public static void ToTexture2D(nuitrack.ColorFrame frame, ref Texture2D dstTexture2D)
+    /// <param name="frame">Original nuitrack.ColorFrame</param>
+    /// <returns>Unity Texture2D</returns>
+    public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
     {
-        if (dstTexture2D == null || dstTexture2D.width != frame.Cols || dstTexture2D.height != frame.Rows)
-            dstTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-
-        dstTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
-        dstTexture2D.Apply();
-
-        byte[] rawData = dstTexture2D.GetRawTextureData();
-
-        for (int i = 0; i < rawData.Length; i += 3)
+        int datasize = frame.DataSize;
+        if (colorDataArray == null || colorDataArray.Length != datasize)
         {
-            byte temp = rawData[i];
-            rawData[i] = rawData[i + 2];
-            rawData[i + 2] = temp;
+            colorDataArray = new byte[datasize];
+        }
+        Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
+
+        for (int i = 0; i < datasize; i += 3)
+        {
+            byte temp = colorDataArray[i];
+            colorDataArray[i] = colorDataArray[i + 2];
+            colorDataArray[i + 2] = temp;
         }
 
-        dstTexture2D.LoadRawTextureData(rawData);
+        Texture2D rgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+        rgbTexture.LoadRawTextureData(colorDataArray);
+        rgbTexture.Apply();
+
+        Resources.UnloadUnusedAssets();
+
+        return rgbTexture;
     }
 
     static Color32 transparentColor = Color.clear;
