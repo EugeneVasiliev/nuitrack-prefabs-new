@@ -87,7 +87,6 @@ public class NuitrackManager : MonoBehaviour
     bool prevUser = false;
 
     bool pauseState = false;
-    bool firstTime = false; //in order to prevent double NuitrackInit() calls on startup (in Awake and in OnApplicationPause)
 
     [HideInInspector] public bool nuitrackInitialized = false;
 
@@ -362,10 +361,7 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            if (firstTime)
-                StartCoroutine(RestartNuitrack());
-
-            firstTime = true;
+            StartCoroutine(RestartNuitrack());
         }
     }
 
@@ -434,7 +430,14 @@ public class NuitrackManager : MonoBehaviour
 #endif
         if (!pauseState)
         {
-            nuitrack.Nuitrack.Update();
+            try
+            {
+                nuitrack.Nuitrack.Update();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError(ex.ToString());
+            }
         }
     }
 

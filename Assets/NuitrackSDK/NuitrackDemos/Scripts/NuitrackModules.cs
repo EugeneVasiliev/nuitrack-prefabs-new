@@ -116,6 +116,8 @@ public class NuitrackModules : MonoBehaviour
             if ((NuitrackManager.HandTracker != null) && (NuitrackManager.HandTracker.GetProcessingTime() > 1f)) processingTimesInfo += "Hand FPS: " + (1000f / NuitrackManager.HandTracker.GetProcessingTime()).ToString("0") + "\n";
 
             perfomanceInfoText.text = processingTimesInfo;
+
+            nuitrack.Nuitrack.Update();
         }
         catch (Exception ex)
         {
