@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class RGBToTexture : MonoBehaviour
 {
     [SerializeField] RawImage rawImage;
-    [SerializeField] ComputeShader RGB2BGRShader;
+    [SerializeField] ComputeShader BGR2RGBShader;
 
     Texture2D dstRgbTexture2D;
     RenderTexture renderTexture;
@@ -25,6 +25,12 @@ public class RGBToTexture : MonoBehaviour
 
     void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
     {
+        ToRenderTexture(frame);
+        rawImage.texture = renderTexture;
+    }
+
+    void ToRenderTexture(nuitrack.ColorFrame frame)
+    {
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
@@ -38,14 +44,13 @@ public class RGBToTexture : MonoBehaviour
         dstRgbTexture2D.Apply();
 
         uint x, y, z;
-        int kernelIndex = RGB2BGRShader.FindKernel("RGB2BGR");
+        int kernelIndex = BGR2RGBShader.FindKernel("RGB2BGR");
 
-        RGB2BGRShader.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
-        RGB2BGRShader.SetTexture(kernelIndex, "Result", renderTexture);
+        BGR2RGBShader.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
+        BGR2RGBShader.SetTexture(kernelIndex, "Result", renderTexture);
 
-        RGB2BGRShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
-        RGB2BGRShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
+        BGR2RGBShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+        BGR2RGBShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
     }
-
 
 }
