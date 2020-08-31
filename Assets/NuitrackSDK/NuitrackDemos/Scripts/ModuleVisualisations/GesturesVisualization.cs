@@ -1,11 +1,27 @@
 ﻿using UnityEngine;
 using System;
+using nuitrack;
 
 public class GesturesVisualization : MonoBehaviour
 {
     ExceptionsLogger exceptionsLogger;
     NuitrackModules nuitrackModules;
-    nuitrack.GestureData gesturesData = null;
+    GestureData gesturesData = null;
+
+    private void OnEnable()
+    {
+        NuitrackManager.onNewGesture += OnNewGesture;
+    }
+
+    private void OnNewGesture(Gesture gesture)
+    {
+        ProcessGesturesData(NuitrackManager.GestureRecognizer.GetGestureData());
+    }
+
+    private void OnDisable()
+    {
+        NuitrackManager.onNewGesture -= OnNewGesture;
+    }
 
     void Start()
     {
@@ -13,19 +29,7 @@ public class GesturesVisualization : MonoBehaviour
         nuitrackModules = FindObjectOfType<NuitrackModules>();
     }
 
-    void Update()
-    {
-        if (NuitrackManager.GestureRecognizer != null)
-        {
-            if (gesturesData != NuitrackManager.GestureRecognizer.GetGestureData())
-            {
-                gesturesData = NuitrackManager.GestureRecognizer.GetGestureData();
-                ProcessGesturesData(gesturesData);
-            }
-        }
-    }
-
-    void ProcessGesturesData(nuitrack.GestureData data)
+    void ProcessGesturesData(GestureData data)
     {
         if (data.NumGestures > 0)
         {
