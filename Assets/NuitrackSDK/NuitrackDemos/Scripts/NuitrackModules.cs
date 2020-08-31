@@ -52,6 +52,9 @@ public class NuitrackModules : MonoBehaviour
 
     private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
     {
+        if(!NuitrackManager.Instance.nuitrackInitialized)
+            exceptionsLogger.AddEntry(NuitrackManager.Instance.initException.ToString());
+
         if (prevDepth != depthOn)
         {
             prevDepth = depthOn;
@@ -91,6 +94,9 @@ public class NuitrackModules : MonoBehaviour
 
     public void InitModules()
     {
+        if (!NuitrackManager.Instance.nuitrackInitialized)
+            return;
+
         try
         {
             Instantiate(issuesProcessorPrefab);

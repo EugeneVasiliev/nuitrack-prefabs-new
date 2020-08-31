@@ -15,7 +15,10 @@ public class GesturesVisualization : MonoBehaviour
 
     private void OnNewGesture(Gesture gesture)
     {
-        ProcessGesturesData(NuitrackManager.GestureRecognizer.GetGestureData());
+        string newEntry =
+            "User " + gesture.UserID + ": " +
+            Enum.GetName(typeof(nuitrack.GestureType), (int)gesture.Type);
+        exceptionsLogger.AddEntry(newEntry);
     }
 
     private void OnDisable()
@@ -27,19 +30,5 @@ public class GesturesVisualization : MonoBehaviour
     {
         exceptionsLogger = FindObjectOfType<ExceptionsLogger>();
         nuitrackModules = FindObjectOfType<NuitrackModules>();
-    }
-
-    void ProcessGesturesData(GestureData data)
-    {
-        if (data.NumGestures > 0)
-        {
-            for (int i = 0; i < data.Gestures.Length; i++)
-            {
-                string newEntry =
-                    "User " + data.Gestures[i].UserID + ": " +
-                    Enum.GetName(typeof(nuitrack.GestureType), (int)data.Gestures[i].Type);
-                exceptionsLogger.AddEntry(newEntry);
-            }
-        }
     }
 }

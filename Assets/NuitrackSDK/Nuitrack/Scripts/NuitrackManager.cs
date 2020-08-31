@@ -90,6 +90,8 @@ public class NuitrackManager : MonoBehaviour
 
     [HideInInspector] public bool nuitrackInitialized = false;
 
+    [HideInInspector] public System.Exception initException;
+
     void ThreadedWork()
     {
         _threadRunning = true;
@@ -285,6 +287,7 @@ public class NuitrackManager : MonoBehaviour
         }
         catch (System.Exception ex)
         {
+            initException = ex;
             Debug.LogError(ex.ToString());
         }
     }
