@@ -51,6 +51,12 @@ public static class NuitrackUtils
     /// <param name="brg2rgbShader">Compute shader for converting BGR to RGB </param>
     public static void ToRenderTexture(nuitrack.ColorFrame frame, ref RenderTexture renderTexture, ComputeShader brg2rgbShader)
     {
+        if (!SystemInfo.supportsComputeShaders)
+        {
+            Debug.LogError("Comppute Shader is not support.");
+            return;
+        }
+
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
