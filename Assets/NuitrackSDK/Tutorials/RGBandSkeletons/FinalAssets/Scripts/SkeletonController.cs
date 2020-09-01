@@ -10,11 +10,6 @@ public class SkeletonController : MonoBehaviour
 
     List<SimpleSkeletonAvatar> avatars = new List<SimpleSkeletonAvatar>();
 
-    void OnEnable()
-    {
-        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
-    }
-
     void Start()
     {
         for (int i = 0; i < skeletonCount; i++)
@@ -26,6 +21,8 @@ public class SkeletonController : MonoBehaviour
         }
 
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
+
+        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
     }
 
     void OnSkeletonUpdate(SkeletonData skeletonData)
@@ -42,5 +39,10 @@ public class SkeletonController : MonoBehaviour
                 avatars[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    private void OnDestroy()
+    {
+        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent -= OnSkeletonUpdate;
     }
 }
