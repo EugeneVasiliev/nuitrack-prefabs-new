@@ -39,49 +39,6 @@ public static class NuitrackUtils
     #endregion
 
 
-    #region ToRenderTexture
-
-    static Texture2D dstRgbTexture2D;
-
-    /// <summary>
-    /// Get UnityEngine.RenderTexture from nuitrack.ColorFrame (faster than ToTexture2D due to GPU usage)
-    /// </summary>
-    /// <param name="frame">Source nuitrack.ColorFram</param>
-    /// <param name="renderTexture">Destination RenderTexture (can be null)</param>
-    /// <param name="brg2rgbShader">Compute shader for converting BGR to RGB </param>
-    public static void ToRenderTexture(nuitrack.ColorFrame frame, ref RenderTexture renderTexture, ComputeShader brg2rgbShader)
-    {
-        if (!SystemInfo.supportsComputeShaders)
-        {
-            Debug.LogError("Comppute Shader is not support.");
-            return;
-        }
-
-        if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
-        {
-            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-
-            renderTexture = new RenderTexture(dstRgbTexture2D.width, dstRgbTexture2D.height, 0, RenderTextureFormat.ARGB32);
-            renderTexture.enableRandomWrite = true;
-            renderTexture.Create();
-        }
-  
-        dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
-        dstRgbTexture2D.Apply();
-
-        uint x, y, z;
-        int kernelIndex = brg2rgbShader.FindKernel("RGB2BGR");
-
-        brg2rgbShader.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
-        brg2rgbShader.SetTexture(kernelIndex, "Result", renderTexture);
-
-        brg2rgbShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
-        brg2rgbShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
-    }
-
-    #endregion
-
-
     #region ToTexture2D
 
     private static byte[] colorDataArray = null;

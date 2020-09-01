@@ -4,15 +4,15 @@ RWTexture2D<float4> Result;
 uniform StructuredBuffer<uint> UserIndexes : register(t1);
 uniform StructuredBuffer<float4> UserColors;
 
-
 int textureWidth;
 
 [numthreads(8, 8, 1)]
 void Segment2Texture(uint3 id : SV_DispatchThreadID)
 {
-	int rawIndex = textureWidth * id.y + id.x;
-	uint userIndex = UserIndexes[rawIndex / 2];
+	uint rawIndex = textureWidth * id.y + id.x;
+	uint userIndex = UserIndexes[rawIndex >> 1];
 
+	// Shift trick, because in the Shader we read two values (Int16) as one (Int32)
 	if(rawIndex % 2 != 0)
 		Result[id.xy] = UserColors[userIndex >> 16];
 	else

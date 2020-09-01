@@ -28,14 +28,22 @@ public class SegmentToTexture : MonoBehaviour
 
     byte[] segmentDataArray = null;
 
+    uint x, y, z;
+    int kernelIndex;
+
     void Start()
-    {
+    { 
         if (SystemInfo.supportsComputeShaders)
         {
             NuitrackManager.onUserTrackerUpdate += NuitrackManager_onUserTrackerUpdate;
 
+            kernelIndex = segment2Texture.FindKernel("Segment2Texture");
+            segment2Texture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+
             userColorsBuffer = new ComputeBuffer(defaultColors.Length, sizeof(float) * 4);
             userColorsBuffer.SetData(defaultColors);
+
+            segment2Texture.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
         }
         else
             Debug.LogError("Comppute Shader is not support.");
@@ -67,6 +75,16 @@ public class SegmentToTexture : MonoBehaviour
             renderTexture.Create();
 
             segment2Texture.SetInt("textureWidth", renderTexture.width);
+            segment2Texture.SetTexture(kernelIndex, "Result", renderTexture);
+
+            /*
+            We put the source data in the buffer, but the buffer does not support types 
+            that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32)).
+
+            For optimization, we specify a length half the original length,
+            since the data is correctly projected into memory
+            (sizeof(ushot) * sourceDataBuffer / 2 == sizeof(uint) * sourceDataBuffer / 2)
+            */
 
             sourceDataBuffer = new ComputeBuffer(frame.DataSize / 2, sizeof(uint));
             segmentDataArray = new byte[frame.DataSize];
@@ -75,15 +93,7 @@ public class SegmentToTexture : MonoBehaviour
         Marshal.Copy(frame.Data, segmentDataArray, 0, frame.DataSize);
         sourceDataBuffer.SetData(segmentDataArray);
 
-        uint x, y, z;
-        int kernelIndex = segment2Texture.FindKernel("Segment2Texture");
-
-        segment2Texture.SetTexture(kernelIndex, "Result", renderTexture);
-
         segment2Texture.SetBuffer(kernelIndex, "UserIndexes", sourceDataBuffer);
-        segment2Texture.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
-
-        segment2Texture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         segment2Texture.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
     }
 }
