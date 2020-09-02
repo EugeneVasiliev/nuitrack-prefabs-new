@@ -14,4 +14,4 @@ public class DrawColorFrame : MonoBehaviour
     {
         background.texture = frame.ToTexture2D();
     }
-}
+} 
