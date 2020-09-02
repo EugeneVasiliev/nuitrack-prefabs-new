@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -48,6 +50,7 @@ public static class NuitrackUtils
     /// </summary>
     /// <param name="frame">Original nuitrack.ColorFrame</param>
     /// <returns>Unity Texture2D</returns>
+    [Obsolete("Texture2D(nuitrack.ColorFrame) is deprecated, please use script RGBToTexture instead.")]
     public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
     {
         int datasize = frame.DataSize;
@@ -91,6 +94,7 @@ public static class NuitrackUtils
     /// <param name="frame">Original nuitrack.UserFrame</param>
     /// <param name="customListColors">Optional colors for users</param>
     /// <returns>Unity Texture2D</returns>
+    [Obsolete("Texture2D(nuitrack.UserFrame) is deprecated, please use script SegmentToTexture instead.")]
     public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, params Color32[] customListColors)
     {
         Color32[] currentColorList = customListColors ?? defaultColors;
@@ -124,6 +128,7 @@ public static class NuitrackUtils
     /// <param name="frame">Original nuitrack.DepthFrame</param>
     /// <param name="contrast">Contrast of the final image (0 - low contrast, 1 - high). Recommended range [0.8-0.95]</param>
     /// <returns>Unity Texture2D</returns>
+    [Obsolete("Texture2D(nuitrack.DepthFrame) is deprecated, please use script DepthToTexture instead.")]
     public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, float contrast = 0.9f)
     {
         byte[] outDepth = new byte[(frame.DataSize / 2) * 3];
