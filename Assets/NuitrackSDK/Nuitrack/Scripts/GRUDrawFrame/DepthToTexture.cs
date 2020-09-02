@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 using System.Runtime.InteropServices;
 
-public class FrameToDepth : MonoBehaviour
+public class DepthToTexture : MonoBehaviour
 {
     [SerializeField] RawImage background;
     [SerializeField] ComputeShader depthToTexture;
