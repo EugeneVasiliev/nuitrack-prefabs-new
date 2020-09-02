@@ -1,6 +1,7 @@
 ﻿using nuitrack;
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class SkeletonController : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class SkeletonController : MonoBehaviour
 
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
 
-        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
+        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
     }
 
     void OnSkeletonUpdate(SkeletonData skeletonData)
@@ -43,6 +44,6 @@ public class SkeletonController : MonoBehaviour
 
     private void OnDestroy()
     {
-        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent -= OnSkeletonUpdate;
+        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
     }
 }

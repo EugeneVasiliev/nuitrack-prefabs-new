@@ -14,4 +14,9 @@ public class DrawColorFrame : MonoBehaviour
     {
         background.texture = frame.ToTexture2D();
     }
+
+    void Destroy()
+    {
+        NuitrackManager.onColorUpdate -= DrawColor;
+    }
 }
