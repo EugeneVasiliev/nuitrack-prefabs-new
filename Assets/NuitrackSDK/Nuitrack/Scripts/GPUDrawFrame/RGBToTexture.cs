@@ -1,4 +1,12 @@
-﻿using UnityEngine;
+﻿/*
+ * This script converts source data of nuitrack.ColorFrame to RenderTexture using the GPU,
+ * which is several times faster than CPU conversions.
+ * 
+ * Learn more about supported platforms and the graphics API: https://docs.unity3d.com/Manual/class-ComputeShader.html
+*/
+
+
+using UnityEngine;
 using UnityEngine.UI;
 
 public class RGBToTexture : MonoBehaviour
