@@ -157,7 +157,6 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            NuitrackLoader.InitNuitrackLibraries();
             initState = NuitrackLoader.InitNuitrackLibraries();
 
             if (initEvent != null)
