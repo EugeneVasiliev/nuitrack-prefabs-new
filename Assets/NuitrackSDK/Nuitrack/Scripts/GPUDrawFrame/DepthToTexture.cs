@@ -37,7 +37,7 @@ public class DepthToTexture : MonoBehaviour
             NuitrackManager.onDepthUpdate += DrawDepth;
         }
         else
-            Debug.LogError("Comppute Shader is not support.");
+            Debug.LogError("Compute Shader is not support.");
     }
 
     void OnDestroy()

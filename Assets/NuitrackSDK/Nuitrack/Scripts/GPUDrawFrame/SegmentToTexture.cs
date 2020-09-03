@@ -54,13 +54,7 @@ public class SegmentToTexture : MonoBehaviour
             segment2Texture.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
         }
         else
-            Debug.LogError("Comppute Shader is not support.");
-    }
-
-    void NuitrackManager_onUserTrackerUpdate(nuitrack.UserFrame frame)
-    {
-        ToRenderTexture(frame);
-        rawImage.texture = renderTexture;
+            Debug.LogError("Compute Shader is not support.");
     }
 
     void OnDestroy()
@@ -74,13 +68,15 @@ public class SegmentToTexture : MonoBehaviour
         }
     }
 
-    void ToRenderTexture(nuitrack.UserFrame frame)
+    void NuitrackManager_onUserTrackerUpdate(nuitrack.UserFrame frame)
     {
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             renderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
             renderTexture.enableRandomWrite = true;
             renderTexture.Create();
+
+            rawImage.texture = renderTexture;
 
             segment2Texture.SetInt("textureWidth", renderTexture.width);
             segment2Texture.SetTexture(kernelIndex, "Result", renderTexture);
@@ -102,6 +98,6 @@ public class SegmentToTexture : MonoBehaviour
         sourceDataBuffer.SetData(segmentDataArray);
 
         segment2Texture.SetBuffer(kernelIndex, "UserIndexes", sourceDataBuffer);
-        segment2Texture.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
+        segment2Texture.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z); 
     }
 }

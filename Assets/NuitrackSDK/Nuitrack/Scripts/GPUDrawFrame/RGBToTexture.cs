@@ -30,13 +30,13 @@ public class RGBToTexture : MonoBehaviour
             BGR2RGBShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         }
         else
-            Debug.LogError("Comppute Shader is not support.");
+            Debug.LogError("Compute Shader is not support.");
     }
 
     void OnDestroy()
     {
         if (SystemInfo.supportsComputeShaders)
-            NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
+            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
     }
 
     void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
@@ -59,6 +59,5 @@ public class RGBToTexture : MonoBehaviour
         dstRgbTexture2D.Apply();
 
         BGR2RGBShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
-
     }
 }
