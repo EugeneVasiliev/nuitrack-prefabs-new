@@ -56,4 +56,9 @@ public class FaceAnimManager : MonoBehaviour
             }
         }
     }
+
+    private void OnDestroy()
+    {
+        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
+    }
 }
