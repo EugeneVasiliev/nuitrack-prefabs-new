@@ -6,7 +6,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 {
     NuitrackModules nuitrackModules;
 
-    ulong lastFrameID = ulong.MaxValue;
+    ulong lastFrameTimestamp = ulong.MaxValue;
 
     //  List<int[]> triangles;
     //  List<Vector3[]> vertices;
@@ -180,11 +180,11 @@ public class UserTrackerVisMesh : MonoBehaviour
             nuitrack.ColorFrame colorFrame = nuitrackModules.ColorFrame;
             nuitrack.UserFrame userFrame = nuitrackModules.UserFrame;
 
-            bool haveNewFrame = (lastFrameID != depthFrame.ID);
+            bool haveNewFrame = (lastFrameTimestamp != depthFrame.Timestamp);
             if (haveNewFrame)
             {
                 ProcessFrame(depthFrame, colorFrame, userFrame);
-                lastFrameID = depthFrame.ID;
+                lastFrameTimestamp = depthFrame.Timestamp;
             }
         }
         else

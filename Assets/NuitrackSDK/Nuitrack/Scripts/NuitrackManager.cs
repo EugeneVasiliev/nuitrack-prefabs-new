@@ -1,6 +1,11 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Threading;
+
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+using UnityEngine.Android;
+#endif
 
 [System.Serializable]
 public class InitEvent : UnityEvent<NuitrackInitState>
@@ -14,6 +19,9 @@ enum WifiConnect
 
 public class NuitrackManager : MonoBehaviour
 {
+    bool _threadRunning;
+    Thread _thread;
+
     public NuitrackInitState InitState { get { return NuitrackLoader.initState; } }
     [SerializeField]
     bool
@@ -27,6 +35,7 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
+    [SerializeField] bool asyncInit = false;
 
     public static bool sensorConnected = false;
 
@@ -80,6 +89,21 @@ public class NuitrackManager : MonoBehaviour
     bool pauseState = false;
     bool firstTime = false; //in order to prevent double NuitrackInit() calls on startup (in Awake and in OnApplicationPause)
 
+    [HideInInspector] public bool nuitrackInitialized = false;
+
+    void ThreadedWork()
+    {
+        _threadRunning = true;
+
+        while (_threadRunning)
+        {
+            initState = NuitrackLoader.InitNuitrackLibraries();
+
+            NuitrackInit();
+        }
+        _threadRunning = false;
+    }
+
     public static NuitrackManager Instance
     {
         get
@@ -102,14 +126,18 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
-        //NuitrackLoader.InitNuitrackLibraries();
-        initState = NuitrackLoader.InitNuitrackLibraries();
-        {
-            if (initEvent != null)
-            {
-                initEvent.Invoke(initState);
-            }
-        }
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+            Permission.RequestUserPermission(Permission.CoarseLocation);
+
+#endif
 
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
@@ -117,10 +145,29 @@ public class NuitrackManager : MonoBehaviour
         Application.runInBackground = runInBackground;
         //Debug.Log ("NuitrackStart");
 
+        if (asyncInit)
+        {
+            StartCoroutine(InitEventStart());
+
+            if (!_threadRunning)
+            {
+                _thread = new Thread(ThreadedWork);
+                _thread.Start();
+            }
+        }
+        else
+        {
+            initState = NuitrackLoader.InitNuitrackLibraries();
+
+            if (initEvent != null)
+            {
+                initEvent.Invoke(initState);
+            }
 #if UNITY_ANDROID && !UNITY_EDITOR
     if (initState == NuitrackInitState.INIT_OK)
 #endif
-        NuitrackInit();
+            NuitrackInit();
+        }
     }
 
     void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
@@ -187,43 +234,25 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
-
     void NuitrackInit()
     {
+        if (nuitrackInitialized)
+            return;
         //Debug.Log("Application.runInBackground " + Application.runInBackground);
         //CloseUserGen(); //just in case
-#if UNITY_IOS
-		if (wifiConnect == WifiConnect.VicoVR)
-		{
-			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
-		}
-		else if (wifiConnect == WifiConnect.TVico)
-		{
-			nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-			nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
-		}
-		else
-			nuitrack.Nuitrack.Init();
-
-#else
-        if ((Application.isEditor || Application.platform == RuntimePlatform.WindowsPlayer) && wifiConnect != WifiConnect.none)
+        if (wifiConnect == WifiConnect.VicoVR)
         {
-            if (wifiConnect == WifiConnect.VicoVR)
-            {
-                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
-            }
-
-            if (wifiConnect == WifiConnect.TVico)
-            {
-                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
-            }
+            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+        }
+        else if (wifiConnect == WifiConnect.TVico)
+        {
+            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
         }
         else
             nuitrack.Nuitrack.Init();
-#endif
+
         Debug.Log("Init OK");
 
         depthSensor = nuitrack.DepthSensor.Create();
@@ -249,6 +278,8 @@ public class NuitrackManager : MonoBehaviour
             gesturesRecognizerModuleOn,
             userTrackerModuleOn
         );
+
+        nuitrackInitialized = true;
     }
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
@@ -350,7 +381,18 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
-        NuitrackInit();
+        if (asyncInit)
+        {
+            if (!_threadRunning)
+            {
+                _thread = new Thread(ThreadedWork);
+                _thread.Start();
+            }
+        }
+        else
+        {
+            NuitrackInit();
+        }
     }
 
     public void StopNuitrack()
@@ -364,6 +406,19 @@ public class NuitrackManager : MonoBehaviour
             false
         );
         CloseUserGen();
+    }
+
+    IEnumerator InitEventStart()
+    {
+        while (!nuitrackInitialized)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+
+        if (initEvent != null)
+        {
+            initEvent.Invoke(initState);
+        }
     }
 
     void Update()
@@ -443,10 +498,26 @@ public class NuitrackManager : MonoBehaviour
 
         nuitrack.Nuitrack.Release();
         Debug.Log("CloseUserGen");
+        nuitrackInitialized = false;
     }
 
     void OnDestroy()
     {
         CloseUserGen();
+    }
+
+    void OnDisable()
+    {
+        StopThread();
+    }
+
+    void StopThread()
+    {
+        if (_threadRunning)
+        {
+            _threadRunning = false;
+
+            _thread.Join();
+        }
     }
 }

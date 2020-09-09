@@ -21,7 +21,7 @@ public static class NuitrackLoader
 
     public static NuitrackInitState InitNuitrackLibraries()
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
 		Debug.Log ("InitNuitrackLibraries() starts.");
 		try
 		{

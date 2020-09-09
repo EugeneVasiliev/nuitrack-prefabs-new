@@ -1,7 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Threading;
+
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+using UnityEngine.Android;
+#endif
 
 public class NuitrackModules : MonoBehaviour
 {
@@ -76,6 +80,18 @@ public class NuitrackModules : MonoBehaviour
 
     void Awake()
     {
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+
+        if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+            Permission.RequestUserPermission(Permission.CoarseLocation);
+
+#endif
         exceptionsLogger = GameObject.FindObjectOfType<ExceptionsLogger>();
         NuitrackInitState state = NuitrackLoader.InitNuitrackLibraries();
         if (state != NuitrackInitState.INIT_OK)
