@@ -26,7 +26,7 @@ public class FaceAnimManager : MonoBehaviour
         }
 
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(faceCount);
-        NuitrackManager.SkeletonTracker.OnSkeletonUpdateEvent += OnSkeletonUpdate;
+        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
     }
 
     void OnSkeletonUpdate(SkeletonData skeletonData)
