@@ -9,14 +9,7 @@ public class ImageItem : Button, IDragHandler
 {
     List<PointerEventData> touches = new List<PointerEventData>();
 
-    Vector3 startCenter;
-    Vector3 startPosition;
-
-    Vector3 startScale;
-    float startHandDistance;
-
-    float startAngle;
-    Quaternion startRotation;
+    Vector3 deltaRectPosition;
 
     [SerializeField]
     [Range(0.1f, 10)]
@@ -26,10 +19,20 @@ public class ImageItem : Button, IDragHandler
     [Range(0.1f, 10)]
     float maxScale = 5;
 
-    public override void OnPointerExit(PointerEventData eventData)
+    bool viewMode = false;
+
+    public void EnterViewMode()
     {
-        touches.Remove(eventData);
-        base.OnPointerExit(eventData);
+        if (!viewMode)
+        {
+            viewMode = true;
+            InstantClearState();
+        }
+    }
+
+    public void ExitViewMode()
+    {
+        viewMode = false;
     }
 
     public override void OnPointerDown(PointerEventData eventData)
@@ -46,35 +49,63 @@ public class ImageItem : Button, IDragHandler
     public override void OnPointerUp(PointerEventData eventData)
     {
         touches.Remove(eventData);
-        UpdateInitialState();
-
-        onClick.Invoke();
-        InstantClearState();
-
         base.OnPointerUp(eventData);
+        UpdateInitialState();
+        InstantClearState();
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        print("Drag!! " + touches.Count);
+        if (!viewMode)
+            return;
 
         if (OneTouch)
         {
-            Vector3 currentCenter = touches[0].position;
-            Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
+            Vector3 firstPoint = GetWorldPointPosition(touches[0]);
+            Vector3 localPointPosition = Rect.InverseTransformPoint(firstPoint);
+            Rect.position = Rect.TransformPoint(localPointPosition - deltaRectPosition);
         }
-        else if(MultiTouch)
+        else if (MultiTouch)
         {
-            Vector3 currentCenter = (touches[0].position + touches[1].position) / 2;
-            Rect.anchoredPosition = startPosition + (currentCenter - startCenter);
+            Vector3 firstPosition = GetWorldPointPosition(touches[0]);
+            Vector3 secondPosition = GetWorldPointPosition(touches[1]);
 
-            float currentHandDistance = (touches[0].position - touches[1].position).magnitude;
-            Rect.localScale = startScale * Mathf.Clamp(Mathf.Abs(currentHandDistance / startHandDistance), minScale, maxScale);
+            Vector3 lastFirstPosition = GetWorldPointLastPosition(touches[0]);
+            Vector3 lastSecondPosition = GetWorldPointLastPosition(touches[1]);
 
-            Vector3 pointRelativeToZero = touches[1].position - touches[0].position;
-            float angle = Mathf.Atan2(pointRelativeToZero.x, pointRelativeToZero.y) * Mathf.Rad2Deg;
+            float deltaFP = (firstPosition - lastFirstPosition).magnitude;
+            float deltaSP = (secondPosition - lastSecondPosition).magnitude;
+            float deltaSumm = deltaFP + deltaSP;
 
-            Rect.localRotation = startRotation * Quaternion.Euler(0, 0, startAngle - angle);
+            if (!Mathf.Approximately(deltaSumm, 0))
+            {
+                // Change rotation
+
+                Vector3 rotaionCenter = Vector3.Lerp(firstPosition, secondPosition, deltaFP / deltaSumm);
+
+                float newAngle = Angle(firstPosition, secondPosition);
+                float lastAngle = Angle(lastFirstPosition, lastSecondPosition);
+
+                Rect.RotateAround(rotaionCenter, Vector3.forward, newAngle - lastAngle);
+
+                // Change position
+
+                Vector3 localPointPosition = Rect.InverseTransformPoint((firstPosition + secondPosition) / 2);
+                Vector3 newPosition = Rect.TransformPoint(localPointPosition - deltaRectPosition);
+                newPosition.z = Rect.position.z;
+                Rect.position = newPosition;
+
+                // Change scale
+
+                float addScale = (firstPosition - secondPosition).magnitude / (lastFirstPosition - lastSecondPosition).magnitude;
+
+                bool validateScale = true;
+                for (int i = 0; i < 3 && validateScale; i++)
+                    validateScale = validateScale && Rect.localScale[i] * addScale > minScale && Rect.localScale[i] * addScale < maxScale;
+
+                if (validateScale)
+                    Rect.localScale *= addScale;
+            }
         }
     }
 
@@ -82,20 +113,32 @@ public class ImageItem : Button, IDragHandler
     {
         if (OneTouch)
         {
-            startCenter = touches[0].position;  
+            Vector3 firstPosition = GetWorldPointPosition(touches[0]);
+            deltaRectPosition = Rect.InverseTransformPoint(firstPosition);
         }
         else if (MultiTouch)
         {
-            startCenter = (touches[0].position + touches[1].position) / 2;
-            startHandDistance = (touches[0].position - touches[1].position).magnitude;
+            Vector3 firstPosition = GetWorldPointPosition(touches[0]);
+            Vector3 secondPosition = GetWorldPointPosition(touches[1]);
 
-            Vector3 pointRelativeToZero = touches[1].position - touches[0].position;
-            startAngle = Mathf.Atan2(pointRelativeToZero.x, pointRelativeToZero.y) * Mathf.Rad2Deg;
+            deltaRectPosition = Rect.InverseTransformPoint((firstPosition + secondPosition) / 2);
         }
+    }
 
-        startScale = Rect.localScale;
-        startPosition = Rect.anchoredPosition;
-        startRotation = Rect.localRotation;
+    Vector3 GetWorldPointPosition(PointerEventData pointerEventData)
+    {
+        return Camera.main.ScreenToWorldPoint(pointerEventData.position);
+    }
+
+    Vector3 GetWorldPointLastPosition(PointerEventData pointerEventData)
+    {
+        return Camera.main.ScreenToWorldPoint(pointerEventData.position - pointerEventData.delta);
+    }
+
+    float Angle(Vector3 fP, Vector3 sP)
+    {
+        Vector3 pointRelativeToZero = fP - sP;
+        return Mathf.Atan2(pointRelativeToZero.y, pointRelativeToZero.x) * Mathf.Rad2Deg;
     }
 
     bool MultiTouch

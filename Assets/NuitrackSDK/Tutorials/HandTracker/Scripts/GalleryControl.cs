@@ -53,8 +53,10 @@ public class GalleryControl : MonoBehaviour
 
     bool animated = false;
     float t = 0;
- 
+
     int currentPage = 0;
+    float startScroll = 0;
+    float scrollT = 0;
 
     IEnumerator Start()
     {
@@ -116,13 +118,13 @@ public class GalleryControl : MonoBehaviour
             selectedItem = currentItem;
 
             canvasGroup.interactable = false;
-            //selectedItem.interactable = false;
-
             selectedItem.transform.SetParent(viewRect, true);
 
             startAnchorPosition = selectedItem.Rect.anchoredPosition;
             startRectSize = selectedItem.Rect.sizeDelta;
             viewRectAnchor = startAnchorPosition;
+
+            selectedItem.EnterViewMode();
         }
     }
 
@@ -166,15 +168,23 @@ public class GalleryControl : MonoBehaviour
                     else
                     {
                         selectedItem.transform.SetParent(content, true);
-                        //selectedItem.interactable = true;
+                        selectedItem.ExitViewMode();
+
                         canvasGroup.interactable = true;
                         selectedItem = null;
                         animated = false;
                     }
                 }
                 else
-                    scrollRect.horizontalScrollbar.value = Mathf.Lerp(scrollRect.horizontalScrollbar.value, scrollStep * currentPage, Time.deltaTime * scrollSpeed);
-
+                {
+                    if (scrollT < 1)
+                    {
+                        scrollT += Time.deltaTime * scrollSpeed;
+                        scrollRect.horizontalScrollbar.value = Mathf.Lerp(startScroll, scrollStep * currentPage, animationCurve.Evaluate(scrollT));
+                    }
+                    else
+                        scrollRect.horizontalScrollbar.interactable = true;
+                }
                 break;
         }
     }
@@ -185,11 +195,19 @@ public class GalleryControl : MonoBehaviour
         {
             case ViewMode.Preview:
 
+                currentPage = Mathf.RoundToInt(scrollRect.horizontalScrollbar.value * (1 / scrollStep));
+
                 if (gesture.Type == nuitrack.GestureType.GestureSwipeLeft)
-                    currentPage = Mathf.Clamp(++currentPage, 0, numberOfPages);
+                {
+                    currentPage = Mathf.Clamp(++currentPage, 0, numberOfPages - 1);
+                    StartScrollAnimation();
+                }
 
                 if (gesture.Type == nuitrack.GestureType.GestureSwipeRight)
-                    currentPage = Mathf.Clamp(--currentPage, 0, numberOfPages);
+                {
+                    currentPage = Mathf.Clamp(--currentPage, 0, numberOfPages - 1);
+                    StartScrollAnimation();
+                }
 
                 break;
 
@@ -209,5 +227,12 @@ public class GalleryControl : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    void StartScrollAnimation()
+    {
+        startScroll = scrollRect.horizontalScrollbar.value;
+        scrollT = 0;
+        scrollRect.horizontalScrollbar.interactable = false;
     }
 }

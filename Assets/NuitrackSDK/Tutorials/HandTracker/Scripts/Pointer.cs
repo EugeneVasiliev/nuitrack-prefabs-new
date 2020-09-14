@@ -24,16 +24,30 @@ public class Pointer : MonoBehaviour
     [SerializeField]
     Sprite pressSprite;
 
+    [SerializeField]
+    [Range(0, 50)]
+    float minVelocityInteractivePoint = 2f;
+
+    float lastTime = 0;
     bool active = false;
 
     private void Start()
     {
         NuitrackManager.onHandsTrackerUpdate += NuitrackManager_onHandsTrackerUpdate;
+        lastTime = Time.time;
     }
 
     private void OnDestroy()
     {
         NuitrackManager.onHandsTrackerUpdate -= NuitrackManager_onHandsTrackerUpdate;
+    }
+
+    public Vector3 Position
+    {
+        get
+        {
+            return transform.position;
+        }
     }
 
     public bool Press
@@ -44,31 +58,31 @@ public class Pointer : MonoBehaviour
     private void NuitrackManager_onHandsTrackerUpdate(nuitrack.HandTrackerData handTrackerData)
     {
         active = false;
-        Press = false;
 
-        if (handTrackerData != null)
+        nuitrack.UserHands userHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);    
+
+        if (userHands != null)
         {
-            nuitrack.UserHands userHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
+            nuitrack.HandContent? handContent = currentHand == Hands.right ? userHands.RightHand : userHands.LeftHand;
 
-            if (userHands != null)
+            if (handContent != null)
             {
                 Vector2 pageSize = parentRectTransform.rect.size;
+                Vector3 lastPosition = baseRect.position;
+                baseRect.anchoredPosition = new Vector2(handContent.Value.X * pageSize.x, -handContent.Value.Y * pageSize.y);
 
-                if (currentHand == Hands.right && userHands.RightHand != null)
-                {
-                    baseRect.anchoredPosition = new Vector2(userHands.RightHand.Value.X * pageSize.x, -userHands.RightHand.Value.Y * pageSize.y);
-                    active = true;
-                    Press = userHands.RightHand.Value.Click;
-                }
-                else if (currentHand == Hands.left && userHands.LeftHand != null)
-                {                    
-                    baseRect.anchoredPosition = new Vector2(userHands.LeftHand.Value.X * pageSize.x, -userHands.LeftHand.Value.Y * pageSize.y);
-                    active = true;
-                    Press = userHands.LeftHand.Value.Click;
-                }
+                float velocity = (baseRect.position - lastPosition).magnitude / (Time.time - lastTime);
+
+                if (velocity < minVelocityInteractivePoint)
+                    Press = handContent.Value.Click;
+
+                active = true;
             }
         }
 
+        Press = Press && active;
+
+        lastTime = Time.time;
         background.enabled = active;
         background.sprite = active && Press ? pressSprite : defaultSprite;
     }
