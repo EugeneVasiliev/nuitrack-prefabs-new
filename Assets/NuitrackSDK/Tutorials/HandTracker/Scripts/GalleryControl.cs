@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+using System.Collections;
+
 public class GalleryControl : MonoBehaviour
 {
     enum ViewMode { Preview, View };
@@ -37,22 +39,31 @@ public class GalleryControl : MonoBehaviour
     [Header("View")]
     [SerializeField] RectTransform viewRect;
 
-    Vector2 defaultPosition;
+    Vector2 viewRectAnchor;
+    Vector2 startRectSize;
+    Vector2 startAnchorPosition;
+    Quaternion startRotation;
+    Vector2 startScale;
 
     [Range(0.1f, 16f)]
     [SerializeField] float animationSpeed = 2;
+    [SerializeField] AnimationCurve animationCurve;
 
     ImageItem selectedItem = null;
 
     bool animated = false;
     float t = 0;
- 
-    int currentPage = 0;
 
-    void Start()
+    int currentPage = 0;
+    float startScroll = 0;
+    float scrollT = 0;
+
+    IEnumerator Start()
     {
-        pageSize = new Vector2(Screen.width, Screen.height);
-        defaultSize = new Vector2(Screen.width / colsNumber, Screen.height / rowsNumber);
+        yield return null;
+
+        pageSize = scrollRect.viewport.rect.size;
+        defaultSize = new Vector2(pageSize.x / colsNumber, pageSize.y / rowsNumber);
 
         Vector2 halfAdd = new Vector2(defaultSize.x / 2, -defaultSize.y / 2);
 
@@ -70,24 +81,22 @@ public class GalleryControl : MonoBehaviour
                 GameObject currentItem = Instantiate(imageItemPrefab);
                 currentItem.transform.SetParent(content.transform, false);
 
-                RectTransform currentRect = currentItem.GetComponent<RectTransform>();
-                currentRect.sizeDelta = defaultSize;
+                ImageItem currentImageItem = currentItem.GetComponent<ImageItem>();
+                currentImageItem.Rect.sizeDelta = defaultSize;
 
                 float X = pageSize.x * p + defaultSize.x * (i % colsNumber);
                 float Y = defaultSize.y * (i / colsNumber);
 
-                currentRect.anchoredPosition = new Vector2(X, -Y) + halfAdd;
+                currentImageItem.Rect.anchoredPosition = new Vector2(X, -Y) + halfAdd;
 
-                Image currentImage = currentItem.GetComponent<Image>();
-                currentImage.sprite = spriteCollection[imageIndex];
+                currentImageItem.image.sprite = spriteCollection[imageIndex];
                 imageIndex++;
 
-                ImageItem currentImageItem = currentItem.GetComponent<ImageItem>();
-                currentImageItem.OnClick += CurrentImageItem_OnClick;
+                currentImageItem.onClick.AddListener(delegate { CurrentImageItem_OnClick(currentImageItem); });
             }
         }
 
-        content.sizeDelta = new Vector2(Screen.width * numberOfPages, Screen.height);
+        content.sizeDelta = new Vector2(pageSize.x * numberOfPages, pageSize.y);
 
         if (numberOfPages > 1)
             scrollStep = 1f / (numberOfPages - 1);
@@ -102,17 +111,20 @@ public class GalleryControl : MonoBehaviour
 
     private void CurrentImageItem_OnClick(ImageItem currentItem)
     {
-        if (currentViewMode == ViewMode.Preview)
+        if (currentViewMode == ViewMode.Preview && !animated)
         {
             t = 0;
             currentViewMode = ViewMode.View;
             selectedItem = currentItem;
 
             canvasGroup.interactable = false;
-            selectedItem.interactable = false;
-
             selectedItem.transform.SetParent(viewRect, true);
-            defaultPosition = selectedItem.transform.localPosition;
+
+            startAnchorPosition = selectedItem.Rect.anchoredPosition;
+            startRectSize = selectedItem.Rect.sizeDelta;
+            viewRectAnchor = startAnchorPosition;
+
+            selectedItem.EnterViewMode();
         }
     }
 
@@ -125,11 +137,13 @@ public class GalleryControl : MonoBehaviour
                 if (t < 1)
                 {
                     t += Time.deltaTime * animationSpeed;
+                    float shift = animationCurve.Evaluate(t);
 
-                    canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, 0, t);
+                    canvasGroup.alpha = Mathf.Lerp(1, 0, shift);
 
-                    selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(selectedItem.image.rectTransform.sizeDelta, pageSize, t);
-                    selectedItem.transform.localPosition = Vector2.Lerp(selectedItem.transform.localPosition, Vector2.zero, t);
+                    selectedItem.Rect.sizeDelta = Vector2.Lerp(startRectSize, pageSize, shift);
+                    Vector2 pageAnchorPosition = new Vector2(pageSize.x / 2, -pageSize.y / 2);
+                    selectedItem.Rect.anchoredPosition = Vector2.Lerp(startAnchorPosition, pageAnchorPosition, shift);
                 }
 
                 break;
@@ -138,30 +152,39 @@ public class GalleryControl : MonoBehaviour
 
                 if (animated)
                 {
-                    if (t > 0)
+                    if (t < 1)
                     {
-                        t -= Time.deltaTime * animationSpeed;
+                        t += Time.deltaTime * animationSpeed;
+                        float shift = animationCurve.Evaluate(t);
 
-                        canvasGroup.alpha = Mathf.Lerp(1, canvasGroup.alpha, t);
+                        canvasGroup.alpha = Mathf.Lerp(0, 1, shift);
 
-                        selectedItem.image.rectTransform.sizeDelta = Vector2.Lerp(defaultSize, selectedItem.image.rectTransform.sizeDelta, t);
+                        selectedItem.Rect.sizeDelta = Vector2.Lerp(startRectSize, defaultSize, shift);
 
-                        selectedItem.transform.localPosition = Vector2.Lerp(defaultPosition, selectedItem.transform.localPosition, t);
-                        selectedItem.transform.localRotation = Quaternion.Lerp(Quaternion.identity, selectedItem.transform.localRotation, t);
-                        selectedItem.transform.localScale = Vector3.Lerp(Vector3.one, selectedItem.transform.localScale, t);
+                        selectedItem.Rect.anchoredPosition = Vector2.Lerp(startAnchorPosition, viewRectAnchor, shift);
+                        selectedItem.Rect.localRotation = Quaternion.Lerp(startRotation, Quaternion.identity, shift);
+                        selectedItem.Rect.localScale = Vector3.Lerp(startScale, Vector3.one, shift);
                     }
                     else
                     {
                         selectedItem.transform.SetParent(content, true);
-                        selectedItem.interactable = true;
+                        selectedItem.ExitViewMode();
+
                         canvasGroup.interactable = true;
                         selectedItem = null;
                         animated = false;
                     }
                 }
                 else
-                    scrollRect.horizontalScrollbar.value = Mathf.Lerp(scrollRect.horizontalScrollbar.value, scrollStep * currentPage, Time.deltaTime * scrollSpeed);
-
+                {
+                    if (scrollT < 1)
+                    {
+                        scrollT += Time.deltaTime * scrollSpeed;
+                        scrollRect.horizontalScrollbar.value = Mathf.Lerp(startScroll, scrollStep * currentPage, animationCurve.Evaluate(scrollT));
+                    }
+                    else
+                        scrollRect.horizontalScrollbar.interactable = true;
+                }
                 break;
         }
     }
@@ -172,11 +195,19 @@ public class GalleryControl : MonoBehaviour
         {
             case ViewMode.Preview:
 
+                currentPage = Mathf.RoundToInt(scrollRect.horizontalScrollbar.value * (1 / scrollStep));
+
                 if (gesture.Type == nuitrack.GestureType.GestureSwipeLeft)
-                    currentPage = Mathf.Clamp(++currentPage, 0, numberOfPages);
+                {
+                    currentPage = Mathf.Clamp(++currentPage, 0, numberOfPages - 1);
+                    StartScrollAnimation();
+                }
 
                 if (gesture.Type == nuitrack.GestureType.GestureSwipeRight)
-                    currentPage = Mathf.Clamp(--currentPage, 0, numberOfPages);
+                {
+                    currentPage = Mathf.Clamp(--currentPage, 0, numberOfPages - 1);
+                    StartScrollAnimation();
+                }
 
                 break;
 
@@ -186,8 +217,22 @@ public class GalleryControl : MonoBehaviour
                 {
                     currentViewMode = ViewMode.Preview;
                     animated = true;
+                    t = 0;
+
+                    startRectSize = selectedItem.Rect.sizeDelta;
+
+                    startAnchorPosition = selectedItem.Rect.anchoredPosition;
+                    startRotation = selectedItem.Rect.localRotation;
+                    startScale = selectedItem.Rect.localScale;
                 }
                 break;
         }
+    }
+
+    void StartScrollAnimation()
+    {
+        startScroll = scrollRect.horizontalScrollbar.value;
+        scrollT = 0;
+        scrollRect.horizontalScrollbar.interactable = false;
     }
 }
