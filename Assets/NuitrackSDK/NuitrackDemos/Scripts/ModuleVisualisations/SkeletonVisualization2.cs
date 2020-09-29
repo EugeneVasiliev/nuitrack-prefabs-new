@@ -6,7 +6,6 @@ using System;
 public class SkeletonVisualization2 : MonoBehaviour
 {
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
-    NuitrackModules nuitrackModules;
 
     nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
     {
@@ -62,12 +61,11 @@ public class SkeletonVisualization2 : MonoBehaviour
     void Start()
     {
         issuesProcessor = IssuesProcessor.Instance;
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
     }
 
     void Update()
     {
-        ProcessSkeletons(nuitrackModules.SkeletonData);
+        ProcessSkeletons(NuitrackManager.SkeletonData);
     }
 
     void HideAllSkeletons()

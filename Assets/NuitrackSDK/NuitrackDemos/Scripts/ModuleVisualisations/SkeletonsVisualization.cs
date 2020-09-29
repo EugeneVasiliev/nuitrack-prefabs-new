@@ -20,7 +20,7 @@ public class SkeletonsVisualization : MonoBehaviour
 
     void Update()
     {
-        ProcessSkeletons(nuitrackModules.SkeletonData);
+        ProcessSkeletons(NuitrackManager.SkeletonData);
     }
 
     void HideAllSkeletons()

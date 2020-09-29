@@ -87,9 +87,10 @@ public class NuitrackManager : MonoBehaviour
     bool prevUser = false;
 
     bool pauseState = false;
-    bool firstTime = false; //in order to prevent double NuitrackInit() calls on startup (in Awake and in OnApplicationPause)
 
     [HideInInspector] public bool nuitrackInitialized = false;
+
+    [HideInInspector] public System.Exception initException;
 
     void ThreadedWork()
     {
@@ -170,7 +171,7 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
-    void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
+    public void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
         //Debug.Log ("" + skel + hand + depth + gest + user);
         if (skeletonTracker == null)
@@ -236,50 +237,58 @@ public class NuitrackManager : MonoBehaviour
 
     void NuitrackInit()
     {
-        if (nuitrackInitialized)
-            return;
-        //Debug.Log("Application.runInBackground " + Application.runInBackground);
-        //CloseUserGen(); //just in case
-        if (wifiConnect == WifiConnect.VicoVR)
+        try
         {
-            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+            if (nuitrackInitialized)
+                return;
+            //Debug.Log("Application.runInBackground " + Application.runInBackground);
+            //CloseUserGen(); //just in case
+            if (wifiConnect == WifiConnect.VicoVR)
+            {
+                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.1.1");
+            }
+            else if (wifiConnect == WifiConnect.TVico)
+            {
+                nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
+                nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
+            }
+            else
+                nuitrack.Nuitrack.Init();
+
+            Debug.Log("Init OK");
+
+            depthSensor = nuitrack.DepthSensor.Create();
+
+            colorSensor = nuitrack.ColorSensor.Create();
+
+            userTracker = nuitrack.UserTracker.Create();
+
+            skeletonTracker = nuitrack.SkeletonTracker.Create();
+
+            gestureRecognizer = nuitrack.GestureRecognizer.Create();
+
+            handTracker = nuitrack.HandTracker.Create();
+
+            nuitrack.Nuitrack.Run();
+            Debug.Log("Run OK");
+
+            ChangeModulsState(
+                skeletonTrackerModuleOn,
+                handsTrackerModuleOn,
+                depthModuleOn,
+                colorModuleOn,
+                gesturesRecognizerModuleOn,
+                userTrackerModuleOn
+            );
+
+            nuitrackInitialized = true;
         }
-        else if (wifiConnect == WifiConnect.TVico)
+        catch (System.Exception ex)
         {
-            nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
-            nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
+            initException = ex;
+            Debug.LogError(ex.ToString());
         }
-        else
-            nuitrack.Nuitrack.Init();
-
-        Debug.Log("Init OK");
-
-        depthSensor = nuitrack.DepthSensor.Create();
-
-        colorSensor = nuitrack.ColorSensor.Create();
-
-        userTracker = nuitrack.UserTracker.Create();
-
-        skeletonTracker = nuitrack.SkeletonTracker.Create();
-
-        gestureRecognizer = nuitrack.GestureRecognizer.Create();
-
-        handTracker = nuitrack.HandTracker.Create();
-
-        nuitrack.Nuitrack.Run();
-        Debug.Log("Run OK");
-
-        ChangeModulsState(
-            skeletonTrackerModuleOn,
-            handsTrackerModuleOn,
-            depthModuleOn,
-            colorModuleOn,
-            gesturesRecognizerModuleOn,
-            userTrackerModuleOn
-        );
-
-        nuitrackInitialized = true;
     }
 
     void HandleOnDepthSensorUpdateEvent(nuitrack.DepthFrame frame)
@@ -361,10 +370,7 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            if (firstTime)
-                StartCoroutine(RestartNuitrack());
-
-            firstTime = true;
+            StartCoroutine(RestartNuitrack());
         }
     }
 
@@ -433,7 +439,14 @@ public class NuitrackManager : MonoBehaviour
 #endif
         if (!pauseState)
         {
-            nuitrack.Nuitrack.Update();
+            try
+            {
+                nuitrack.Nuitrack.Update();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError(ex.ToString());
+            }
         }
     }
 
@@ -476,29 +489,36 @@ public class NuitrackManager : MonoBehaviour
 
     public void CloseUserGen()
     {
-        if (depthSensor != null) depthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
-        if (colorSensor != null) colorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
-        if (userTracker != null) userTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
-        if (skeletonTracker != null) skeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
-        if (gestureRecognizer != null) gestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
-        if (handTracker != null) handTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
+        try
+        {
+            if (depthSensor != null) depthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
+            if (colorSensor != null) colorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
+            if (userTracker != null) userTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
+            if (skeletonTracker != null) skeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
+            if (gestureRecognizer != null) gestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
+            if (handTracker != null) handTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
 
-        depthFrame = null;
-        colorFrame = null;
-        userFrame = null;
-        skeletonData = null;
-        handTrackerData = null;
+            depthFrame = null;
+            colorFrame = null;
+            userFrame = null;
+            skeletonData = null;
+            handTrackerData = null;
 
-        depthSensor = null;
-        colorSensor = null;
-        userTracker = null;
-        skeletonTracker = null;
-        gestureRecognizer = null;
-        handTracker = null;
+            depthSensor = null;
+            colorSensor = null;
+            userTracker = null;
+            skeletonTracker = null;
+            gestureRecognizer = null;
+            handTracker = null;
 
-        nuitrack.Nuitrack.Release();
-        Debug.Log("CloseUserGen");
-        nuitrackInitialized = false;
+            nuitrack.Nuitrack.Release();
+            Debug.Log("CloseUserGen");
+            nuitrackInitialized = false;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError(ex.ToString());
+        }
     }
 
     void OnDestroy()

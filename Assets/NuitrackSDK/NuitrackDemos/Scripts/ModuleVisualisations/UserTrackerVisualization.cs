@@ -7,7 +7,6 @@ using nuitrack.issues;
 public class UserTrackerVisualization : MonoBehaviour
 {
     #region Fields
-    NuitrackModules nuitrackModules;
     IssuesProcessor issuesProcessor;
 
     ulong lastFrameTimestamp = ulong.MaxValue;
@@ -71,9 +70,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
     IEnumerator WaitSetShaderProperties(Color newZeroColor, bool showBorders)
     {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-
-        while (!nuitrackModules.nuitrackInitialized)
+        while (!NuitrackManager.Instance.nuitrackInitialized)
         {
             yield return null;
         }
@@ -89,9 +86,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
     IEnumerator WaitInit()
     {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-
-        while (!nuitrackModules.nuitrackInitialized)
+        while (!NuitrackManager.Instance.nuitrackInitialized)
         {
             yield return null;
         }
@@ -118,8 +113,7 @@ public class UserTrackerVisualization : MonoBehaviour
         }
 
         issuesProcessor = IssuesProcessor.Instance;
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-        nuitrack.OutputMode mode = nuitrackModules.DepthSensor.GetOutputMode();
+        nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
         frameStep = mode.XRes / hRes;
         if (frameStep <= 0) frameStep = 1; // frameStep should be greater then 0
         hRes = mode.XRes / frameStep;
@@ -284,11 +278,11 @@ public class UserTrackerVisualization : MonoBehaviour
 
     void Update()
     {
-        if ((nuitrackModules.DepthFrame != null) && active)
+        if ((NuitrackManager.DepthFrame != null) && active)
         {
-            nuitrack.DepthFrame depthFrame = nuitrackModules.DepthFrame;
-            nuitrack.ColorFrame colorFrame = nuitrackModules.ColorFrame;
-            nuitrack.UserFrame userFrame = nuitrackModules.UserFrame;
+            nuitrack.DepthFrame depthFrame = NuitrackManager.DepthFrame;
+            nuitrack.ColorFrame colorFrame = NuitrackManager.ColorFrame;
+            nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
 
             bool haveNewFrame = (lastFrameTimestamp != depthFrame.Timestamp);
             if (haveNewFrame)
