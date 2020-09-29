@@ -6,6 +6,8 @@ public class AnimatorAvatar : MonoBehaviour
 {
     [SerializeField] Animator animator;
     [SerializeField] List<SimpleJoint> joints = new List<SimpleJoint>();
+    [SerializeField]
+    nuitrack.JointType rootJoint = nuitrack.JointType.LeftCollar;
 
     void Start ()
     {
@@ -24,7 +26,7 @@ public class AnimatorAvatar : MonoBehaviour
         if (CurrentUserTracker.CurrentSkeleton != null)
         {
             nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-            transform.position = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(nuitrack.JointType.Torso).ToVector3());
+            transform.position = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(rootJoint).ToVector3());
 
             foreach (SimpleJoint item in joints)
             {
