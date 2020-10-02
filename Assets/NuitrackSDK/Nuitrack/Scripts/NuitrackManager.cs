@@ -437,7 +437,7 @@ public class NuitrackManager : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (NuitrackLoader.initState == NuitrackInitState.INIT_OK)
 #endif
-        if (!pauseState)
+        if (!pauseState && (asyncInit && _threadRunning))
         {
             try
             {
