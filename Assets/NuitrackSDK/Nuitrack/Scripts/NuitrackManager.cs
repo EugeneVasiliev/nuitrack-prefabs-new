@@ -283,6 +283,8 @@ public class NuitrackManager : MonoBehaviour
             );
 
             nuitrackInitialized = true;
+
+            StopThread();
         }
         catch (System.Exception ex)
         {
@@ -437,7 +439,7 @@ public class NuitrackManager : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (NuitrackLoader.initState == NuitrackInitState.INIT_OK)
 #endif
-        if (!pauseState && (asyncInit && _threadRunning))
+        if (!pauseState || (asyncInit && _threadRunning))
         {
             try
             {
