@@ -8,7 +8,7 @@ build_unity_package:
   tags:
     - windows_x64
   script:
-    - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets/NuitrackSDK, Assets/Plugins" %cd%/NuitrackSDK.unitypackage'
+    - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets/NuitrackSDK" "Assets/Plugins" %cd%/NuitrackSDK.unitypackage'
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
