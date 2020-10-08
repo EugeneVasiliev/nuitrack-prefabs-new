@@ -128,22 +128,37 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
+        StartCoroutine(AllStart());
+
+    }
+
+    IEnumerator AllStart()
+    {
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 
-        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
             Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+            yield return null;
+        }
 
-        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+        {
             Permission.RequestUserPermission(Permission.ExternalStorageRead);
+            yield return null;
+        }
 
-        if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+        while (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+        {
             Permission.RequestUserPermission(Permission.CoarseLocation);
+            yield return null;
+        }
 #endif
 
 #if UNITY_ANDROID && !UNITY_EDITOR
         asyncInit = false;
+        Debug.LogError("Async Init not work on Android");
 #endif
-
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         Application.targetFrameRate = 60;
@@ -173,6 +188,8 @@ public class NuitrackManager : MonoBehaviour
 #endif
             NuitrackInit();
         }
+
+        yield return null;
     }
 
     public void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
