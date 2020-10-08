@@ -102,8 +102,9 @@ public class NuitrackManager : MonoBehaviour
             initState = NuitrackLoader.InitNuitrackLibraries();
 
             NuitrackInit();
+
+            print("_threadRunning");
         }
-        _threadRunning = false;
     }
 
     public static NuitrackManager Instance
@@ -314,8 +315,7 @@ public class NuitrackManager : MonoBehaviour
             );
 
             nuitrackInitialized = true;
-
-            StopThread();
+            _threadRunning = false;
         }
         catch (System.Exception ex)
         {
@@ -569,7 +569,6 @@ public class NuitrackManager : MonoBehaviour
         if (_threadRunning)
         {
             _threadRunning = false;
-
             _thread.Join();
         }
     }
