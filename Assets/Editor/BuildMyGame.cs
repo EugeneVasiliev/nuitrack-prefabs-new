@@ -6,7 +6,7 @@ public class BuildMyGame
 {
 
     //[MenuItem("MyTools/Android Build With Postprocess")]
-    public static void BuildAndroid()
+    public static void BuildAab()
     {
         SetProject();
 
@@ -16,7 +16,7 @@ public class BuildMyGame
         BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.Android, BuildOptions.None);
     }
 
-    public static void BuildAndroidApk()
+    public static void BuildApk()
     {
         SetProject();
 
