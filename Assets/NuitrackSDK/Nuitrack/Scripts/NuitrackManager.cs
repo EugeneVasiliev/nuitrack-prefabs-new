@@ -35,6 +35,7 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
+    [Tooltip("Not work on Android")]
     [SerializeField] bool asyncInit = false;
 
     public static bool sensorConnected = false;
@@ -137,7 +138,10 @@ public class NuitrackManager : MonoBehaviour
 
         if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
             Permission.RequestUserPermission(Permission.CoarseLocation);
+#endif
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+        asyncInit = false;
 #endif
 
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
