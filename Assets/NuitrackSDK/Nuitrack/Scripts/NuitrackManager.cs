@@ -128,37 +128,15 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
-        StartCoroutine(AllStart());
-
+#if UNITY_ANDROID && !UNITY_EDITOR
+        StartCoroutine(AndroidStart());
+#else
+        FirstStart();
+#endif
     }
 
-    IEnumerator AllStart()
+    void FirstStart()
     {
-#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
-
-        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
-        {
-            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
-            yield return null;
-        }
-
-        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
-        {
-            Permission.RequestUserPermission(Permission.ExternalStorageRead);
-            yield return null;
-        }
-
-        while (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
-        {
-            Permission.RequestUserPermission(Permission.CoarseLocation);
-            yield return null;
-        }
-#endif
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-        asyncInit = false;
-        Debug.LogError("Async Init not work on Android");
-#endif
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         Application.targetFrameRate = 60;
@@ -188,6 +166,38 @@ public class NuitrackManager : MonoBehaviour
 #endif
             NuitrackInit();
         }
+    }
+
+    IEnumerator AndroidStart()
+    {
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+            yield return null;
+        }
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+            yield return null;
+        }
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+        {
+            Permission.RequestUserPermission(Permission.CoarseLocation);
+            yield return null;
+        }
+#endif
+
+        if (asyncInit)
+        {
+            asyncInit = false;
+            Debug.LogError("Async Init not work on Android");
+        }
+
+        FirstStart();
 
         yield return null;
     }
