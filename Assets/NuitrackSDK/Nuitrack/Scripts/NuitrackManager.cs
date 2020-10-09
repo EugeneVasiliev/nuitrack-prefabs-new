@@ -35,7 +35,7 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
-    [Tooltip("Not work on Android")]
+    [Tooltip("Is not supported for Android")]
     [SerializeField] bool asyncInit = false;
 
     public static bool sensorConnected = false;
@@ -102,8 +102,6 @@ public class NuitrackManager : MonoBehaviour
             initState = NuitrackLoader.InitNuitrackLibraries();
 
             NuitrackInit();
-
-            print("_threadRunning");
         }
     }
 
@@ -195,7 +193,7 @@ public class NuitrackManager : MonoBehaviour
         if (asyncInit)
         {
             asyncInit = false;
-            Debug.LogError("Async Init not work on Android");
+            Debug.LogError("Async Init is not supported for Android");
         }
 
         FirstStart();
