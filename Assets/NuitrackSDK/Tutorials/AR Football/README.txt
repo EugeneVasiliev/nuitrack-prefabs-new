@@ -1,1 +1,6 @@
-http://download.3divi.com/Nuitrack/doc/UnityARCore_page.html
+Window => Package Manager
+
+* Multiplayer HLAPI (for Multiplayer)
+* AR Foundation (for AR)
+* ARCore XR Plugin (for Android)
+* ARKit XR Plugin (for IOS)
