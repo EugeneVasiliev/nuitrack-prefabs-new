@@ -46,57 +46,54 @@ public class FootballARController : MonoBehaviour {
         searchingForPlaneUI.SetActive(showSearchingUI);
 
         // If the player has not touched the screen, we are done with this update.
-        Touch touch;
-        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
-        {
+        if (!TryGetTouchPosition(out Vector2 touchPosition))
             return;
-        }
 
         environment = FindObjectOfType<Environment>();
 
-        if (raycastManager.Raycast(touchPosition, hits, TrackableType.PlaneWithinPolygon))
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hitRay;
+
+        if (raycastManager.Raycast(ray, hits, TrackableType.PlaneWithinPolygon) && environment)
         {
-            // Use hit pose and camera pose to check if hittest is from the
-            // back of the plane, if it is, no need to create the anchor.
-            if ((hits[0].hitType == TrackableType.Planes) &&
-                 Vector3.Dot(mainCamera.transform.position - hits[0].pose.position,
-                       hits[0].pose.rotation * Vector3.up) < 0)
-            {
-                Debug.Log("Hit at back of the current DetectedPlane");
-            }
-            else
+            if (Physics.Raycast(ray, out hitRay, 100))
             {
                 // If the beam hits the correct (not the opposite) part of the surface, then we immediately check if there is a gate along the way. If the surface is "empty", then we put the gate on it. If on the way there are gates, then "kick the ball"
-                if (KickBall() == false && environment)
+                print(hits[0].distance - hitRay.distance);
+                if (hits[0].distance == hitRay.distance)
                 {
                     environment.transform.position = hits[0].pose.position;
                     environment.transform.rotation = hits[0].pose.rotation;
                     environment.transform.Rotate(0, modelRotation, 0, Space.Self);
                 }
+                else
+                {
+                    // If there are no surfaces along the path of the beam, but there is a gate, then "kick the ball"
+                    KickBall(hitRay.point);
+                }
             }
-        }
-        else
-        {
-            // If there are no surfaces along the path of the beam, but there is a gate, then "kick the ball"
-            KickBall();
         }
     }
     // If you can kick the ball, then kick it and return true, if not, then return false
-    bool KickBall()
+    void KickBall(Vector3 targetPos)
     {
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hitRay;
+        //Sending a "kick" message to the server
+        mainCamera.transform.parent = environment.transform; //We temporarily make the camera a child object for our "environment". This is necessary to get its local coordinates relative to the game object "Environment" (GameObject environment)
+        environment.aim.position = targetPos;
+        FindObjectOfType<PlayerController>().Kick(mainCamera.transform.localPosition, environment.aim.transform.localPosition);
 
-        if (Physics.Raycast(ray, out hitRay, 100) && environment)
+        mainCamera.transform.parent = aRCoreDevice.transform; //return the camera back
+    }
+
+    bool TryGetTouchPosition(out Vector2 touchPosition)
+    {
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
-            //Sending a "kick" message to the server
-            mainCamera.transform.parent = environment.transform; //We temporarily make the camera a child object for our "environment". This is necessary to get its local coordinates relative to the game object "Environment" (GameObject environment)
-            environment.aim.position = hitRay.point;
-            FindObjectOfType<PlayerController>().Kick(mainCamera.transform.localPosition, environment.aim.transform.localPosition);
-
-            mainCamera.transform.parent = aRCoreDevice.transform; //return the camera back
+            touchPosition = Input.GetTouch(0).position;
             return true;
         }
+
+        touchPosition = default;
         return false;
     }
 }
