@@ -54,13 +54,12 @@ public class FootballARController : MonoBehaviour {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitRay;
 
-        if (raycastManager.Raycast(ray, hits, TrackableType.PlaneWithinPolygon) && environment)
+        if (Physics.Raycast(ray, out hitRay, 100))
         {
-            if (Physics.Raycast(ray, out hitRay, 100))
+            if (raycastManager.Raycast(ray, hits, TrackableType.PlaneWithinPolygon) && environment)
             {
                 // If the beam hits the correct (not the opposite) part of the surface, then we immediately check if there is a gate along the way. If the surface is "empty", then we put the gate on it. If on the way there are gates, then "kick the ball"
-                print(hits[0].distance - hitRay.distance);
-                if (hits[0].distance == hitRay.distance)
+                if (hitRay.transform.name.Contains("ARPlane"))
                 {
                     environment.transform.position = hits[0].pose.position;
                     environment.transform.rotation = hits[0].pose.rotation;
@@ -71,6 +70,10 @@ public class FootballARController : MonoBehaviour {
                     // If there are no surfaces along the path of the beam, but there is a gate, then "kick the ball"
                     KickBall(hitRay.point);
                 }
+            }
+            else
+            {
+                KickBall(hitRay.point);
             }
         }
     }

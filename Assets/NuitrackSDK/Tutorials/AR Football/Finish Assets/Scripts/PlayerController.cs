@@ -10,6 +10,7 @@ public class PlayerController : NetworkBehaviour
     [Command] //Called on the server, requires the Cmd prefix
     void CmdKick(Vector3 startPos, Vector3 endPos)
     {
+        print("bonk");
         GameObject ball = (GameObject)Instantiate(ballPrefab);
         ball.GetComponent<BallController>().Setup(startPos, endPos);
         NetworkServer.Spawn(ball);
