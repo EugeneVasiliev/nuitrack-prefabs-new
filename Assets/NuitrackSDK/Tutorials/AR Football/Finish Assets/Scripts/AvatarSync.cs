@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if ENABLE_AR_TUTORIAL
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -51,3 +52,4 @@ public class AvatarSync : NetworkBehaviour
         public Vector3 avatarPos;  //avatar position
     }
 }
+#endif

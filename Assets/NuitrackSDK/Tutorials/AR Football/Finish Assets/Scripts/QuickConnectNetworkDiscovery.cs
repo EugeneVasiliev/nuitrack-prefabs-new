@@ -1,4 +1,5 @@
-﻿using UnityEngine.Networking;
+﻿#if ENABLE_AR_TUTORIAL
+using UnityEngine.Networking;
 
 public class QuickConnectNetworkDiscovery : NetworkDiscovery
 {
@@ -14,4 +15,4 @@ public class QuickConnectNetworkDiscovery : NetworkDiscovery
         NetworkManager.singleton.StartClient(); // Connects
     }
 }
-
+#endif

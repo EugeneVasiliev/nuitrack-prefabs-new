@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if ENABLE_AR_TUTORIAL
+using UnityEngine;
 
 public class BallController : MonoBehaviour
 {
@@ -56,3 +57,4 @@ public class BallController : MonoBehaviour
         }
     }
 }
+#endif

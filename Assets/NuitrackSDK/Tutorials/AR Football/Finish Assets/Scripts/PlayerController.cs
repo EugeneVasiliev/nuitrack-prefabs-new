@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if ENABLE_AR_TUTORIAL
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerController : NetworkBehaviour
@@ -21,3 +22,4 @@ public class PlayerController : NetworkBehaviour
         CmdKick(startPos, endPos);
     }
 }
+#endif

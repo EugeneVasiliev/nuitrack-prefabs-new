@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if ENABLE_AR_TUTORIAL
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class Environment : MonoBehaviour {
@@ -12,3 +13,4 @@ public class Environment : MonoBehaviour {
             transform.localScale = clientSize;
     }
 }
+#endif

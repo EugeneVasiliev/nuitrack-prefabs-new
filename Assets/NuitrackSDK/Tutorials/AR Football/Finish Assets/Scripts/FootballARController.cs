@@ -18,15 +18,13 @@ public class FootballARController : MonoBehaviour {
     // The rotation in degrees need to apply to model when model is placed.
     private const float modelRotation = 180.0f; // rotate so that the environment is facing the camera
 
-    // A list to hold all planes ARCore is tracking in the current frame. 
-    // This object is used across the application to avoid per-frame allocations.
-
-    [SerializeField] Transform aRCoreDevice; // must be the parent of the camera
-
-    ARRaycastManager raycastManager;
-    ARPlaneManager planeManager;
-    Vector2 touchPosition;
+    // A list to hold all planes AR is tracking in the current frame. 
     TrackableCollection<ARPlane> allPlanes;
+
+    [SerializeField] ARRaycastManager raycastManager;
+    [SerializeField] ARPlaneManager planeManager;
+
+    [SerializeField] Transform aRDevice; // must be the parent of the camera
 
     static List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -47,8 +45,11 @@ public class FootballARController : MonoBehaviour {
         searchingForPlaneUI.SetActive(showSearchingUI);
 
         // If the player has not touched the screen, we are done with this update.
-        if (!TryGetTouchPosition(out Vector2 touchPosition))
+        Touch touch;
+        if (Input.touchCount < 1 || (touch = Input.GetTouch(0)).phase != TouchPhase.Began)
+        {
             return;
+        }
 
         environment = FindObjectOfType<Environment>();
 
@@ -86,19 +87,7 @@ public class FootballARController : MonoBehaviour {
         environment.aim.position = targetPos;
         FindObjectOfType<PlayerController>().Kick(mainCamera.transform.localPosition, environment.aim.transform.localPosition);
 
-        mainCamera.transform.parent = aRCoreDevice.transform; //return the camera back
-    }
-
-    bool TryGetTouchPosition(out Vector2 touchPosition)
-    {
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-        {
-            touchPosition = Input.GetTouch(0).position;
-            return true;
-        }
-
-        touchPosition = default;
-        return false;
+        mainCamera.transform.parent = aRDevice.transform; //return the camera back
     }
 }
 #endif

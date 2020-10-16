@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if ENABLE_AR_TUTORIAL
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
@@ -61,3 +62,4 @@ public class NetworkController : MonoBehaviour
         }
     }
 }
+#endif
