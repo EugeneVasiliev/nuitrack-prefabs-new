@@ -69,12 +69,12 @@ public class HumanoidRecoder : IRecordable
 
             foreach (KeyValuePair<int, AnimationCurve> data in muscleCurves)
             {
-                clip.SetCurve(null, typeof(Animator), HumanTrait.MuscleName[data.Key], data.Value);
+                clip.SetCurve("", typeof(Animator), HumanTrait.MuscleName[data.Key], data.Value);
             }
 
             foreach (KeyValuePair<string, AnimationCurve> data in rootCurves)
             {
-                clip.SetCurve(null, typeof(Animator), data.Key, data.Value);
+                clip.SetCurve("", typeof(Animator), data.Key, data.Value);
             }
 
             return clip;

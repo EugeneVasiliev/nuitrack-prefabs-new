@@ -6,7 +6,8 @@ public class RiggedAvatar : MonoBehaviour
     [Header("Rigged model")]
     [SerializeField]
     ModelJoint[] modelJoints;
-
+    [SerializeField]
+    nuitrack.JointType rootJoint = nuitrack.JointType.LeftCollar;
     /// <summary> Model bones </summary>
     Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
 
@@ -26,9 +27,9 @@ public class RiggedAvatar : MonoBehaviour
 
     void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
-        //Calculate the model position: take the Torso position and invert movement along the Z axis
-        Vector3 torsoPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(nuitrack.JointType.Torso).ToVector3());
-        transform.position = torsoPos;
+        //Calculate the model position: take the root position and invert movement along the Z axis
+        Vector3 rootPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(rootJoint).ToVector3());
+        transform.position = rootPos;
 
         foreach (var riggedJoint in jointsRigged)
         {

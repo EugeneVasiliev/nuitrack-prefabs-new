@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 public class UserTrackerVisMesh : MonoBehaviour
 {
-    NuitrackModules nuitrackModules;
-
     ulong lastFrameTimestamp = ulong.MaxValue;
 
     //  List<int[]> triangles;
@@ -46,9 +44,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     IEnumerator WaitInit()
     {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-
-        while (!nuitrackModules.nuitrackInitialized)
+        while (!NuitrackManager.Instance.nuitrackInitialized)
         {
             yield return null;
         }
@@ -58,9 +54,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     private void Initialize()
     {
-        nuitrackModules = FindObjectOfType<NuitrackModules>();
-        nuitrack.OutputMode mode = nuitrackModules.DepthSensor.GetOutputMode();
-        //sensor = nuitrackModules.DepthSensor;
+        nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
         int xRes = mode.XRes;
         int yRes = mode.YRes;
 
@@ -171,14 +165,14 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     void Update()
     {
-        if (!nuitrackModules.nuitrackInitialized)
+        if (!NuitrackManager.Instance.nuitrackInitialized)
             return;
 
-        if ((nuitrackModules.DepthFrame != null) && active)
+        if ((NuitrackManager.DepthFrame != null) && active)
         {
-            nuitrack.DepthFrame depthFrame = nuitrackModules.DepthFrame;
-            nuitrack.ColorFrame colorFrame = nuitrackModules.ColorFrame;
-            nuitrack.UserFrame userFrame = nuitrackModules.UserFrame;
+            nuitrack.DepthFrame depthFrame = NuitrackManager.DepthFrame;
+            nuitrack.ColorFrame colorFrame = NuitrackManager.ColorFrame;
+            nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
 
             bool haveNewFrame = (lastFrameTimestamp != depthFrame.Timestamp);
             if (haveNewFrame)
