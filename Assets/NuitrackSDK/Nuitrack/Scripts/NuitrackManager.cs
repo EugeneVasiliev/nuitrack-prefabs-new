@@ -160,8 +160,9 @@ public class NuitrackManager : MonoBehaviour
             {
                 initEvent.Invoke(initState);
             }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
-    if (initState == NuitrackInitState.INIT_OK)
+    if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
 #endif
             NuitrackInit();
         }
