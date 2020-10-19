@@ -189,6 +189,8 @@ public class NuitrackManager : MonoBehaviour
             Permission.RequestUserPermission(Permission.CoarseLocation);
             yield return null;
         }
+
+        yield return new WaitForEndOfFrame();
 #endif
 
         if (asyncInit)
