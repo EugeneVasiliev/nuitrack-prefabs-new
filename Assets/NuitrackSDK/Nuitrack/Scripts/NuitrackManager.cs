@@ -461,13 +461,8 @@ public class NuitrackManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Application.Quit();
-        }
-
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (NuitrackLoader.initState == NuitrackInitState.INIT_OK)
+        if (NuitrackLoader.initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
 #endif
         if (!pauseState || (asyncInit && _threadRunning))
         {
