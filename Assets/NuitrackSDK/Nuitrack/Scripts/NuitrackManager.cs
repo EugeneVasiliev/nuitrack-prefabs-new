@@ -135,6 +135,12 @@ public class NuitrackManager : MonoBehaviour
     void Awake()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
+        if (asyncInit)
+        {
+            asyncInit = false;
+            Debug.LogWarning("Async Init is not supported for Android");
+        }
+
         StartCoroutine(AndroidStart());
 #else
         FirstStart();
@@ -198,12 +204,6 @@ public class NuitrackManager : MonoBehaviour
         }
 
 #endif
-
-        if (asyncInit)
-        {
-            asyncInit = false;
-            Debug.LogError("Async Init is not supported for Android");
-        }
 
         FirstStart();
 
