@@ -125,6 +125,13 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    private bool IsNuitrackLibrariesInitialized()
+    {
+        if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+            return true;
+        return false;
+    }
+
     void Awake()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -162,7 +169,7 @@ public class NuitrackManager : MonoBehaviour
             }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-    if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+            if (IsNuitrackLibrariesInitialized())
 #endif
             NuitrackInit();
         }
@@ -190,7 +197,6 @@ public class NuitrackManager : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForEndOfFrame();
 #endif
 
         if (asyncInit)
@@ -421,6 +427,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         if (asyncInit)
         {
             if (!_threadRunning)
@@ -437,6 +447,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StopNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         ChangeModulsState(
             false,
             false,
@@ -464,7 +478,7 @@ public class NuitrackManager : MonoBehaviour
     void Update()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (NuitrackLoader.initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+        if (IsNuitrackLibrariesInitialized())
 #endif
         if (!pauseState || (asyncInit && _threadRunning))
         {
