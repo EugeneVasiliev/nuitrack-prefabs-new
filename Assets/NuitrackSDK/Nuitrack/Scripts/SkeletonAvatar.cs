@@ -124,13 +124,10 @@ public class SkeletonAvatar : MonoBehaviour
 
         if (headTransform != null)
         {
-            //if (headInNeck)
-            //    headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3()));
-            //else
 #if UNITY_IOS
 			headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3())) + basePivotOffset;
 #else
-            headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.None).ToVector3())) + basePivotOffset;
+            headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3())) + basePivotOffset;
 #endif
 
             basePivot = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3())) + basePivotOffset;
