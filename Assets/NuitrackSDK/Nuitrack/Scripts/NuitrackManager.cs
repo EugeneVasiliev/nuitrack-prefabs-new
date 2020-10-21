@@ -125,9 +125,22 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    private bool IsNuitrackLibrariesInitialized()
+    {
+        if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+            return true;
+        return false;
+    }
+
     void Awake()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
+        if (asyncInit)
+        {
+            asyncInit = false;
+            Debug.LogWarning("Async Init is not supported for Android");
+        }
+
         StartCoroutine(AndroidStart());
 #else
         FirstStart();
@@ -162,7 +175,7 @@ public class NuitrackManager : MonoBehaviour
             }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-    if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+            if (IsNuitrackLibrariesInitialized())
 #endif
             NuitrackInit();
         }
@@ -190,14 +203,8 @@ public class NuitrackManager : MonoBehaviour
             yield return null;
         }
 
-        yield return new WaitForEndOfFrame();
+        yield return null;
 #endif
-
-        if (asyncInit)
-        {
-            asyncInit = false;
-            Debug.LogError("Async Init is not supported for Android");
-        }
 
         FirstStart();
 
@@ -410,6 +417,8 @@ public class NuitrackManager : MonoBehaviour
 
     IEnumerator RestartNuitrack()
     {
+        yield return null;
+
         while (pauseState)
         {
             StartNuitrack();
@@ -421,6 +430,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         if (asyncInit)
         {
             if (!_threadRunning)
@@ -437,6 +450,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StopNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         ChangeModulsState(
             false,
             false,
@@ -464,7 +481,7 @@ public class NuitrackManager : MonoBehaviour
     void Update()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (NuitrackLoader.initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+        if (IsNuitrackLibrariesInitialized())
 #endif
         if (!pauseState || (asyncInit && _threadRunning))
         {
