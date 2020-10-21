@@ -41,7 +41,8 @@ public class TPoseCalibration : MonoBehaviour
             if (instance == null)
             {
                 instance = FindObjectOfType<TPoseCalibration>();
-                DontDestroyOnLoad(instance);
+                if(instance)
+                    DontDestroyOnLoad(instance);
             }
 
             return instance;

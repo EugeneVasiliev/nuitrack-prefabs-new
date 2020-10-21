@@ -9,12 +9,12 @@ public class PunchSpeedMeter : MonoBehaviour {
 
     float maximumPunchSpeed = 0;
 
-    private void Awake()
+    void Awake()
     {
         dummy.SetActive(false);
     }
 
-    private void OnEnable()
+    void OnEnable()
     {
         TPoseCalibration.Instance.onSuccess += OnSuccessCalibration;
     }
@@ -32,8 +32,9 @@ public class PunchSpeedMeter : MonoBehaviour {
         speedMeterText.text = maximumPunchSpeed.ToString("f2") + " m/s";
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
-        TPoseCalibration.Instance.onSuccess -= OnSuccessCalibration;
+        if(TPoseCalibration.Instance)
+            TPoseCalibration.Instance.onSuccess -= OnSuccessCalibration;
     }
 }
