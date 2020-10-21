@@ -203,6 +203,7 @@ public class NuitrackManager : MonoBehaviour
             yield return null;
         }
 
+        yield return null;
 #endif
 
         FirstStart();
@@ -416,6 +417,8 @@ public class NuitrackManager : MonoBehaviour
 
     IEnumerator RestartNuitrack()
     {
+        yield return null;
+
         while (pauseState)
         {
             StartNuitrack();
