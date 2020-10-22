@@ -31,9 +31,6 @@ public class FaceAnimManager : MonoBehaviour
 
     void OnSkeletonUpdate(SkeletonData skeletonData)
     {
-        string json = Nuitrack.GetInstancesJson();
-        faceInfo = JsonUtility.FromJson<FaceInfo>(json.Replace("\"\"", "[]"));
-
         if (faceInfo.Instances.Length == 0)
             return;
 
@@ -55,6 +52,12 @@ public class FaceAnimManager : MonoBehaviour
                 faceAnimControllers[i].gameObject.SetActive(false);
             }
         }
+    }
+
+    private void Update()
+    {
+        string json = Nuitrack.GetInstancesJson();
+        faceInfo = JsonUtility.FromJson<FaceInfo>(json.Replace("\"\"", "[]"));
     }
 
     private void OnDestroy()
