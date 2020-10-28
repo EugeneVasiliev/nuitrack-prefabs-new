@@ -48,11 +48,12 @@ public class SwitchDll : IPreprocessBuildWithReport
             SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false, false);
             SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false, true);
         }
-        else if(EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+        else if(EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android ||
+                EditorUserBuildSettings.selectedBuildTargetGroup == BuildTargetGroup.Standalone)
         {
-            Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android));
+            Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup));
 
-            if (PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) == ScriptingImplementation.IL2CPP)
+            if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.IL2CPP)
             {
                 SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true, false);
                 SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false, false);
