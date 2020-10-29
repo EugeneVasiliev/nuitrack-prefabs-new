@@ -35,6 +35,7 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
+    [Tooltip("Is not supported for Android")]
     [SerializeField] bool asyncInit = false;
 
     public static bool sensorConnected = false;
@@ -102,7 +103,6 @@ public class NuitrackManager : MonoBehaviour
 
             NuitrackInit();
         }
-        _threadRunning = false;
     }
 
     public static NuitrackManager Instance
@@ -125,21 +125,30 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    private bool IsNuitrackLibrariesInitialized()
+    {
+        if (initState == NuitrackInitState.INIT_OK || wifiConnect != WifiConnect.none)
+            return true;
+        return false;
+    }
+
     void Awake()
     {
-#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (asyncInit)
+        {
+            asyncInit = false;
+            Debug.LogWarning("Async Init is not supported for Android");
+        }
 
-        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
-            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
-
-        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
-            Permission.RequestUserPermission(Permission.ExternalStorageRead);
-
-        if (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
-            Permission.RequestUserPermission(Permission.CoarseLocation);
-
+        StartCoroutine(AndroidStart());
+#else
+        FirstStart();
 #endif
+    }
 
+    void FirstStart()
+    {
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         Application.targetFrameRate = 60;
@@ -164,11 +173,42 @@ public class NuitrackManager : MonoBehaviour
             {
                 initEvent.Invoke(initState);
             }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
-    if (initState == NuitrackInitState.INIT_OK)
+            if (IsNuitrackLibrariesInitialized())
 #endif
             NuitrackInit();
         }
+    }
+
+    IEnumerator AndroidStart()
+    {
+#if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+            yield return null;
+        }
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+        {
+            Permission.RequestUserPermission(Permission.ExternalStorageRead);
+            yield return null;
+        }
+
+        while (!Permission.HasUserAuthorizedPermission(Permission.CoarseLocation))
+        {
+            Permission.RequestUserPermission(Permission.CoarseLocation);
+            yield return null;
+        }
+
+        yield return null;
+#endif
+
+        FirstStart();
+
+        yield return null;
     }
 
     public void ChangeModulsState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
@@ -283,6 +323,7 @@ public class NuitrackManager : MonoBehaviour
             );
 
             nuitrackInitialized = true;
+            _threadRunning = false;
         }
         catch (System.Exception ex)
         {
@@ -376,6 +417,8 @@ public class NuitrackManager : MonoBehaviour
 
     IEnumerator RestartNuitrack()
     {
+        yield return null;
+
         while (pauseState)
         {
             StartNuitrack();
@@ -387,6 +430,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         if (asyncInit)
         {
             if (!_threadRunning)
@@ -403,6 +450,10 @@ public class NuitrackManager : MonoBehaviour
 
     public void StopNuitrack()
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (!IsNuitrackLibrariesInitialized())
+            return;
+#endif
         ChangeModulsState(
             false,
             false,
@@ -429,15 +480,10 @@ public class NuitrackManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Application.Quit();
-        }
-
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (NuitrackLoader.initState == NuitrackInitState.INIT_OK)
+        if (IsNuitrackLibrariesInitialized())
 #endif
-        if (!pauseState)
+        if (!pauseState || (asyncInit && _threadRunning))
         {
             try
             {
@@ -536,7 +582,6 @@ public class NuitrackManager : MonoBehaviour
         if (_threadRunning)
         {
             _threadRunning = false;
-
             _thread.Join();
         }
     }
