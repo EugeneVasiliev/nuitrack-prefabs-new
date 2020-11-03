@@ -42,45 +42,52 @@ public class SwitchDll : IPreprocessBuildWithReport
             return;
         }
 
-        if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.iOS)
-        {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false, true);
-        }
-        else if(EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android ||
-                EditorUserBuildSettings.selectedBuildTargetGroup == BuildTargetGroup.Standalone)
-        {
-            Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup));
+        BuildTarget buildTarget = EditorUserBuildSettings.activeBuildTarget;
+        BuildTargetGroup buildTargetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget);
 
-            if (PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.IL2CPP)
-            {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false, false);
-            }
-            else
-            {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, true, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false, false);
-            }
+        ScriptingImplementation backend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
+
+        Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup);
+
+        bool useStructureSensor = false;
+
+        if (buildTargetGroup == BuildTargetGroup.iOS)
+        {
+#if use_structure_sensor
+            useStructureSensor = true;
+#else
+            Debug.Log("If you need to use Structure Sensor add use_structure_sensor to Scripting Define Symbols in Player Settings...");
+#endif
+            Debug.Log("Used Structure Sensor: " + useStructureSensor);
+        }
+
+        if (buildTargetGroup == BuildTargetGroup.iOS && useStructureSensor)
+        {
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
+        }
+        else if((buildTargetGroup == BuildTargetGroup.Android || buildTargetGroup == BuildTargetGroup.Standalone) && backend == ScriptingImplementation.IL2CPP)
+        {
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
         else
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, true, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, true);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
     }
 
-    public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value, bool iosValue)
+    public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
-        if (value || iosValue)
+        if (value)
             Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Switch Nuitrack dll to " + plugin.assetPath);
 
         plugin.SetCompatibleWithAnyPlatform(false);
-        plugin.SetCompatibleWithPlatform(BuildTarget.iOS, iosValue);
+        plugin.SetCompatibleWithPlatform(BuildTarget.iOS, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.Android, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneLinux, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneLinux64, value);
