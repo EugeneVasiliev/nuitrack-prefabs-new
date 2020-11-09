@@ -61,11 +61,20 @@ public class SwitchDll : IPreprocessBuildWithReport
             Debug.Log("Used Structure Sensor: " + useStructureSensor);
         }
 
-        if (buildTargetGroup == BuildTargetGroup.iOS && useStructureSensor)
+        if (buildTargetGroup == BuildTargetGroup.iOS)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
             SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
+
+            if (useStructureSensor)
+            {
+                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
+                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
+            }
+            else
+            {
+                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true);
+                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+            }
         }
         else if((buildTargetGroup == BuildTargetGroup.Android || buildTargetGroup == BuildTargetGroup.Standalone) && backend == ScriptingImplementation.IL2CPP)
         {
