@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -8,8 +8,8 @@ public class SwitchDll : IPreprocessBuildWithReport
 {
     public int callbackOrder { get { return 0; } }
 
-    static string pathAndroidIl2cpp = "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly/IL2CPP/nuitrack.net.dll";
-    static string pathAndroidMono = "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly/nuitrack.net.dll";
+    static string pathIL2CPP = "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly/IL2CPP/nuitrack.net.dll";
+    static string pathMONO = "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly/nuitrack.net.dll";
     static string pathIOS = "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly/IOS/nuitrack.net.dll";
 
     static SwitchDll()
@@ -20,19 +20,19 @@ public class SwitchDll : IPreprocessBuildWithReport
     [MenuItem("Nuitrack/Auto switch dll")]
     public static void Check()
     {
-        PluginImporter pluginAndroidIl2cpp = (PluginImporter)PluginImporter.GetAtPath(pathAndroidIl2cpp);
-        PluginImporter pluginAndroidMono = (PluginImporter)PluginImporter.GetAtPath(pathAndroidMono);
+        PluginImporter pluginIL2CPP = (PluginImporter)PluginImporter.GetAtPath(pathIL2CPP);
+        PluginImporter pluginMONO = (PluginImporter)PluginImporter.GetAtPath(pathMONO);
         PluginImporter pluginIOS = (PluginImporter)PluginImporter.GetAtPath(pathIOS);
 
-        if (pluginAndroidIl2cpp == null)
+        if (pluginIL2CPP == null)
         {
-            Debug.LogError("Il2cpp Dll not found: " + pathAndroidIl2cpp);
+            Debug.LogError("Il2cpp Dll not found: " + pathIL2CPP);
             return;
         }
 
-        if (pluginAndroidMono == null)
+        if (pluginMONO == null)
         {
-            Debug.LogError("Mono Dll not found: " + pathAndroidMono);
+            Debug.LogError("Mono Dll not found: " + pathMONO);
             return;
         }
 
@@ -63,29 +63,29 @@ public class SwitchDll : IPreprocessBuildWithReport
 
         if (buildTargetGroup == BuildTargetGroup.iOS)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
 
             if (useStructureSensor)
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
+                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
                 SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
             }
             else
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true);
+                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
                 SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
             }
         }
         else if((buildTargetGroup == BuildTargetGroup.Android || buildTargetGroup == BuildTargetGroup.Standalone) && backend == ScriptingImplementation.IL2CPP)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, true);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
             SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
         else
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidIl2cpp, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginAndroidMono, true);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
+            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, true);
             SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
     }
