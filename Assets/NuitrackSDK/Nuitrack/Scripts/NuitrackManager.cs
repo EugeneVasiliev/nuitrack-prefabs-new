@@ -93,6 +93,16 @@ public class NuitrackManager : MonoBehaviour
 
     [HideInInspector] public System.Exception initException;
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+    static int GetAndroidAPILevel()
+    {
+        using (var version = new AndroidJavaClass("android.os.Build$VERSION"))
+        {
+            return version.GetStatic<int>("SDK_INT");
+        }
+    }
+#endif
+
     void ThreadedWork()
     {
         _threadRunning = true;
@@ -201,6 +211,15 @@ public class NuitrackManager : MonoBehaviour
         {
             Permission.RequestUserPermission(Permission.CoarseLocation);
             yield return null;
+        }
+
+        if (GetAndroidAPILevel() > 26) // camera permissions required for Android newer than Oreo 8
+        {
+            while (!Permission.HasUserAuthorizedPermission(Permission.Camera))
+            {
+                Permission.RequestUserPermission(Permission.Camera);
+                yield return null;
+            }
         }
 
         yield return null;
