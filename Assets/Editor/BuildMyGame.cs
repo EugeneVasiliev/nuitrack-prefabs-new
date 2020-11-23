@@ -4,6 +4,9 @@ using UnityEditor;
 
 public class BuildMyGame
 {
+    static string androidSDKPath = "C:\\AndroidSDK";
+    static string androidNDKPath = "C:\\android-ndk-r19c";
+    static string androidJDKPath = "C:\\Program Files\\Java\\jdk1.8.0_181";
 
     //[MenuItem("MyTools/Android Build With Postprocess")]
     public static void BuildAab()
@@ -33,6 +36,11 @@ public class BuildMyGame
         PlayerSettings.Android.keystorePass = "q2w3e4r";
         PlayerSettings.Android.keyaliasName = "main_key";
         PlayerSettings.Android.keyaliasPass = "q2w3e4r";
+
+        EditorPrefs.SetString("AndroidSdkRoot", androidSDKPath);
+        EditorPrefs.SetString("AndroidNdkRoot", androidNDKPath);
+        EditorPrefs.SetString("JdkPath", androidJDKPath);
+        //EditorPrefs.SetString("AndroidNdkRootR16b", androidNDKPath);
 
         EditorPrefs.SetString("AndroidSdkRoot", "C:\\AndroidSDK");
         EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
