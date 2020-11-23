@@ -6,7 +6,7 @@ build_apk:
   tags:
     - windows_x64
   script:
-    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -quit -accept-apiupdate -batchmode -projectPath "${WORKSPACE}" -logFile "${WORKSPACE}/build_log.txt" -executeMethod BuildMyGame.BuildApk "${WORKSPACE}/NuitrackDemo.apk"'
+    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -quit -accept-apiupdate-projectPath %cd% -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
   artifacts:
     paths:
       - NuitrackDemo.apk
