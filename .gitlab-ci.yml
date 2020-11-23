@@ -1,39 +1,14 @@
 stages:
-- build_package
 - build_demo_apk
-- build_demo_abb
-
-build_unity_package:
-  stage: "build_package"
-  tags:
-    - windows_x64
-  script:
-    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets/NuitrackSDK" "Assets/Plugins" %cd%/NuitrackSDK.unitypackage'
-  artifacts:
-    paths:
-      - NuitrackSDK.unitypackage
-    expire_in: 14d
 
 build_apk:
   stage: "build_demo_apk"
   tags:
     - windows_x64
   script:
-    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
+    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -quit -accept-apiupdate -batchmode -projectPath %cd% -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
   artifacts:
     paths:
       - NuitrackDemo.apk
-      - build_log.txt
-    expire_in: 14d
-
-build_aab:
-  stage: "build_demo_abb"
-  tags:
-    - windows_x64
-  script:
-    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildAab %cd%/NuitrackDemo.aab'
-  artifacts:
-    paths:
-      - NuitrackDemo.aab
       - build_log.txt
     expire_in: 14d
