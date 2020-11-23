@@ -4,7 +4,7 @@ using UnityEditor;
 
 public class BuildMyGame
 {
-    static string androidSDKPath = "C:\\AndroidSDK";
+    static string androidSDKPath = "C:\\NVPACK\\dk1.8.0_77";
     static string androidNDKPath = "C:\\android-ndk-r19c";
     static string androidJDKPath = "C:\\Program Files\\Java\\jdk1.8.0_181";
 
