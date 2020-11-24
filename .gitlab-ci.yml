@@ -6,7 +6,7 @@ build_apk:
   tags:
     - windows_x64
   script:
-    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -quit -projectPath %cd% -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
+    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -quit -logFile %cd%/build_log.txt -projectPath %cd% -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk -quit'
   artifacts:
     paths:
       - NuitrackDemo.apk
