@@ -6,7 +6,7 @@ build_apk:
   tags:
     - windows_x64
   script:
-    - 'C:/Program Files/Unity2019.4/Editor/Unity.exe'
+    - '"C:/Program Files/Unity2019.4/Editor/Unity.exe"'
   artifacts:
     paths:
       - NuitrackDemo.apk
