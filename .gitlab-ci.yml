@@ -22,8 +22,7 @@ production:Win64:
   only:    
     - tags
   tags:    
-    - windows
-    - unity
+    - windows_x64
   cache:
     key: windows
     paths:
@@ -46,8 +45,7 @@ develop:Win64:
   only:    
     - pushes
   tags:    
-    - windows
-    - unity
+    - windows_x64
   cache:
     key: windows
     paths:
