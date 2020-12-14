@@ -1,15 +1,40 @@
 stages:
-- build_demo_apk
+  - playerBuild
 
-build_apk:
-  stage: "build_demo_apk"
-  tags:
-    - windows_x64
-  timeout: 20 minutes
-  script:
-    - '"C:/Program Files/Unity2019.4/Editor/Unity.exe" -projectPath "C:/Gitlab-Runner/builds/8AhzdTYQ/0/unityapps/nuitrack-prefabs" -executeMethod BuildMyGame.BuildApk "C:/Gitlab-Runner/builds/8AhzdTYQ/0/unityapps/nuitrack-prefabs/NuitrackDemo.apk"'
-  artifacts:
+variables:
+  OUTPUT_DIR: "build"    
+  BUILD_PREFIX: "demo"
+  UNITY_VERSION: "2019.4.9f1"
+  UNITY_CACHE_SERVER: "localhost:8126"
+
+default:
+  before_script:
+    - npm i
+
+cache:
+  paths:
+    - node_modules/
+
+
+production:Win64:
+  stage: playerBuild
+  when: always
+  only:    
+    - tags
+  tags:    
+    - windows
+    - unity
+  cache:
+    key: windows
     paths:
-      - NuitrackDemo.apk
-    expire_in: 14d
-    when: always
+      - Library/
+  artifacts:
+    name: production-windows-build
+    expire_in: 2 hrs
+    when: on_success
+    paths:    
+        - build/**
+  variables:
+    BUILD_TARGET: "StandaloneWindows64"
+  script:
+    - npx gulp buildWindows
