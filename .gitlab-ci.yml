@@ -6,9 +6,8 @@ build_apk:
   tags:
     - windows_x64
   script:
-    - '"C:\Program Files\Unity550\2019.4.15f1\Editor\Unity.exe" -quit -logFile %cd%/build_log.txt -projectPath %cd% -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
+    - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -projectPath "C:\Gitlab-Runner\builds\8AhzdTYQ\0\unityapps\nuitrack-prefabs" -executeMethod BuildMyGame.BuildApk "C:\Gitlab-Runner\builds\8AhzdTYQ\0\unityapps\nuitrack-prefabs\NuitrackDemo.apk"'
   artifacts:
     paths:
       - NuitrackDemo.apk
-      - build_log.txt
     expire_in: 14d
