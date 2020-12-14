@@ -36,5 +36,30 @@ production:Win64:
         - build/**
   variables:
     BUILD_TARGET: "StandaloneWindows64"
+    BACKEND_BASE_URL: "https://production.mydomain.com/mygame" 
+  script:
+    - npx gulp buildWindows
+
+develop:Win64:
+  stage: playerBuild
+  when: manual
+  only:    
+    - pushes
+  tags:    
+    - windows
+    - unity
+  cache:
+    key: windows
+    paths:
+      - Library/
+  artifacts:
+    name: develop-windows-build
+    expire_in: 2 hrs
+    when: on_success
+    paths:    
+        - build/**
+  variables:
+    BUILD_TARGET: "StandaloneWindows64"
+    BACKEND_BASE_URL: "https://develop.mydomain.com/mygame" 
   script:
     - npx gulp buildWindows
