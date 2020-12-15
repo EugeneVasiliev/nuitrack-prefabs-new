@@ -3,6 +3,8 @@
 /*/
 
 !.gitignore
+!build_aab.bat
+!build_apk.bat
 
 !.gitlab-ci.yml
 !/Assets
