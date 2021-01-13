@@ -1,0 +1,9 @@
+<Modules>
+    <Module path="libnimMockNodes.so" />
+    <Module path="libnimRecorder.so" />
+    <Module path="libnimCodecs.so" />
+    <Module path="libmodule-lips.so" />
+    <Module path="libXnDeviceFilePS.so"/>
+    <Module path="libXnDeviceSensorV2PS.so"/>
+    <Module path="libnuitrack_ni.so"/>
+</Modules>
