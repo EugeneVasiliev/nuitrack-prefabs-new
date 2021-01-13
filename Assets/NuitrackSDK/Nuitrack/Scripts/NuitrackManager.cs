@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
+using System.Collections.Generic;
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
@@ -294,6 +295,42 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    void selectAndActivateDevice(int deviceIndex, string activation_key = null)
+    {
+        Debug.Log("Nuitrack version: " + nuitrack.Nuitrack.GetVersion().ToString());
+        List<nuitrack.device.NuitrackDevice> devices = nuitrack.Nuitrack.GetDeviceList();
+
+        if(devices.Count == 0)
+            throw new nuitrack.Exception("Empty device list");
+
+        if(deviceIndex >= devices.Count)
+            throw new nuitrack.Exception("No such device id");
+
+        nuitrack.device.NuitrackDevice selectedDevice = devices[deviceIndex];
+        bool deviceIsActivated = System.Convert.ToBoolean(selectedDevice.GetActivationStatus());
+
+        if (deviceIsActivated)
+            Debug.Log("Device is Activated\n");
+        else if (!string.IsNullOrEmpty(activation_key))
+        {
+            try
+            {
+                Debug.Log("Try to ativate a device\n");
+                selectedDevice.Activate(activation_key);
+            }
+            catch (nuitrack.Exception exception)
+            {
+                Debug.Log("Cannot activate device.\n");
+                throw exception;
+            }
+        }
+        else
+            Debug.Log("No activation key.\n");
+
+        nuitrack.Nuitrack.SetDevice(selectedDevice);
+        Debug.Log("Device is selected\n");
+    }
+
     void NuitrackInit()
     {
         try
@@ -316,6 +353,8 @@ public class NuitrackManager : MonoBehaviour
                 nuitrack.Nuitrack.Init();
 
             Debug.Log("Init OK");
+
+            selectAndActivateDevice(0, ""); // select the first avaliable device and activate it
 
             depthSensor = nuitrack.DepthSensor.Create();
 
