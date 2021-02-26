@@ -3,6 +3,8 @@
 using UnityEngine;
 using UnityEditor;
 
+using UnityEngine.UI;
+
 public class UnityAnimationRecorder : MonoBehaviour
 {
     enum RecordMode { Generic, GenericExperimental, Humanoid };
@@ -29,6 +31,10 @@ public class UnityAnimationRecorder : MonoBehaviour
     [Header("Humanoid Animations")]
     [SerializeField] AnimatorAvatar animatorAvatar;
 
+    [Header("UI")]
+    [SerializeField] Button startRecordButton;
+    [SerializeField] Button stopRecordButton;
+
     void Start()
     {
         poseCalibration.onSuccess += PoseCalibration_onSuccess;
@@ -54,21 +60,42 @@ public class UnityAnimationRecorder : MonoBehaviour
         poseCalibration.onSuccess -= PoseCalibration_onSuccess;
     }
 
-    private void PoseCalibration_onSuccess(Quaternion rotation)
+    public void StartRecord()
     {
         if (!isRecording)
         {
             Debug.Log("Start recording");
             isRecording = true;
+
+            startRecordButton.interactable = false;
+            stopRecordButton.interactable = true;
+
+            recordIcon.SetActive(true);
         }
-        else
+    }
+
+    public void StopRecord()
+    {
+        if(isRecording)
         {
             Debug.Log("Stop recording");
             isRecording = false;
+
+            startRecordButton.interactable = true;
+            stopRecordButton.interactable = false;
+
+            recordIcon.SetActive(false);
+
             SaveToFile(recordable.GetClip);
         }
+    }
 
-        recordIcon.SetActive(isRecording);
+    private void PoseCalibration_onSuccess(Quaternion rotation)
+    {
+        if (!isRecording)
+            StartRecord();
+        else
+            StopRecord();
     }
 
     void Update()
