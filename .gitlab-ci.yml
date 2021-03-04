@@ -15,24 +15,30 @@ build_unity_package:
     expire_in: 14d
 
 build_apk:
+  timeout: 30m
+  allow_failure: true
   stage: "build_demo_apk"
   tags:
     - windows_x64
   script:
     - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
   artifacts:
+    when: always
     paths:
       - NuitrackDemo.apk
       - build_log.txt
     expire_in: 14d
 
 build_aab:
+  timeout: 30m
+  allow_failure: true
   stage: "build_demo_abb"
   tags:
     - windows_x64
   script:
     - '"C:\Program Files\Unity2019.4\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildAab %cd%/NuitrackDemo.aab'
   artifacts:
+    when: always
     paths:
       - NuitrackDemo.aab
       - build_log.txt
