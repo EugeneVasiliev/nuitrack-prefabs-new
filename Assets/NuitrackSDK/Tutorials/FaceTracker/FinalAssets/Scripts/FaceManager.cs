@@ -34,7 +34,7 @@ public class FaceManager : MonoBehaviour
     List<FaceController> faceControllers = new List<FaceController>();
     Instances[] faces;
 
-    FaceInfo faceInfo;
+    JsonInfo faceInfo;
 
     void Start()
     {
@@ -47,7 +47,7 @@ public class FaceManager : MonoBehaviour
     void Update()
     {
         string json = nuitrack.Nuitrack.GetInstancesJson();
-        faceInfo = JsonUtility.FromJson<FaceInfo>(json.Replace("\"\"", "[]"));
+        faceInfo = JsonUtility.FromJson<JsonInfo>(json.Replace("\"\"", "[]"));
 
         faces = faceInfo.Instances;
         for (int i = 0; i < faceControllers.Count; i++)

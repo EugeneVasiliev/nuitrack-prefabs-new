@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public class FaceInfo
+public class JsonInfo
 {
     public string Timestamp;
     public Instances[] Instances;
@@ -13,6 +13,16 @@ public class Instances
     public int id;
     public string @class;
     public Face face;
+    public bbox bbox;
+}
+
+[System.Serializable]
+public class bbox
+{
+    public float left;
+    public float top;
+    public float width;
+    public float height;
 }
 
 [System.Serializable]
