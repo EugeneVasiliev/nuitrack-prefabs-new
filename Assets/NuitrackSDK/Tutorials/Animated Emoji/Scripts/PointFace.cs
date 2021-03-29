@@ -6,7 +6,7 @@ public class PointFace : MonoBehaviour {
 
     int frameId = 0;
 
-    FaceInfo faceInfo;
+    JsonInfo faceInfo;
 
     [SerializeField] GameObject sphere;
 

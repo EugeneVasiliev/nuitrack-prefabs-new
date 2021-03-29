@@ -10,7 +10,7 @@ public class FaceAnimManager : MonoBehaviour
     [Range(0, 6)]
     [SerializeField] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
 
-    public FaceInfo faceInfo;
+    public JsonInfo faceInfo;
     List<FaceAnimController> faceAnimControllers = new List<FaceAnimController>();
     float headsDistance = 100;
 
@@ -57,7 +57,7 @@ public class FaceAnimManager : MonoBehaviour
     private void Update()
     {
         string json = Nuitrack.GetInstancesJson();
-        faceInfo = JsonUtility.FromJson<FaceInfo>(json.Replace("\"\"", "[]"));
+        faceInfo = JsonUtility.FromJson<JsonInfo>(json.Replace("\"\"", "[]"));
     }
 
     private void OnDestroy()
