@@ -52,9 +52,9 @@ public class JumpSimulator : MonoBehaviour
 
     Vector3 JointPoisition(nuitrack.Skeleton skeleton, nuitrack.JointType jointType)
     {
-        //return skeleton.GetJoint(jointType).ToVector3() * 0.001f;
+        return skeleton.GetJoint(jointType).ToVector3() * 0.001f;
 
-        return skeletonEmulator.JointPoisition(jointType);
+        //return skeletonEmulator.JointPoisition(jointType);
     }
 
     bool LegOnFloor(nuitrack.Skeleton skeleton)
@@ -80,7 +80,7 @@ public class JumpSimulator : MonoBehaviour
 
     float ProjectHipY(nuitrack.Skeleton skeleton, float delta=0)
     {
-        //return (skeleton.GetJoint(nuitrack.JointType.LeftHip).Proj.Y + skeleton.GetJoint(nuitrack.JointType.RightHip).Proj.Y) / 2 + delta * 1000;
+        //return (skeleton.GetJoint(nuitrack.JointType.LeftHip).Proj.Y + skeleton.GetJoint(nuitrack.JointType.RightHip).Proj.Y) / 2;
 
         Vector3 hipPosition = JointPoisition(skeleton, nuitrack.JointType.LeftHip);
         hipPosition.y += delta;
@@ -94,30 +94,32 @@ public class JumpSimulator : MonoBehaviour
         bestJumpLine.gameObject.SetActive(false);
     }
 
+    public Vector3 floorBasePoint;
+    public Vector3 floorNormalVector;
+
     // Update is called once per frame
     void Update()
-    {
+    {       
+        if (NuitrackManager.UserFrame == null || CurrentUserTracker.CurrentSkeleton == null)
+        {
+            CurrentMaxJumpHeigth = 0;
+            return;
+        }
+
         nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
 
-        //Vector3 floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
-        //Vector3 floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3() * 0.0001f;
+        floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
+        floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3();
 
-        Vector3 floorBasePoint = floorBasePointTransform.position;
-        Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
+        //Vector3 floorBasePoint = floorBasePointTransform.position;
+        //Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
 
-        //if (floorBasePoint != default && floorNormalVector != default)
-        floorPlane = new Plane(floorNormalVector, floorBasePoint);
+        floorPlane = new Plane(floorNormalVector.normalized, floorBasePoint);
 
-        //if (skeleton == null)
-        //{
-        //    CurrentMaxJumpHeigth = 0;
-        //    return;
-        //}
+        //float bestJumpHipsY = ProjectHipY(skeleton, TotalMaxJumpHeigth);
 
-        float bestJumpHipsY = ProjectHipY(skeleton, TotalMaxJumpHeigth);
-
-        bestJumpLine.anchoredPosition = new Vector2(0, bestJumpHipsY * baseRect.rect.height);
-        bestJumpLable.text = string.Format("Best: {0:F2}", TotalMaxJumpHeigth);
+        //bestJumpLine.anchoredPosition = new Vector2(0, bestJumpHipsY * baseRect.rect.height);
+        //bestJumpLable.text = string.Format("Best: {0:F2}", TotalMaxJumpHeigth);
 
         float currentJumpHipsY = ProjectHipY(skeleton);
 
@@ -138,7 +140,7 @@ public class JumpSimulator : MonoBehaviour
             float hipFloorDistance = (Vector3.Distance(leftHipPosition, floorLeftHipPoint) + Vector3.Distance(rightHipPosition, floorRightHipPoint)) / 2;
             float deltaJump = hipFloorDistance - legLength;
 
-            Debug.Log(deltaJump);
+            //Debug.Log(deltaJump);
 
             if (deltaJump > CurrentMaxJumpHeigth)
                 CurrentMaxJumpHeigth = deltaJump;
@@ -146,33 +148,33 @@ public class JumpSimulator : MonoBehaviour
             if (CurrentMaxJumpHeigth > TotalMaxJumpHeigth)
             {
                 TotalMaxJumpHeigth = CurrentMaxJumpHeigth;
-                bestJumpLine.gameObject.SetActive(true);
+                //bestJumpLine.gameObject.SetActive(true);
             }
         }
 
     }
    
 
-    void OnDrawGizmos()
-    {
-        Vector3 floorBasePoint = floorBasePointTransform.position;
-        Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
+    //void OnDrawGizmos()
+    //{
+    //    Vector3 floorBasePoint = floorBasePointTransform.position;
+    //    Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
 
-        floorPlane = new Plane(floorNormalVector, floorBasePoint);
+    //    floorPlane = new Plane(floorNormalVector, floorBasePoint);
 
-        UnityEditor.Handles.color = new Color(0.5f, 1, 0.5f, 1f);
-        UnityEditor.Handles.DrawWireDisc(floorBasePoint, floorNormalVector, 2);
+    //    UnityEditor.Handles.color = new Color(0.5f, 1, 0.5f, 1f);
+    //    UnityEditor.Handles.DrawWireDisc(floorBasePoint, floorNormalVector, 2);
 
-        UnityEditor.Handles.DrawLine(floorBasePointTransform.position, floorNormalVectorTransform.position);
+    //    UnityEditor.Handles.DrawLine(floorBasePointTransform.position, floorNormalVectorTransform.position);
 
-        Vector3 leftAnkle = JointPoisition(null, nuitrack.JointType.LeftAnkle);
-        Vector3 rightAnkle = JointPoisition(null, nuitrack.JointType.RightAnkle);
+    //    Vector3 leftAnkle = JointPoisition(null, nuitrack.JointType.LeftAnkle);
+    //    Vector3 rightAnkle = JointPoisition(null, nuitrack.JointType.RightAnkle);
 
-        Vector3 floorLeftAnklePoint = floorPlane.ClosestPointOnPlane(leftAnkle);
-        Vector3 floorRightAnklePoint = floorPlane.ClosestPointOnPlane(rightAnkle);
+    //    Vector3 floorLeftAnklePoint = floorPlane.ClosestPointOnPlane(leftAnkle);
+    //    Vector3 floorRightAnklePoint = floorPlane.ClosestPointOnPlane(rightAnkle);
 
-        Gizmos.color = LegOnFloor(null) ? Color.green : Color.red;
-        Gizmos.DrawSphere(floorLeftAnklePoint, 0.1f);
-        Gizmos.DrawSphere(floorRightAnklePoint, 0.1f);
-    }
+    //    Gizmos.color = LegOnFloor(null) ? Color.green : Color.red;
+    //    Gizmos.DrawSphere(floorLeftAnklePoint, 0.1f);
+    //    Gizmos.DrawSphere(floorRightAnklePoint, 0.1f);
+    //}
 }
