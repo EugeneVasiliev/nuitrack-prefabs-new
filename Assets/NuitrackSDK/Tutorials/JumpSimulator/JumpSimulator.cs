@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using UnityEngine.UI;
 
-using System.Collections.Generic;
 
 public class JumpSimulator : MonoBehaviour
 {
@@ -9,8 +10,12 @@ public class JumpSimulator : MonoBehaviour
     Plane floorPlane;
 
     [SerializeField] RectTransform baseRect;
+    [SerializeField] AspectRatioFitter aspectRatioFitter;
 
-    [Header ("Best jump UI")] 
+    [Header ("Floor UI")]
+    [SerializeField] RectTransform floorLine;
+
+    [Header ("Best jump UI")]
     [SerializeField] RectTransform bestJumpLine;
     [SerializeField] Text bestJumpLable;
 
@@ -18,37 +23,22 @@ public class JumpSimulator : MonoBehaviour
     [SerializeField] RectTransform currentJumpLine;
     [SerializeField] Text currentJumpLable;
 
+    [Header ("Test options")]
     [SerializeField] SkeletonEmulator skeletonEmulator;
+    [SerializeField] Transform floorBasePointTransform;
+    [SerializeField] Transform floorNormalVectorTransform;
 
-    public Transform floorBasePointTransform;
-    public Transform floorNormalVectorTransform;
-
-    public float TotalMaxJumpHeigth
+    public float TotalMaxJumpHeight
     {
         get;
         private set;
     }
 
-    public float CurrentMaxJumpHeigth
+    public float CurrentMaxJumpHeight
     {
         get;
         private set;
     }
-
-
-    List<nuitrack.JointType> leftLegJoints = new List<nuitrack.JointType>
-    {
-        nuitrack.JointType.LeftHip,
-        nuitrack.JointType.LeftKnee,
-        nuitrack.JointType.LeftAnkle
-    };
-
-    List<nuitrack.JointType> rightLegJoints = new List<nuitrack.JointType>
-    {
-        nuitrack.JointType.RightHip,
-        nuitrack.JointType.RightKnee,
-        nuitrack.JointType.RightAnkle
-    };
 
     Vector3 JointPoisition(nuitrack.Skeleton skeleton, nuitrack.JointType jointType)
     {
@@ -68,90 +58,104 @@ public class JumpSimulator : MonoBehaviour
         return Vector3.Distance(leftAnkle, floorLeftAnklePoint) <= deltaAnkleFloor || Vector3.Distance(rightAnkle, floorRightAnklePoint) <= deltaAnkleFloor;
     }
 
-    float LegLength(nuitrack.Skeleton skeleton, List<nuitrack.JointType> jointTypes)
+    float GetLowerJoint(nuitrack.Skeleton skeleton, out nuitrack.JointType lowerJointType)
     {
-        float length = 0;
+        lowerJointType = nuitrack.JointType.Head;
+        float jumpHeight = float.MaxValue;
 
-        for (int i = 0; i < jointTypes.Count - 1; i++)
-            length += Vector3.Distance(JointPoisition(skeleton, jointTypes[i]), JointPoisition(skeleton, jointTypes[i + 1]));
+        foreach (nuitrack.JointType jointType in Enum.GetValues(typeof(nuitrack.JointType)))
+        {
+            Vector3 jointPoint = JointPoisition(skeleton, jointType);
+            Vector3 floorPoint = floorPlane.ClosestPointOnPlane(jointPoint);
 
-        return length;
+            float currentDistance = Vector3.Distance(jointPoint, floorPoint);
+
+            if (currentDistance < jumpHeight)
+            {
+                lowerJointType = jointType;
+                jumpHeight = currentDistance;
+            }
+        }
+
+        return jumpHeight;
     }
 
-    float ProjectHipY(nuitrack.Skeleton skeleton, float delta=0)
+    Vector3 ScreenPoint(Vector3 realPoint)
     {
-        //return (skeleton.GetJoint(nuitrack.JointType.LeftHip).Proj.Y + skeleton.GetJoint(nuitrack.JointType.RightHip).Proj.Y) / 2;
-
-        Vector3 hipPosition = JointPoisition(skeleton, nuitrack.JointType.LeftHip);
-        hipPosition.y += delta;
-
-        Vector3 hip = Camera.main.WorldToScreenPoint(hipPosition);
-        return hip.y / Screen.height;
+        Vector3 cameraSpacePoint = Camera.main.transform.TransformPoint(realPoint);
+        return Camera.main.WorldToScreenPoint(cameraSpacePoint);
     }
 
     void Start()
     {
-        bestJumpLine.gameObject.SetActive(false);
+        DisplayLines(false);
     }
 
-    public Vector3 floorBasePoint;
-    public Vector3 floorNormalVector;
 
-    // Update is called once per frame
+    void DisplayLines(bool visible)
+    {
+        currentJumpLine.gameObject.SetActive(visible);
+        floorLine.gameObject.SetActive(visible);
+        bestJumpLine.gameObject.SetActive(visible);
+    }
+    
     void Update()
-    {       
+    {
+        if(NuitrackManager.ColorFrame != null)
+            aspectRatioFitter.aspectRatio = (float)(NuitrackManager.ColorFrame.Cols) / NuitrackManager.ColorFrame.Rows;
+
         if (NuitrackManager.UserFrame == null || CurrentUserTracker.CurrentSkeleton == null)
         {
-            CurrentMaxJumpHeigth = 0;
+            DisplayLines(false);
             return;
         }
 
+        DisplayLines(true);
+
         nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
 
-        floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
-        floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3();
+        Vector3 floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
+        Vector3 floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
 
         //Vector3 floorBasePoint = floorBasePointTransform.position;
         //Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
 
-        floorPlane = new Plane(floorNormalVector.normalized, floorBasePoint);
+        floorPlane = new Plane(floorNormalVector, floorBasePoint);
 
-        //float bestJumpHipsY = ProjectHipY(skeleton, TotalMaxJumpHeigth);
+        Vector3 userWaist = JointPoisition(skeleton, nuitrack.JointType.Waist);
+        Vector3 userFloor = floorPlane.ClosestPointOnPlane(userWaist);
+        Vector3 screenFloorPoint = ScreenPoint(userFloor);
 
-        //bestJumpLine.anchoredPosition = new Vector2(0, bestJumpHipsY * baseRect.rect.height);
-        //bestJumpLable.text = string.Format("Best: {0:F2}", TotalMaxJumpHeigth);
-
-        float currentJumpHipsY = ProjectHipY(skeleton);
-
-        currentJumpLine.anchoredPosition = new Vector2(0, currentJumpHipsY * baseRect.rect.height);
-        currentJumpLable.text = string.Format("Current: {0:F2}", CurrentMaxJumpHeigth);
+        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenFloorPoint.y);
 
 
-        float legLength = (LegLength(skeleton, leftLegJoints) + LegLength(skeleton, rightLegJoints)) / 2;
+        Vector3 bestJump = userFloor + floorNormalVector * TotalMaxJumpHeight;
+        Vector3 screenBestUserJump = ScreenPoint(bestJump);
+
+        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenBestUserJump.y);
+
+
+        nuitrack.JointType lowerJoint;
+        float jumpHeight = GetLowerJoint(skeleton, out lowerJoint);
+
+        Vector3 jointPosition = JointPoisition(skeleton, lowerJoint);
+        Vector3 currentJumpScreenPoint = ScreenPoint(jointPosition);
+
+        currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - currentJumpScreenPoint.y);
+
+        currentJumpLable.text = string.Format("Current: {0:F2}", CurrentMaxJumpHeight);
 
         if (!LegOnFloor(skeleton))
         {
-            Vector3 leftHipPosition = JointPoisition(skeleton, nuitrack.JointType.LeftHip);
-            Vector3 rightHipPosition = JointPoisition(skeleton, nuitrack.JointType.RightHip);
+            if (jumpHeight > CurrentMaxJumpHeight)
+                CurrentMaxJumpHeight = jumpHeight;
 
-            Vector3 floorLeftHipPoint = floorPlane.ClosestPointOnPlane(leftHipPosition);
-            Vector3 floorRightHipPoint = floorPlane.ClosestPointOnPlane(rightHipPosition);
-
-            float hipFloorDistance = (Vector3.Distance(leftHipPosition, floorLeftHipPoint) + Vector3.Distance(rightHipPosition, floorRightHipPoint)) / 2;
-            float deltaJump = hipFloorDistance - legLength;
-
-            //Debug.Log(deltaJump);
-
-            if (deltaJump > CurrentMaxJumpHeigth)
-                CurrentMaxJumpHeigth = deltaJump;
-
-            if (CurrentMaxJumpHeigth > TotalMaxJumpHeigth)
+            if (CurrentMaxJumpHeight > TotalMaxJumpHeight)
             {
-                TotalMaxJumpHeigth = CurrentMaxJumpHeigth;
-                //bestJumpLine.gameObject.SetActive(true);
+                TotalMaxJumpHeight = CurrentMaxJumpHeight;
+                bestJumpLable.text = string.Format("Best: {0:F2}", TotalMaxJumpHeight);
             }
         }
-
     }
    
 
