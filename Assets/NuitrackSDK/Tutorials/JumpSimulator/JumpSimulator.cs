@@ -28,13 +28,13 @@ public class JumpSimulator : MonoBehaviour
     [SerializeField] Transform floorBasePointTransform;
     [SerializeField] Transform floorNormalVectorTransform;
 
-    public float TotalMaxJumpHeight
+    public float BestJumpHeight
     {
         get;
         private set;
     }
 
-    public float CurrentMaxJumpHeight
+    public float CurrentJumpHeight
     {
         get;
         private set;
@@ -91,7 +91,6 @@ public class JumpSimulator : MonoBehaviour
         DisplayLines(false);
     }
 
-
     void DisplayLines(bool visible)
     {
         currentJumpLine.gameObject.SetActive(visible);
@@ -112,8 +111,6 @@ public class JumpSimulator : MonoBehaviour
 
         DisplayLines(true);
 
-        nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-
         Vector3 floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
         Vector3 floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
 
@@ -122,18 +119,7 @@ public class JumpSimulator : MonoBehaviour
 
         floorPlane = new Plane(floorNormalVector, floorBasePoint);
 
-        Vector3 userWaist = JointPoisition(skeleton, nuitrack.JointType.Waist);
-        Vector3 userFloor = floorPlane.ClosestPointOnPlane(userWaist);
-        Vector3 screenFloorPoint = ScreenPoint(userFloor);
-
-        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenFloorPoint.y);
-
-
-        Vector3 bestJump = userFloor + floorNormalVector * TotalMaxJumpHeight;
-        Vector3 screenBestUserJump = ScreenPoint(bestJump);
-
-        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenBestUserJump.y);
-
+        nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
 
         nuitrack.JointType lowerJoint;
         float jumpHeight = GetLowerJoint(skeleton, out lowerJoint);
@@ -142,20 +128,32 @@ public class JumpSimulator : MonoBehaviour
         Vector3 currentJumpScreenPoint = ScreenPoint(jointPosition);
 
         currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - currentJumpScreenPoint.y);
+        currentJumpLable.text = string.Format("Current: {0:F2}", CurrentJumpHeight);
 
-        currentJumpLable.text = string.Format("Current: {0:F2}", CurrentMaxJumpHeight);
 
         if (!LegOnFloor(skeleton))
         {
-            if (jumpHeight > CurrentMaxJumpHeight)
-                CurrentMaxJumpHeight = jumpHeight;
+            if (jumpHeight > CurrentJumpHeight)
+                CurrentJumpHeight = jumpHeight;
 
-            if (CurrentMaxJumpHeight > TotalMaxJumpHeight)
+            if (CurrentJumpHeight > BestJumpHeight)
             {
-                TotalMaxJumpHeight = CurrentMaxJumpHeight;
-                bestJumpLable.text = string.Format("Best: {0:F2}", TotalMaxJumpHeight);
+                BestJumpHeight = CurrentJumpHeight;
+                bestJumpLable.text = string.Format("Best: {0:F2}", BestJumpHeight);
             }
         }
+
+
+        Vector3 userWaistPoint = JointPoisition(skeleton, nuitrack.JointType.Waist);
+        Vector3 userFloorPoint = floorPlane.ClosestPointOnPlane(userWaistPoint);
+        Vector3 screenFloorPoint = ScreenPoint(userFloorPoint);
+
+        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenFloorPoint.y);
+
+        Vector3 bestJumpPoint = userFloorPoint + floorNormalVector * BestJumpHeight;
+        Vector3 screenBestJumpPoint = ScreenPoint(bestJumpPoint);
+
+        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - screenBestJumpPoint.y);
     }
    
 
