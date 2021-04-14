@@ -7,7 +7,7 @@ public class RiggedAvatar : MonoBehaviour
     [SerializeField]
     ModelJoint[] modelJoints;
     [SerializeField]
-    nuitrack.JointType rootJoint = nuitrack.JointType.LeftCollar;
+    nuitrack.JointType rootJoint = nuitrack.JointType.Torso;
     /// <summary> Model bones </summary>
     Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
 

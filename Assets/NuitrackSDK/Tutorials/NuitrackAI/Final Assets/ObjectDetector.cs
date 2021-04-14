@@ -44,7 +44,6 @@ public class ObjectDetector : MonoBehaviour
             if (objects!=null && i < objects.Length && objects[i].@class != "human")
             {
                 frames[i].gameObject.SetActive(true);
-                print(objects[i].@class + objects[i].bbox.top);
 
                 float frameWidth = objects[i].bbox.width * Screen.width;
                 float frameHeight = objects[i].bbox.height * Screen.height;
