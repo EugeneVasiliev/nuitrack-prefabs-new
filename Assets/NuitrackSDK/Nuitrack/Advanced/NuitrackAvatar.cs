@@ -65,11 +65,11 @@ public class NuitrackAvatar : MonoBehaviour
             ModelJoint modelJoint = riggedJoint.Value;
 
             //Bone position
-            Vector3 newPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * joint.ToVector3());
+            Vector3 newPos = 0.001f * joint.ToVector3();
             modelJoint.bone.position = newPos;
 
             //Bone rotation
-            Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
+            Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
             modelJoint.bone.rotation = jointOrient;
 
             //Bone scale

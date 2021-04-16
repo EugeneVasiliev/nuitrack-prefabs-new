@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
@@ -18,6 +19,17 @@ public class NuitrackModules : MonoBehaviour
 
     [SerializeField] TextMesh perfomanceInfoText;
 
+    [SerializeField] GameObject standardCamera, threeViewCamera;
+    [SerializeField] GameObject indirectAvatar, directAvatar;
+
+    Dropdown m_Dropdown;
+
+    public void SwitchCamera()
+    {
+        standardCamera.SetActive(!standardCamera.activeSelf);
+        threeViewCamera.SetActive(!threeViewCamera.activeSelf);
+    }
+
     void Awake()
     {
         exceptionsLogger = GameObject.FindObjectOfType<ExceptionsLogger>();
@@ -26,6 +38,28 @@ public class NuitrackModules : MonoBehaviour
         {
             exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
         }
+
+        m_Dropdown = FindObjectOfType<Dropdown>();
+        //Add listener for when the value of the Dropdown changes, to take action
+        m_Dropdown.onValueChanged.AddListener(delegate {
+            DropdownValueChanged(m_Dropdown);
+        });
+    }
+
+    GameObject root;
+    GameObject skelVis;
+    int skelVisId;
+
+    void DropdownValueChanged(Dropdown change)
+    {
+        skelVisId = change.value;
+        if (!root)
+            root = GameObject.Find("Root_1");
+
+        root.SetActive(change.value == 0);
+        skelVis.SetActive(change.value == 0);
+        indirectAvatar.SetActive(change.value == 1);
+        directAvatar.SetActive(change.value == 2);
     }
 
     bool prevDepth = false;
@@ -76,6 +110,16 @@ public class NuitrackModules : MonoBehaviour
         if (skeletonOn != prevSkel)
         {
             prevSkel = skeletonOn;
+            if (skelVisId == 0)
+            {
+                if (root)
+                    root.SetActive(true);
+                skelVis.SetActive(true);
+            }
+            if (skelVisId == 1)
+                indirectAvatar.SetActive(skeletonOn);
+            if (skelVisId == 2)
+                directAvatar.SetActive(skeletonOn);
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
@@ -102,7 +146,7 @@ public class NuitrackModules : MonoBehaviour
             Instantiate(issuesProcessorPrefab);
             Instantiate(depthUserVisualizationPrefab);
             Instantiate(depthUserMeshVisualizationPrefab);
-            Instantiate(skeletonsVisualizationPrefab);
+            skelVis = Instantiate(skeletonsVisualizationPrefab);
             Instantiate(handTrackerVisualizationPrefab);
             Instantiate(gesturesVisualizationPrefab);
         }
