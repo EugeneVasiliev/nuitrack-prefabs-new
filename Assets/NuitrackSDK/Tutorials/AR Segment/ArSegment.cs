@@ -62,9 +62,16 @@ public class ArSegment : MonoBehaviour
 
     void UpdateRGB()
     {
-        if (rgbRenderTexture == null || rgbRenderTexture.width != dataProvider.rgbCols || rgbRenderTexture.height != dataProvider.rgbRows)
+        nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
+
+        if (frame == null)
+            return;
+
+        //DataProviderFrame frame = dataProvider.RGBFrame;
+
+        if (rgbRenderTexture == null || rgbRenderTexture.width != frame.Cols || rgbRenderTexture.height != frame.Rows)
         {
-            dstRgbTexture2D = new Texture2D(dataProvider.rgbCols, dataProvider.rgbRows, TextureFormat.RGB24, false);
+            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
             BGR2RGBShader.SetTexture(rgbKernelIndex, "Texture", dstRgbTexture2D);
 
             rgbRenderTexture = new RenderTexture(dstRgbTexture2D.width, dstRgbTexture2D.height, 0, RenderTextureFormat.ARGB32);
@@ -77,10 +84,10 @@ public class ArSegment : MonoBehaviour
         if (!isGenerated)
         {
             isGenerated = true;
-            meshGenerator.Generate(dataProvider.rgbCols, dataProvider.rgbRows);
+            meshGenerator.Generate(frame.Cols, frame.Rows);
         }
 
-        dstRgbTexture2D.LoadRawTextureData(dataProvider.RGB);
+        dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
         dstRgbTexture2D.Apply();
 
         BGR2RGBShader.Dispatch(rgbKernelIndex, dstRgbTexture2D.width / (int)xRGB, dstRgbTexture2D.height / (int)yRGB, (int)zRGB);
@@ -90,9 +97,16 @@ public class ArSegment : MonoBehaviour
 
     void UpdateHieghtMap()
     {
-        if (depthRenderTexture == null || depthRenderTexture.width != dataProvider.depthCols || depthRenderTexture.height != dataProvider.depthRows)
+        nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
+
+        if (frame == null)
+            return;
+
+        //DataProviderFrame frame = dataProvider.DepthFrame;
+
+        if (depthRenderTexture == null || depthRenderTexture.width != frame.Cols || depthRenderTexture.height != frame.Rows)
         {
-            depthRenderTexture = new RenderTexture(dataProvider.depthCols, dataProvider.depthRows, 0, RenderTextureFormat.ARGB32);
+            depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
             depthRenderTexture.enableRandomWrite = true;
             depthRenderTexture.Create();
 
@@ -108,16 +122,14 @@ public class ArSegment : MonoBehaviour
             (sizeof(ushot) * sourceDataBuffer / 2 == sizeof(uint) * sourceDataBuffer / 2)
             */
 
-            int dataSize = dataProvider.Depth.Length;
+            int dataSize = frame.DataSize;
             sourceDataBuffer = new ComputeBuffer(dataSize / 2, sizeof(uint));
             depthToTexture.SetBuffer(depthKernelIndex, "DepthFrame", sourceDataBuffer);
 
             depthDataArray = new byte[dataSize];
         }
 
-        //Marshal.Copy(dataProvider.Depth, depthDataArray, 0, depthDataArray.Length);
-
-        depthDataArray = dataProvider.Depth;
+        Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
 
         depthToTexture.SetFloat("contrast", contrast);
