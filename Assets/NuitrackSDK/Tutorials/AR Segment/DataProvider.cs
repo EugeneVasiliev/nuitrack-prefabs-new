@@ -1,99 +1,128 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using UnityEngine;
 
+
+[System.Serializable]
+public class DataProviderFrame
+{
+    public byte[] data;
+    public int Cols;
+    public int Rows;
+
+    public int DataSize
+    {
+        get
+        {
+            return data.Length;
+        }
+    }
+
+    public IntPtr Data
+    {
+        get
+        {
+            IntPtr unmanagedPointer = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, unmanagedPointer, data.Length);
+            // Call unmanaged code
+            Marshal.FreeHGlobal(unmanagedPointer);
+            return unmanagedPointer;
+        }
+    }
+}
+
 public class DataProvider : MonoBehaviour
 {
     [SerializeField] bool isActive = false;
 
-    [SerializeField] byte[] rgbData;
-    [SerializeField] byte[] depthData;
-    [SerializeField] ushort[] segmentData;
-
-    [Header ("Frame size")]
-    public int rgbCols = 640;
-    public int rgbRows = 480;
-
-    public int depthCols = 640;
-    public int depthRows = 480;
-
-    public int segmentCols = 640;
-    public int segmentRows = 480;
+    [Header ("Do not open \"data\" array, please")] 
+    [SerializeField] DataProviderFrame rgbFrame;
+    [SerializeField] DataProviderFrame depthFrame;
+    [SerializeField] DataProviderFrame segmentFrame;
 
     void Start()
     {
         if (isActive)
         {
-            NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
-            NuitrackManager.onDepthUpdate += NuitrackManager_onDepthUpdate;
-            NuitrackManager.onUserTrackerUpdate += NuitrackManager_onUserTrackerUpdate;
+            TPoseCalibration.Instance.onSuccess += Instance_onSuccess;
+
+            //NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
+            //NuitrackManager.onDepthUpdate += NuitrackManager_onDepthUpdate;
+            //NuitrackManager.onUserTrackerUpdate += NuitrackManager_onUserTrackerUpdate;
         }
+    }
+
+    private void Instance_onSuccess(Quaternion rotation)
+    {
+        NuitrackManager_onColorUpdate(NuitrackManager.ColorFrame);
+        NuitrackManager_onDepthUpdate(NuitrackManager.DepthFrame);
+        NuitrackManager_onUserTrackerUpdate(NuitrackManager.UserFrame);
+
+        Debug.Log("Shot");
     }
 
     private void NuitrackManager_onUserTrackerUpdate(nuitrack.UserFrame frame)
     {
-        int datasize = frame.DataSize;
+        segmentFrame = new DataProviderFrame()
+        {
+            data = new byte[frame.DataSize],
+            Cols = frame.Cols,
+            Rows = frame.Rows
+        };
 
-        if (segmentData == null || segmentData.Length != datasize)
-            segmentData = new ushort[datasize];
-
-        for (int i = 0; i < datasize; i++)
-            segmentData[i] = frame[i];
-
-        segmentCols = frame.Cols;
-        segmentRows = frame.Rows;
+        Marshal.Copy(frame.Data, segmentFrame.data, 0, frame.DataSize);
     }
+
 
     private void NuitrackManager_onDepthUpdate(nuitrack.DepthFrame frame)
     {
-        int datasize = frame.DataSize;
+        depthFrame = new DataProviderFrame()
+        {
+            data = new byte[frame.DataSize],
+            Cols = frame.Cols,
+            Rows = frame.Rows
+        };
 
-        if (depthData == null || depthData.Length != datasize)
-            depthData = new byte[datasize];
-
-        depthData = new byte[datasize];
-        Marshal.Copy(frame.Data, depthData, 0, depthData.Length);
-
-        depthCols = frame.Cols;
-        depthRows = frame.Rows;
+        Marshal.Copy(frame.Data, depthFrame.data, 0, frame.DataSize);
     }
 
     void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
     {
-        int datasize = frame.DataSize;
-        
-        if (rgbData == null || rgbData.Length != datasize)
-            rgbData = new byte[datasize];
+        rgbFrame = new DataProviderFrame()
+        {
+            data = new byte[frame.DataSize],
+            Cols = frame.Cols,
+            Rows = frame.Rows
+        };
 
-        Marshal.Copy(frame.Data, rgbData, 0, datasize);
-
-        rgbCols = frame.Cols;
-        rgbRows = frame.Rows;
+        Marshal.Copy(frame.Data, rgbFrame.data, 0, frame.DataSize);
     }
 
-    public byte[] RGB
+    public DataProviderFrame RGBFrame
     {
         get
         {
-            return rgbData;
+            return rgbFrame;
         }
     }
 
-    public byte[] Depth
+    public DataProviderFrame DepthFrame
     {
         get
         {
-            return depthData;
+            return depthFrame;
         }
     }
 
-    public ushort[] Segment
+
+    public DataProviderFrame SegmentFrame
     {
         get
         {
-            return segmentData;
+            return segmentFrame;
         }
     }
 
