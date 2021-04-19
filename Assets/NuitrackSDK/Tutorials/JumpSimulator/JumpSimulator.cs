@@ -23,11 +23,6 @@ public class JumpSimulator : MonoBehaviour
     [SerializeField] RectTransform currentJumpLine;
     [SerializeField] Text currentJumpLable;
 
-    [Header ("Test options")]
-    [SerializeField] SkeletonEmulator skeletonEmulator;
-    [SerializeField] Transform floorBasePointTransform;
-    [SerializeField] Transform floorNormalVectorTransform;
-
     bool lefOnFloorLastFrame = true;
 
     public float BestJumpHeight
@@ -114,13 +109,10 @@ public class JumpSimulator : MonoBehaviour
             return;
         }
 
-        DisplayLines(true);
+        DisplayLines(true);   
 
         Vector3 floorBasePoint = NuitrackManager.UserFrame.Floor.ToVector3();
         Vector3 floorNormalVector = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
-
-        //Vector3 floorBasePoint = floorBasePointTransform.position;
-        //Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
 
         floorPlane = new Plane(floorNormalVector, floorBasePoint);
 
@@ -166,28 +158,4 @@ public class JumpSimulator : MonoBehaviour
 
         bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenBestJumpPoint.y);
     }
-   
-
-    //void OnDrawGizmos()
-    //{
-    //    Vector3 floorBasePoint = floorBasePointTransform.position;
-    //    Vector3 floorNormalVector = (floorBasePointTransform.position - floorNormalVectorTransform.position).normalized;
-
-    //    floorPlane = new Plane(floorNormalVector, floorBasePoint);
-
-    //    UnityEditor.Handles.color = new Color(0.5f, 1, 0.5f, 1f);
-    //    UnityEditor.Handles.DrawWireDisc(floorBasePoint, floorNormalVector, 2);
-
-    //    UnityEditor.Handles.DrawLine(floorBasePointTransform.position, floorNormalVectorTransform.position);
-
-    //    Vector3 leftAnkle = JointPoisition(null, nuitrack.JointType.LeftAnkle);
-    //    Vector3 rightAnkle = JointPoisition(null, nuitrack.JointType.RightAnkle);
-
-    //    Vector3 floorLeftAnklePoint = floorPlane.ClosestPointOnPlane(leftAnkle);
-    //    Vector3 floorRightAnklePoint = floorPlane.ClosestPointOnPlane(rightAnkle);
-
-    //    Gizmos.color = LegOnFloor(null) ? Color.green : Color.red;
-    //    Gizmos.DrawSphere(floorLeftAnklePoint, 0.1f);
-    //    Gizmos.DrawSphere(floorRightAnklePoint, 0.1f);
-    //}
 }
