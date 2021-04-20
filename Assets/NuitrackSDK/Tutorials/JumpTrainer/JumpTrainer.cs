@@ -68,7 +68,7 @@ public class JumpTrainer : MonoBehaviour
             }
         }
 
-        return jumpHeight;
+        return jumpHeight * 0.001f;
     }
 
     Vector3 FrameSpaceProjPoint(nuitrack.Vector3 realPoint, nuitrack.DepthFrame frame)
@@ -135,7 +135,7 @@ public class JumpTrainer : MonoBehaviour
             if (CurrentJumpHeight > BestJumpHeight)
             {
                 BestJumpHeight = CurrentJumpHeight;
-                bestJumpLabel.text = string.Format("Best: {0:F2}", BestJumpHeight * 0.001f);
+                bestJumpLabel.text = string.Format("Best: {0:F2}", BestJumpHeight);
             }
         }
         else
@@ -145,16 +145,16 @@ public class JumpTrainer : MonoBehaviour
         Vector3 currentJumpScreenPoint = FrameSpaceProjPoint(jointPosition, NuitrackManager.DepthFrame);
 
         currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * currentJumpScreenPoint.y);
-        currentJumpLabel.text = string.Format("Current: {0:F2}", CurrentJumpHeight * 0.001f);
+        currentJumpLabel.text = string.Format("Current: {0:F2}", CurrentJumpHeight);
 
-        Vector3 userWaistPoint = skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3();
-        Vector3 userFloorPoint = floorPlane.ClosestPointOnPlane(userWaistPoint);
-        Vector3 screenFloorPoint = FrameSpaceProjPoint(NuitrackVector(userFloorPoint), NuitrackManager.DepthFrame);
+        Vector3 waistPosition = skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3();
+        Vector3 floorWaistPosition = floorPlane.ClosestPointOnPlane(waistPosition);
+        Vector3 screenFloorWaistPoint = FrameSpaceProjPoint(NuitrackVector(floorWaistPosition), NuitrackManager.DepthFrame);
 
-        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenFloorPoint.y);
+        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenFloorWaistPoint.y);
 
-        Vector3 bestJumpPoint = userFloorPoint + floorNormal * BestJumpHeight;
-        Vector3 screenBestJumpPoint = FrameSpaceProjPoint(NuitrackVector(bestJumpPoint), NuitrackManager.DepthFrame);
+        Vector3 bestJumpPosition = floorWaistPosition + floorNormal * BestJumpHeight * 1000;
+        Vector3 screenBestJumpPoint = FrameSpaceProjPoint(NuitrackVector(bestJumpPosition), NuitrackManager.DepthFrame);
 
         bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenBestJumpPoint.y);
     }
