@@ -10,13 +10,7 @@ public class ArSegment : MonoBehaviour
     [SerializeField] Camera mainCamera;
 
     [Header ("RGB shader")]
-    [SerializeField] ComputeShader BGR2RGBShader;
-
     Texture2D dstRgbTexture2D;
-    RenderTexture rgbRenderTexture;
-
-    uint xRGB, yRGB, zRGB;
-    int rgbKernelIndex;
 
     [Header("Segment shader")]
     [SerializeField] ComputeShader depthToTexture;
@@ -37,14 +31,9 @@ public class ArSegment : MonoBehaviour
 
     [Header ("Mesh generator")]
     [SerializeField] MeshGenerator meshGenerator;
-    bool isGenerated = false;
 
     void Start()
     {
-        // RGB
-        rgbKernelIndex = BGR2RGBShader.FindKernel("RGB2BGR");
-        BGR2RGBShader.GetKernelThreadGroupSizes(rgbKernelIndex, out xRGB, out yRGB, out zRGB);
-
         // Segment map
 
         depthKernelIndex = depthToTexture.FindKernel("Depth2Texture");
@@ -62,52 +51,40 @@ public class ArSegment : MonoBehaviour
 
     void UpdateRGB()
     {
-        nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
+        //nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
 
-        if (frame == null)
-            return;
+        //if (frame == null)
+        //    return;
 
-        //DataProviderFrame frame = dataProvider.RGBFrame;
+        DataProviderFrame frame = dataProvider.RGBFrame;
 
-        if (rgbRenderTexture == null || rgbRenderTexture.width != frame.Cols || rgbRenderTexture.height != frame.Rows)
-        {
+        if (dstRgbTexture2D == null)
+        {     
             dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-            BGR2RGBShader.SetTexture(rgbKernelIndex, "Texture", dstRgbTexture2D);
-
-            rgbRenderTexture = new RenderTexture(dstRgbTexture2D.width, dstRgbTexture2D.height, 0, RenderTextureFormat.ARGB32);
-            rgbRenderTexture.enableRandomWrite = true;
-            rgbRenderTexture.Create();
-
-            BGR2RGBShader.SetTexture(rgbKernelIndex, "Result", rgbRenderTexture);
-        }
-
-        if (!isGenerated)
-        {
-            isGenerated = true;
             meshGenerator.Generate(frame.Cols, frame.Rows);
         }
 
         dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
         dstRgbTexture2D.Apply();
 
-        BGR2RGBShader.Dispatch(rgbKernelIndex, dstRgbTexture2D.width / (int)xRGB, dstRgbTexture2D.height / (int)yRGB, (int)zRGB);
-
-        outMat.SetTexture("_MainTex", rgbRenderTexture);
+        outMat.SetTexture("_MainTex", dstRgbTexture2D);
     }
 
     void UpdateHieghtMap()
     {
-        nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
+        //nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
 
-        if (frame == null)
-            return;
+        //if (frame == null)
+        //    return;
 
-        //DataProviderFrame frame = dataProvider.DepthFrame;
+        DataProviderFrame frame = dataProvider.DepthFrame;
 
         if (depthRenderTexture == null || depthRenderTexture.width != frame.Cols || depthRenderTexture.height != frame.Rows)
         {
             depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
             depthRenderTexture.enableRandomWrite = true;
+            depthRenderTexture.filterMode = FilterMode.Point;
+            
             depthRenderTexture.Create();
 
             depthToTexture.SetInt("textureWidth", depthRenderTexture.width);
@@ -141,6 +118,6 @@ public class ArSegment : MonoBehaviour
     private void OnDestroy()
     {
         Destroy(depthRenderTexture);
-        Destroy(rgbRenderTexture);
+        Destroy(dstRgbTexture2D);
     }
 }
