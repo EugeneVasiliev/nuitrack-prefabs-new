@@ -32,6 +32,14 @@ public class ArSegment : MonoBehaviour
     [Header ("Mesh generator")]
     [SerializeField] MeshGenerator meshGenerator;
 
+    Plane floorPlane;
+    [SerializeField] Transform rootMainScene;
+    [SerializeField] Transform floorRoot;
+
+    [SerializeField] float deltaHieght = 0.1f;
+    [SerializeField] float deltaAndle = 5f;
+    [SerializeField] float lerpMove = 4f;
+
     void Start()
     {
         // Segment map
@@ -40,6 +48,9 @@ public class ArSegment : MonoBehaviour
         depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
     }
 
+    Vector3 floorPoint;
+    Vector3 floorNormal;
+
     void Update()
     {
         Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
@@ -47,6 +58,46 @@ public class ArSegment : MonoBehaviour
 
         UpdateRGB();
         UpdateHieghtMap();
+
+        if (NuitrackManager.UserFrame == null)
+            return;
+
+        Vector3 newFloorPoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
+        Vector3 newFloorNormal = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
+        Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
+
+        if (floorPlane.Equals(default))
+        {
+            floorPoint = newFloorPoint;
+            floorNormal = newFloorNormal;
+            floorPlane = new Plane(floorNormal, floorPoint);
+        }
+
+        Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(rootMainScene.position);
+        Vector3 floorSensor = floorPlane.ClosestPointOnPlane(rootMainScene.position);
+
+        if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAndle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHieght)
+        {
+            Debug.Log(string.Format("Angle = {0}, hieght = {1}", Vector3.Angle(newFloor.normal, floorPlane.normal), Mathf.Abs(newFloorSensor.y - floorSensor.y)));
+            floorPoint = newFloorPoint;
+            floorNormal = newFloorNormal;
+            floorPlane = new Plane(floorNormal, floorPoint);
+
+        }
+
+        Vector3 forward = rootMainScene.forward;
+        Vector3.OrthoNormalize(ref floorNormal, ref forward);
+
+        rootMainScene.localRotation = Quaternion.RotateTowards(rootMainScene.localRotation, Quaternion.LookRotation(forward, floorNormal), Time.deltaTime * lerpMove);
+
+        Vector3 localRoot = floorRoot.localPosition;
+        localRoot.y = floorSensor.y;
+        floorRoot.localPosition = Vector3.MoveTowards(floorRoot.localPosition, localRoot, Time.deltaTime * lerpMove);
+    }
+
+    private void OnDrawGizmos()
+    {
+        UnityEditor.Handles.DrawWireDisc(floorPoint, floorNormal, 2f);
     }
 
     void UpdateRGB()
@@ -56,7 +107,7 @@ public class ArSegment : MonoBehaviour
         //if (frame == null)
         //    return;
 
-        DataProviderFrame frame = dataProvider.RGBFrame;
+        DataProvider.DPFrame frame = dataProvider.RGBFrame;
 
         if (dstRgbTexture2D == null)
         {     
@@ -77,7 +128,7 @@ public class ArSegment : MonoBehaviour
         //if (frame == null)
         //    return;
 
-        DataProviderFrame frame = dataProvider.DepthFrame;
+        DataProvider.DPFrame frame = dataProvider.DepthFrame;
 
         if (depthRenderTexture == null || depthRenderTexture.width != frame.Cols || depthRenderTexture.height != frame.Rows)
         {

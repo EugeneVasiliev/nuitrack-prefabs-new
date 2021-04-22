@@ -41,7 +41,7 @@ public class MeshGenerator : MonoBehaviour
                 float wi = (float)w / width;
                 float he = (float)h / height;
 
-                Vector2 uv = new Vector2(wi, he);
+                Vector2 uv = new Vector2(wi, 1 - he);
                 uvs.Add(uv);
 
                 if (aspectRatio > 1)
