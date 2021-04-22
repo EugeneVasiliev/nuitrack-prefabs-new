@@ -40,12 +40,16 @@ public class ArSegment : MonoBehaviour
     [SerializeField] float deltaAndle = 5f;
     [SerializeField] float lerpMove = 4f;
 
+    [SerializeField] float planeToCameraDistance;
+
     void Start()
     {
         // Segment map
 
         depthKernelIndex = depthToTexture.FindKernel("Depth2Texture");
         depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
+
+        UpdateSkelet();
     }
 
     Vector3 floorPoint;
@@ -53,46 +57,10 @@ public class ArSegment : MonoBehaviour
 
     void Update()
     {
-        Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
-        outMat.SetVector("_CameraPosition", localCameraPosition);
-
         UpdateRGB();
         UpdateHieghtMap();
-
-        if (NuitrackManager.UserFrame == null)
-            return;
-
-        Vector3 newFloorPoint = NuitrackManager.UserFrame.Floor.ToVector3() * 0.001f;
-        Vector3 newFloorNormal = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
-        Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
-
-        if (floorPlane.Equals(default))
-        {
-            floorPoint = newFloorPoint;
-            floorNormal = newFloorNormal;
-            floorPlane = new Plane(floorNormal, floorPoint);
-        }
-
-        Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(rootMainScene.position);
-        Vector3 floorSensor = floorPlane.ClosestPointOnPlane(rootMainScene.position);
-
-        if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAndle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHieght)
-        {
-            Debug.Log(string.Format("Angle = {0}, hieght = {1}", Vector3.Angle(newFloor.normal, floorPlane.normal), Mathf.Abs(newFloorSensor.y - floorSensor.y)));
-            floorPoint = newFloorPoint;
-            floorNormal = newFloorNormal;
-            floorPlane = new Plane(floorNormal, floorPoint);
-
-        }
-
-        Vector3 forward = rootMainScene.forward;
-        Vector3.OrthoNormalize(ref floorNormal, ref forward);
-
-        rootMainScene.localRotation = Quaternion.RotateTowards(rootMainScene.localRotation, Quaternion.LookRotation(forward, floorNormal), Time.deltaTime * lerpMove);
-
-        Vector3 localRoot = floorRoot.localPosition;
-        localRoot.y = floorSensor.y;
-        floorRoot.localPosition = Vector3.MoveTowards(floorRoot.localPosition, localRoot, Time.deltaTime * lerpMove);
+        UpdateFloor();
+        //UpdateSkelet();
     }
 
     private void OnDrawGizmos()
@@ -103,11 +71,10 @@ public class ArSegment : MonoBehaviour
     void UpdateRGB()
     {
         //nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
-
-        //if (frame == null)
-        //    return;
-
         DataProvider.DPFrame frame = dataProvider.RGBFrame;
+
+        if (frame == null)
+            return;
 
         if (dstRgbTexture2D == null)
         {     
@@ -124,11 +91,10 @@ public class ArSegment : MonoBehaviour
     void UpdateHieghtMap()
     {
         //nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
-
-        //if (frame == null)
-        //    return;
-
         DataProvider.DPFrame frame = dataProvider.DepthFrame;
+
+        if (frame == null)
+            return;
 
         if (depthRenderTexture == null || depthRenderTexture.width != frame.Cols || depthRenderTexture.height != frame.Rows)
         {
@@ -140,7 +106,7 @@ public class ArSegment : MonoBehaviour
 
             depthToTexture.SetInt("textureWidth", depthRenderTexture.width);
             depthToTexture.SetTexture(depthKernelIndex, "Result", depthRenderTexture);
-
+            depthToTexture.SetFloat("contrast", 0);
             /*
             We put the source data in the buffer, but the buffer does not support types 
             that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32)).
@@ -155,15 +121,80 @@ public class ArSegment : MonoBehaviour
             depthToTexture.SetBuffer(depthKernelIndex, "DepthFrame", sourceDataBuffer);
 
             depthDataArray = new byte[dataSize];
+
+            outMat.SetTexture("_HeightMap", depthRenderTexture);
         }
 
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
 
-        depthToTexture.SetFloat("contrast", contrast);
+        
         depthToTexture.Dispatch(depthKernelIndex, depthRenderTexture.width / (int)xDepth, depthRenderTexture.height / (int)yDepth, (int)zDepth);
 
-        outMat.SetTexture("_HeightMap", depthRenderTexture);
+        
+
+        Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
+        outMat.SetVector("_CameraPosition", localCameraPosition);
+    }
+
+    void UpdateFloor()
+    {
+        DataProvider.DPUserFrame userFrame = dataProvider.UserFrame;
+        //nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
+
+        if (userFrame == null)
+            return;
+
+        Vector3 newFloorPoint = userFrame.Floor.ToVector3() * 0.001f;
+        Vector3 newFloorNormal = userFrame.FloorNormal.ToVector3().normalized;
+        Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
+
+        if (floorPlane.Equals(default))
+        {
+            floorPoint = newFloorPoint;
+            floorNormal = newFloorNormal;
+            floorPlane = new Plane(floorNormal, floorPoint);
+        }
+
+        Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(rootMainScene.position);
+        Vector3 floorSensor = floorPlane.ClosestPointOnPlane(rootMainScene.position);
+
+        if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAndle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHieght)
+        {
+            floorPoint = newFloorPoint;
+            floorNormal = newFloorNormal;
+            floorPlane = new Plane(floorNormal, floorPoint);
+
+        }
+
+        Vector3 forward = rootMainScene.forward;
+        Vector3.OrthoNormalize(ref floorNormal, ref forward);
+
+        rootMainScene.localRotation = Quaternion.RotateTowards(rootMainScene.localRotation, Quaternion.LookRotation(forward, floorNormal), Time.deltaTime * lerpMove);
+
+        Vector3 localRoot = floorRoot.localPosition;
+        localRoot.y = floorSensor.y;
+        floorRoot.localPosition = Vector3.MoveTowards(floorRoot.localPosition, localRoot, Time.deltaTime * lerpMove);
+    }
+
+    [SerializeField] Transform sensorCenter;
+    [SerializeField] GameObject jointObj;
+
+    void UpdateSkelet()
+    {
+        //nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
+        DataProvider.DPSkeleton skeleton = dataProvider.CurrentSkeleton;
+
+        if (skeleton == null)
+            return;
+
+        foreach(nuitrack.JointType jointType in System.Enum.GetValues(typeof(nuitrack.JointType)))
+        {
+            Vector3 position = skeleton.GetJoint(jointType).Real.ToVector3() * 0.001f;
+
+            GameObject joint = Instantiate(jointObj, sensorCenter);
+            joint.transform.localPosition = position;
+        }
     }
 
     private void OnDestroy()

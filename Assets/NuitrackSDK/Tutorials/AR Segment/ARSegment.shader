@@ -4,7 +4,6 @@
     {
         _MainTex("Texture", 2D) = "white" {}
         _HeightMap("Height map", 2D) = "white" {}
-        _Amount("Extrusion Amount", Range(-1024, 1024)) = 0.5
         _CameraPosition("Camera position", Vector) = (0,0,0,0)
 
 		_Emission("Emission", Range(0, 1)) = 0.5
@@ -21,8 +20,7 @@
         {
             float2 uv_MainTex;
         };
-         
-        float _Amount;
+
         sampler2D _MainTex;
         sampler2D _HeightMap;
         float3 _CameraPosition;
@@ -34,9 +32,10 @@
 
             if (tex.b <= (1.0F / 256.0F))
                 tex.b = 1;
-
-            float3 toCam = normalize(v.vertex - _CameraPosition) * tex.b;
-            v.vertex.xyz += toCam * _Amount;
+            
+            float3 deltaCam = v.vertex - _CameraPosition;
+            float3 toCam = normalize(deltaCam) * tex.b;
+            v.vertex.xyz += toCam * 16;
         }
 
         void surf(Input IN, inout SurfaceOutput o)
