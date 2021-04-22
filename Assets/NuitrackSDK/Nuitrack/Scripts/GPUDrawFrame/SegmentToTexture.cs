@@ -39,12 +39,12 @@ public class SegmentToTexture : MonoBehaviour
     uint x, y, z;
     int kernelIndex;
 
-    void Start()
-    { 
+    void OnEnable()
+    {
+        NuitrackManager.onUserTrackerUpdate += NuitrackManager_onUserTrackerUpdate;
+
         if (SystemInfo.supportsComputeShaders)
         {
-            NuitrackManager.onUserTrackerUpdate += NuitrackManager_onUserTrackerUpdate;
-
             kernelIndex = segment2Texture.FindKernel("Segment2Texture");
             segment2Texture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
 
@@ -57,12 +57,12 @@ public class SegmentToTexture : MonoBehaviour
             Debug.LogError("Compute Shader is not support.");
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
+        NuitrackManager.onUserTrackerUpdate -= NuitrackManager_onUserTrackerUpdate;
+
         if (SystemInfo.supportsComputeShaders)
         {
-            NuitrackManager.onUserTrackerUpdate -= NuitrackManager_onUserTrackerUpdate;
-
             userColorsBuffer.Release();
             sourceDataBuffer.Release();
         }
@@ -70,6 +70,12 @@ public class SegmentToTexture : MonoBehaviour
 
     void NuitrackManager_onUserTrackerUpdate(nuitrack.UserFrame frame)
     {
+        if (!SystemInfo.supportsComputeShaders)
+        {
+            rawImage.texture = frame.ToTexture2D();
+            return;
+        }
+
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             renderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);

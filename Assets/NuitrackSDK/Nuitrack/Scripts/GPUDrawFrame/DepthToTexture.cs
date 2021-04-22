@@ -27,21 +27,23 @@ public class DepthToTexture : MonoBehaviour
     uint x, y, z;
     int kernelIndex;
 
-    void Start()
+    void OnEnable()
     {
+        NuitrackManager.onDepthUpdate += DrawDepth;
+
         if (SystemInfo.supportsComputeShaders)
         {
             kernelIndex = depthToTexture.FindKernel("Depth2Texture");
             depthToTexture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
-
-            NuitrackManager.onDepthUpdate += DrawDepth;
         }
         else
             Debug.LogError("Compute Shader is not support.");
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
+        NuitrackManager.onDepthUpdate -= DrawDepth;
+
         if (SystemInfo.supportsComputeShaders)
         {
             NuitrackManager.onDepthUpdate -= DrawDepth;
@@ -51,6 +53,12 @@ public class DepthToTexture : MonoBehaviour
 
     void DrawDepth(nuitrack.DepthFrame frame)
     {
+        if (!SystemInfo.supportsComputeShaders)
+        {
+            background.texture = frame.ToTexture2D();
+            return;
+        }
+
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             renderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);

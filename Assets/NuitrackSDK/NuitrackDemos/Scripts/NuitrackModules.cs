@@ -22,7 +22,10 @@ public class NuitrackModules : MonoBehaviour
     [SerializeField] GameObject standardCamera, threeViewCamera;
     [SerializeField] GameObject indirectAvatar, directAvatar;
 
-    Dropdown m_Dropdown;
+    [SerializeField] GameObject sensorFrameWindowed;
+    [SerializeField] GameObject sensorFrameFullscreen;
+
+    [SerializeField] Dropdown dropdownModelSwitcher;
 
     public void SwitchCamera()
     {
@@ -39,11 +42,10 @@ public class NuitrackModules : MonoBehaviour
             exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
         }
 
-        m_Dropdown = FindObjectOfType<Dropdown>();
         //Add listener for when the value of the Dropdown changes, to take action
-        m_Dropdown.onValueChanged.AddListener(delegate {
-            DropdownValueChanged(m_Dropdown);
-        });
+        //dropdownModelSwitcher.onValueChanged.AddListener(delegate {
+        //    DropdownValueChanged(dropdownModelSwitcher);
+        //});
     }
 
     GameObject root;
@@ -60,6 +62,18 @@ public class NuitrackModules : MonoBehaviour
         skelVis.SetActive(change.value == 0);
         indirectAvatar.SetActive(change.value == 1);
         directAvatar.SetActive(change.value == 2);
+    }
+
+    public void SwitchModelByIndex(int id)
+    {
+        skelVisId = id;
+        if (!root)
+            root = GameObject.Find("Root_1");
+
+        root.SetActive(skelVisId == 0);
+        skelVis.SetActive(skelVisId == 0);
+        indirectAvatar.SetActive(skelVisId == 1);
+        directAvatar.SetActive(skelVisId == 2);
     }
 
     bool prevDepth = false;
@@ -173,5 +187,17 @@ public class NuitrackModules : MonoBehaviour
         {
             exceptionsLogger.AddEntry(ex.ToString());
         }
+    }
+
+    int sensorFrameId = 0;
+
+    public void SwitchSensorFrame()
+    {
+        sensorFrameId++;
+        if (sensorFrameId > 2)
+            sensorFrameId = 0;
+
+        sensorFrameWindowed.SetActive(sensorFrameId == 1);
+        sensorFrameFullscreen.SetActive(sensorFrameId == 2);
     }
 }

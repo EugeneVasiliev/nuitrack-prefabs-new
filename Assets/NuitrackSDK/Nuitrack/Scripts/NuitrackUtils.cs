@@ -95,15 +95,18 @@ public static class NuitrackUtils
     /// <param name="customListColors">Optional colors for users</param>
     /// <returns>Unity Texture2D</returns>
     [Obsolete("Texture2D(nuitrack.UserFrame) is deprecated, please use script SegmentToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, params Color32[] customListColors)
+    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, Color32[] customListColors = null)
     {
-        Color32[] currentColorList = customListColors ?? defaultColors;
+        Color32[] currentColorList = defaultColors;
+
+        if (customListColors != null)
+            currentColorList = customListColors;
 
         byte[] outSegment = new byte[frame.Cols * frame.Rows * 4];
 
         for (int i = 0; i < (frame.Cols * frame.Rows); i++)
         {
-            Color32 currentColor = (frame[i] == 0) ? transparentColor : currentColorList[frame[i]];
+            Color32 currentColor = (frame[i] == 0) ? transparentColor : currentColorList[frame[i]]/*(Color32)Color.red*/ /*currentColorList[frame[i]]*/;
 
             int ptr = i * 4;
             outSegment[ptr] = currentColor.a;
