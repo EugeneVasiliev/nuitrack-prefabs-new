@@ -1,11 +1,10 @@
-﻿Shader "Nuitrack/AR Segment" 
+﻿Shader "Nuitrack/Depth3D" 
 {
     Properties
     {
         _MainTex("Texture", 2D) = "white" {}
         _HeightMap("Height map", 2D) = "white" {}
         _CameraPosition("Camera position", Vector) = (0,0,0,0)
-
 		_Emission("Emission", Range(0, 1)) = 0.5
     }
 
@@ -14,7 +13,7 @@
         Tags { "RenderType" = "Opaque"}
 
         CGPROGRAM
-        #pragma surface surf Lambert vertex:vert
+        #pragma surface surf Lambert vertex:vert addshadow
             
         struct Input 
         {
@@ -30,12 +29,12 @@
         {
             float4 tex = tex2Dlod(_HeightMap, float4(v.texcoord.xy, 0, 0));
 
-            if (tex.b <= (1.0F / 256.0F))
+            if (tex.b <= (1.0 / 256.0))
                 tex.b = 1;
             
-            float3 deltaCam = v.vertex - _CameraPosition;
-            float3 toCam = normalize(deltaCam) * tex.b;
-            v.vertex.xyz += toCam * 16;
+            float3 deltaCam = _CameraPosition - v.vertex;
+            float3 toCam = normalize(deltaCam) * (1 - tex.b);
+            v.vertex.xyz += toCam * length(deltaCam);
         }
 
         void surf(Input IN, inout SurfaceOutput o)

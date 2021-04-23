@@ -4,9 +4,8 @@ using System.Runtime.InteropServices;
 
 using UnityEngine;
 
-public class ArSegment : MonoBehaviour
+public class Depth3D : MonoBehaviour
 {
-    [SerializeField] DataProvider dataProvider;
     [SerializeField] Camera mainCamera;
 
     [Header ("RGB shader")]
@@ -19,7 +18,6 @@ public class ArSegment : MonoBehaviour
     [SerializeField] float contrast = 0f;
 
     ComputeBuffer sourceDataBuffer;
-
     byte[] depthDataArray = null;
     RenderTexture depthRenderTexture;
 
@@ -40,7 +38,12 @@ public class ArSegment : MonoBehaviour
     [SerializeField] float deltaAndle = 5f;
     [SerializeField] float lerpMove = 4f;
 
-    [SerializeField] float planeToCameraDistance;
+    [Header ("Floor")]
+    [SerializeField] Transform sensorCenter;
+    [SerializeField] GameObject jointObj;
+
+    [Header ("Test options")]
+    [SerializeField] DataProvider dataProvider;
 
     void Start()
     {
@@ -50,6 +53,8 @@ public class ArSegment : MonoBehaviour
         depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
 
         UpdateSkelet();
+
+        FitMeshIntoFrame();
     }
 
     Vector3 floorPoint;
@@ -63,9 +68,30 @@ public class ArSegment : MonoBehaviour
         //UpdateSkelet();
     }
 
-    private void OnDrawGizmos()
-    {
-        UnityEditor.Handles.DrawWireDisc(floorPoint, floorNormal, 2f);
+    void FitMeshIntoFrame()
+    {  
+        //nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
+        DataProvider.DPFrame frame = dataProvider.DepthFrame;
+
+        float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.position, mainCamera.transform.position);
+        float frameAspectRatio = (float)frame.Cols / frame.Rows;
+
+        float v_angle = mainCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
+
+        float scale;
+
+        if (mainCamera.aspect < frameAspectRatio)
+        {
+            float radHFOV = Mathf.Atan(Mathf.Tan(v_angle) * mainCamera.aspect);
+            scale = cameraToPlaneDist * Mathf.Tan(radHFOV);
+        }
+        else
+        {
+            scale = cameraToPlaneDist * Mathf.Tan(v_angle);
+            scale *= (float)frame.Cols / frame.Rows;
+        }
+
+        meshGenerator.transform.localScale = new Vector3(scale * 2, scale * 2, 1);
     }
 
     void UpdateRGB()
@@ -127,14 +153,13 @@ public class ArSegment : MonoBehaviour
 
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
-
-        
-        depthToTexture.Dispatch(depthKernelIndex, depthRenderTexture.width / (int)xDepth, depthRenderTexture.height / (int)yDepth, (int)zDepth);
-
-        
+     
+        depthToTexture.Dispatch(depthKernelIndex, depthRenderTexture.width / (int)xDepth, depthRenderTexture.height / (int)yDepth, (int)zDepth);     
 
         Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
         outMat.SetVector("_CameraPosition", localCameraPosition);
+
+        FitMeshIntoFrame();
     }
 
     void UpdateFloor()
@@ -177,9 +202,6 @@ public class ArSegment : MonoBehaviour
         floorRoot.localPosition = Vector3.MoveTowards(floorRoot.localPosition, localRoot, Time.deltaTime * lerpMove);
     }
 
-    [SerializeField] Transform sensorCenter;
-    [SerializeField] GameObject jointObj;
-
     void UpdateSkelet()
     {
         //nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
@@ -201,5 +223,46 @@ public class ArSegment : MonoBehaviour
     {
         Destroy(depthRenderTexture);
         Destroy(dstRgbTexture2D);
+    }
+
+    private void OnDrawGizmos()
+    {
+        UnityEditor.Handles.DrawWireDisc(floorPoint, floorNormal, 2f);
+
+        //float v_angle = mainCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
+        //float radHFOV = Mathf.Atan(Mathf.Tan(v_angle) * mainCamera.aspect);
+
+        ////nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
+        //DataProvider.DPFrame frame = dataProvider.DepthFrame;
+
+        //float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.transform.position, mainCamera.transform.position);
+        //float frameAspectRatio = (float)frame.Cols / frame.Rows;
+
+        ////Debug.Log(string.Format("v_angle = {0}, h_angle = {1}, mainCamera.aspect = {2}", mainCamera.fieldOfView, radHFOV * Mathf.Rad2Deg, mainCamera.aspect));
+
+        //float scale;
+
+        //if (mainCamera.aspect < frameAspectRatio)
+        //    scale = cameraToPlaneDist * Mathf.Tan(radHFOV);
+        //else
+        //    scale = cameraToPlaneDist * Mathf.Tan(v_angle);
+
+        //Vector3[] polyLines = new Vector3[]
+        //{
+        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
+        //    new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
+        //    new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
+        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
+        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
+        // };
+
+        //UnityEditor.Handles.DrawPolyLine(polyLines);
+
+        ////Gizmos.DrawCube(new Vector3(0, 0, cameraToPlaneDist), Vector3.one * cameraToPlaneDist * Mathf.Tan(radHFOV));
+
+        //Gizmos.DrawCube(new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), 0, cameraToPlaneDist), Vector3.one);
+        //Gizmos.DrawCube(new Vector3(0, cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist), Vector3.one);
+        //Gizmos.DrawCube(new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), 0, cameraToPlaneDist), Vector3.one);
+        //Gizmos.DrawCube(new Vector3(0, -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist), Vector3.one);
     }
 }
