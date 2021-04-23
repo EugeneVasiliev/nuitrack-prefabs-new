@@ -20,12 +20,14 @@ public class NuitrackModules : MonoBehaviour
     [SerializeField] TextMesh perfomanceInfoText;
 
     [SerializeField] GameObject standardCamera, threeViewCamera;
-    [SerializeField] GameObject indirectAvatar, directAvatar;
+    [SerializeField] GameObject indirectAvatar, directAvatar, indirectAvatarMan, directAvatarMan;
 
     [SerializeField] GameObject sensorFrameWindowed;
     [SerializeField] GameObject sensorFrameFullscreen;
 
     [SerializeField] Dropdown dropdownModelSwitcher;
+
+    int sensorFrameId = 0;
 
     public void SwitchCamera()
     {
@@ -52,28 +54,19 @@ public class NuitrackModules : MonoBehaviour
     GameObject skelVis;
     int skelVisId;
 
-    void DropdownValueChanged(Dropdown change)
-    {
-        skelVisId = change.value;
-        if (!root)
-            root = GameObject.Find("Root_1");
-
-        root.SetActive(change.value == 0);
-        skelVis.SetActive(change.value == 0);
-        indirectAvatar.SetActive(change.value == 1);
-        directAvatar.SetActive(change.value == 2);
-    }
-
     public void SwitchModelByIndex(int id)
     {
         skelVisId = id;
         if (!root)
             root = GameObject.Find("Root_1");
 
-        root.SetActive(skelVisId == 0);
+        if(root)
+            root.SetActive(skelVisId == 0);
         skelVis.SetActive(skelVisId == 0);
         indirectAvatar.SetActive(skelVisId == 1);
         directAvatar.SetActive(skelVisId == 2);
+        indirectAvatarMan.SetActive(skelVisId == 3);
+        directAvatarMan.SetActive(skelVisId == 4);
     }
 
     bool prevDepth = false;
@@ -134,6 +127,10 @@ public class NuitrackModules : MonoBehaviour
                 indirectAvatar.SetActive(skeletonOn);
             if (skelVisId == 2)
                 directAvatar.SetActive(skeletonOn);
+            if (skelVisId == 1)
+                indirectAvatarMan.SetActive(skeletonOn);
+            if (skelVisId == 2)
+                directAvatarMan.SetActive(skeletonOn);
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
@@ -189,12 +186,10 @@ public class NuitrackModules : MonoBehaviour
         }
     }
 
-    int sensorFrameId = 0;
-
     public void SwitchSensorFrame()
     {
         sensorFrameId++;
-        if (sensorFrameId > 2)
+        if (sensorFrameId > 1)
             sensorFrameId = 0;
 
         sensorFrameWindowed.SetActive(sensorFrameId == 1);

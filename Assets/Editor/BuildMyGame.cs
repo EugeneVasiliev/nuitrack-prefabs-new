@@ -16,6 +16,12 @@ public class BuildMyGame
         BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.Android, BuildOptions.None);
     }
 
+    public static void BuildLinux()
+    {
+        // Build player.
+        BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.StandaloneLinuxUniversal, BuildOptions.None);
+    }
+
     public static void BuildApk()
     {
         SetProject();

@@ -61,26 +61,29 @@ public class NuitrackAvatar : MonoBehaviour
             //Get joint from the Nuitrack
             nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
 
-            //Get modelJoint
-            ModelJoint modelJoint = riggedJoint.Value;
-
-            //Bone position
-            Vector3 newPos = 0.001f * joint.ToVector3();
-            modelJoint.bone.position = newPos;
-
-            //Bone rotation
-            Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
-            modelJoint.bone.rotation = jointOrient;
-
-            //Bone scale
-            if (modelJoint.parentBone != null)
+            if(joint.Confidence > 0.1f)
             {
-                //Take the Transform of a parent bone
-                Transform parentBone = modelJoint.parentBone;
-                //calculate how many times the distance between the child bone and its parent bone has changed compared to the base distance (which was recorded at the start)
-                float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
-                //change the size of the bone to the resulting value (On default bone size (1,1,1))
-                parentBone.localScale = Vector3.one / scaleDif;
+                //Get modelJoint
+                ModelJoint modelJoint = riggedJoint.Value;
+
+                //Bone position
+                Vector3 newPos = 0.001f * joint.ToVector3();
+                modelJoint.bone.position = newPos;
+
+                //Bone rotation
+                Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
+                modelJoint.bone.rotation = jointOrient;
+
+                //Bone scale
+                if (modelJoint.parentBone != null)
+                {
+                    //Take the Transform of a parent bone
+                    Transform parentBone = modelJoint.parentBone;
+                    //calculate how many times the distance between the child bone and its parent bone has changed compared to the base distance (which was recorded at the start)
+                    float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
+                    //change the size of the bone to the resulting value (On default bone size (1,1,1))
+                    parentBone.localScale = Vector3.one / scaleDif;
+                }
             }
         }
     }
