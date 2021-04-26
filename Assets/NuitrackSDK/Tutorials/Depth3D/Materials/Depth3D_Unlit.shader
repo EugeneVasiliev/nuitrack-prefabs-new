@@ -16,7 +16,7 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-
+			#pragma target 3.0
             #include "UnityCG.cginc"
 
             struct appdata
@@ -57,6 +57,7 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
+				//return tex2D(_HeightMap, i.uv).bgra;
                 return tex2D(_MainTex, i.uv).bgra;
             }
             ENDCG

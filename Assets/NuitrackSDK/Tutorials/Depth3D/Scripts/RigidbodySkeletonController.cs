@@ -5,46 +5,29 @@ using UnityEngine;
 
 public class RigidbodySkeletonController : MonoBehaviour
 {
-    [System.Serializable]
-    public class RigidbodyJoint
-    {
-        public Rigidbody rigidbody;
-        public nuitrack.JointType jointType;
-    }
-
-    [SerializeField] Transform space;
-    [SerializeField] List<RigidbodyJoint> rigidbodyJoints;
-
-    [SerializeField] Transform sensorCenter;
-    [SerializeField] GameObject jointObj;
+    [Header ("Rigidbody")]
+    [SerializeField] List<nuitrack.JointType> targetJoints;
+    [SerializeField] GameObject rigidBodyJoint;
 
     [SerializeField] float smoothVal = 4f;
 
-    Dictionary<nuitrack.JointType, Transform> jointsObj;
+    [Header ("Space")]
+    [SerializeField] Transform space;
+    [SerializeField] Transform sensorCenter;
+
+    Dictionary<nuitrack.JointType, Rigidbody> rigidbodyObj;
 
     void Start()
     {
-        jointsObj = new Dictionary<nuitrack.JointType, Transform>();
+        rigidbodyObj = new Dictionary<nuitrack.JointType, Rigidbody>();
 
-        foreach (nuitrack.JointType jointType in System.Enum.GetValues(typeof(nuitrack.JointType)))
+        foreach (nuitrack.JointType jointType in targetJoints)
         {
-            GameObject joint = Instantiate(jointObj, sensorCenter);
-            joint.name = jointType.ToString();
-            jointsObj.Add(jointType, joint.transform);
-        }
-    }
+            GameObject jointObj = Instantiate(rigidBodyJoint, sensorCenter);
+            jointObj.name = string.Format("{0}_rigidbody", jointType.ToString());
 
-    void Update()
-    {
-        nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-
-        if (skeleton == null)
-            return;
-
-        foreach (KeyValuePair<nuitrack.JointType, Transform> joints in jointsObj)
-        {
-            Vector3 position = skeleton.GetJoint(joints.Key).Real.ToVector3() * 0.001f;
-            joints.Value.localPosition = position;
+            Rigidbody rigidbody = jointObj.GetComponent<Rigidbody>();
+            rigidbodyObj.Add(jointType, rigidbody);
         }
     }
 
@@ -55,14 +38,19 @@ public class RigidbodySkeletonController : MonoBehaviour
         if (skeleton == null)
             return;
 
-        foreach(RigidbodyJoint rigidbodyJoint in rigidbodyJoints)
+        foreach(KeyValuePair<nuitrack.JointType, Rigidbody> rigidbodyJoint in rigidbodyObj)
         {
-            Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.jointType).Real.ToVector3() * 0.001f;
-            Vector3 spacePostion = space.TransformPoint(newPosition);
+            Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.Key).Real.ToVector3() * 0.001f;
 
-            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.rigidbody.position, spacePostion, Time.deltaTime * smoothVal);
+            Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
+            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothVal);
 
-            rigidbodyJoint.rigidbody.MovePosition(lerpPosition);
+            rigidbodyJoint.Value.MovePosition(lerpPosition);
         }
+    }
+
+    void UpdateSkeletons()
+    {
+
     }
 }
