@@ -6,7 +6,7 @@ public class Depth3D : MonoBehaviour
 {
     [SerializeField] Camera mainCamera;
 
-    [Header ("RGB shader")]
+    [Header("RGB shader")]
     Texture2D dstRgbTexture2D;
 
     [Header("Segment shader")]
@@ -22,26 +22,21 @@ public class Depth3D : MonoBehaviour
     uint xDepth, yDepth, zDepth;
     int depthKernelIndex;
 
-    [Header ("Mesh generator")]
+    [Header("Mesh generator")]
     [SerializeField] MeshGenerator meshGenerator;
 
-    [Header ("Floor")]
+    [Header("Floor")]
     Plane floorPlane;
-    [SerializeField] Transform rootMainScene;
-    [SerializeField] Transform floorRoot;
+    [SerializeField] Transform sensorSpace;
 
     [SerializeField] float deltaHieght = 0.1f;
     [SerializeField] float deltaAndle = 5f;
     [SerializeField] float lerpMove = 4f;
 
-    float gravityMagnitude;
-
     void Start()
     {
         depthKernelIndex = depthToTexture.FindKernel("Depth2Texture");
         depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
-
-        gravityMagnitude = Physics.gravity.magnitude;
     }
 
     Vector3 floorPoint;
@@ -92,7 +87,7 @@ public class Depth3D : MonoBehaviour
             return;
 
         if (dstRgbTexture2D == null)
-        {     
+        {
             dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
             meshGenerator.Generate(frame.Cols, frame.Rows);
         }
@@ -115,13 +110,13 @@ public class Depth3D : MonoBehaviour
             depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
             depthRenderTexture.enableRandomWrite = true;
             depthRenderTexture.filterMode = FilterMode.Point;
-            
+
             depthRenderTexture.Create();
 
             depthToTexture.SetInt("textureWidth", depthRenderTexture.width);
             depthToTexture.SetTexture(depthKernelIndex, "Result", depthRenderTexture);
             depthToTexture.SetFloat("contrast", 0);
-           
+
             /*
             We put the source data in the buffer, but the buffer does not support types 
             that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32)).
@@ -140,13 +135,13 @@ public class Depth3D : MonoBehaviour
 
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
-     
+
         depthToTexture.Dispatch(depthKernelIndex, depthRenderTexture.width / (int)xDepth, depthRenderTexture.height / (int)yDepth, (int)zDepth);
 
         meshGenerator.Material.SetTexture("_HeightMap", depthRenderTexture);
 
         Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
-        meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition); 
+        meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
     }
 
     void UpdateFloor()
@@ -158,81 +153,40 @@ public class Depth3D : MonoBehaviour
 
         Vector3 newFloorPoint = userFrame.Floor.ToVector3() * 0.001f;
         Vector3 newFloorNormal = userFrame.FloorNormal.ToVector3().normalized;
+
         Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
 
-        if (floorPlane.Equals(default))
+        if (floorPlane.Equals(default(Plane)))
         {
             floorPoint = newFloorPoint;
             floorNormal = newFloorNormal;
             floorPlane = new Plane(floorNormal, floorPoint);
         }
 
-        Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(rootMainScene.position);
-        Vector3 floorSensor = floorPlane.ClosestPointOnPlane(rootMainScene.position);
+        Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(Vector3.zero);
+        Vector3 floorSensor = floorPlane.ClosestPointOnPlane(Vector3.zero);
 
         if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAndle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHieght)
         {
             floorPoint = newFloorPoint;
             floorNormal = newFloorNormal;
             floorPlane = new Plane(floorNormal, floorPoint);
-
         }
 
-        Vector3 forward = rootMainScene.forward;
-        Vector3.OrthoNormalize(ref floorNormal, ref forward);
+        Vector3 reflectNormal = Vector3.Reflect(-floorNormal, Vector3.up);
+        Vector3 forward = Vector3.forward;
+        Vector3.OrthoNormalize(ref reflectNormal, ref forward);
 
-        rootMainScene.localRotation = Quaternion.RotateTowards(rootMainScene.localRotation, Quaternion.LookRotation(forward, floorNormal), Time.deltaTime * lerpMove);
+        mainCamera.transform.rotation = Quaternion.RotateTowards(mainCamera.transform.rotation, Quaternion.LookRotation(forward, reflectNormal), Time.deltaTime * lerpMove);
 
-        Vector3 localRoot = floorRoot.localPosition;
-        localRoot.y = floorSensor.y;
-        floorRoot.localPosition = Vector3.MoveTowards(floorRoot.localPosition, localRoot, Time.deltaTime * lerpMove);
-
-        Physics.gravity = -floorNormal * gravityMagnitude;
+        Vector3 localRoot = mainCamera.transform.position;
+        localRoot.y = -floorSensor.y;
+        mainCamera.transform.position = Vector3.MoveTowards(mainCamera.transform.position, localRoot, Time.deltaTime * lerpMove);
     }
 
     private void OnDestroy()
     {
         Destroy(depthRenderTexture);
         Destroy(dstRgbTexture2D);
-    }
-
-    private void OnDrawGizmos()
-    {
-        UnityEditor.Handles.DrawWireDisc(floorPoint, floorNormal, 2f);
-
-        //float v_angle = mainCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
-        //float radHFOV = Mathf.Atan(Mathf.Tan(v_angle) * mainCamera.aspect);
-
-        ////nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
-
-        //float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.transform.position, mainCamera.transform.position);
-        //float frameAspectRatio = (float)frame.Cols / frame.Rows;
-
-        ////Debug.Log(string.Format("v_angle = {0}, h_angle = {1}, mainCamera.aspect = {2}", mainCamera.fieldOfView, radHFOV * Mathf.Rad2Deg, mainCamera.aspect));
-
-        //float scale;
-
-        //if (mainCamera.aspect < frameAspectRatio)
-        //    scale = cameraToPlaneDist * Mathf.Tan(radHFOV);
-        //else
-        //    scale = cameraToPlaneDist * Mathf.Tan(v_angle);
-
-        //Vector3[] polyLines = new Vector3[]
-        //{
-        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
-        //    new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
-        //    new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
-        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
-        //    new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist),
-        // };
-
-        //UnityEditor.Handles.DrawPolyLine(polyLines);
-
-        ////Gizmos.DrawCube(new Vector3(0, 0, cameraToPlaneDist), Vector3.one * cameraToPlaneDist * Mathf.Tan(radHFOV));
-
-        //Gizmos.DrawCube(new Vector3(cameraToPlaneDist * Mathf.Tan(radHFOV), 0, cameraToPlaneDist), Vector3.one);
-        //Gizmos.DrawCube(new Vector3(0, cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist), Vector3.one);
-        //Gizmos.DrawCube(new Vector3(-cameraToPlaneDist * Mathf.Tan(radHFOV), 0, cameraToPlaneDist), Vector3.one);
-        //Gizmos.DrawCube(new Vector3(0, -cameraToPlaneDist * Mathf.Tan(v_angle), cameraToPlaneDist), Vector3.one);
     }
 }
