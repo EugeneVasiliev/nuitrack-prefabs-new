@@ -12,9 +12,6 @@ public class Depth3D : MonoBehaviour
     [Header("Segment shader")]
     [SerializeField] ComputeShader depthToTexture;
 
-    [Range(-1.0f, 1.0f)]
-    [SerializeField] float contrast = 0f;
-
     ComputeBuffer sourceDataBuffer;
     byte[] depthDataArray = null;
     RenderTexture depthRenderTexture;
@@ -26,12 +23,21 @@ public class Depth3D : MonoBehaviour
     [SerializeField] MeshGenerator meshGenerator;
 
     [Header("Floor")]
-    Plane floorPlane;
     [SerializeField] Transform sensorSpace;
+
+    Plane floorPlane;
+
+    Vector3 floorPoint;
+    Vector3 floorNormal;
 
     [SerializeField] float deltaHieght = 0.1f;
     [SerializeField] float deltaAndle = 5f;
-    [SerializeField] float lerpMove = 4f;
+    [SerializeField] float lerpMove = 2f;
+    [SerializeField] float lerpRotate = 24f;
+
+    ulong colorFrameTimestamp;
+    ulong depthFrameTimestamp;
+    ulong userFrameTimestamp;
 
     void Start()
     {
@@ -39,28 +45,42 @@ public class Depth3D : MonoBehaviour
         depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
     }
 
-    Vector3 floorPoint;
-    Vector3 floorNormal;
-
     void Update()
     {
         UpdateRGB();
-        FitMeshIntoFrame();
-
         UpdateHieghtMap();
+ 
         UpdateFloor();
     }
 
-    void FitMeshIntoFrame()
+    void UpdateRGB()
     {
         nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
 
-        if (frame == null)
+        if (frame == null || frame.Timestamp == colorFrameTimestamp)
             return;
 
-        float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.position, mainCamera.transform.position);
+        colorFrameTimestamp = frame.Timestamp;
+
+        if (dstRgbTexture2D == null)
+        {
+            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+            meshGenerator.Generate(frame.Cols, frame.Rows);
+        }
+
+        dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
+        dstRgbTexture2D.Apply();
+
+        meshGenerator.Material.SetTexture("_MainTex", dstRgbTexture2D);
+
+        FitMeshIntoFrame(frame);
+    }
+
+    void FitMeshIntoFrame(nuitrack.ColorFrame frame)
+    {        
         float frameAspectRatio = (float)frame.Cols / frame.Rows;
 
+        float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.position, mainCamera.transform.position);
         float v_angle = mainCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
 
         float scale;
@@ -79,33 +99,16 @@ public class Depth3D : MonoBehaviour
         meshGenerator.transform.localScale = new Vector3(scale * 2, scale * 2, 1);
     }
 
-    void UpdateRGB()
-    {
-        nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
-
-        if (frame == null)
-            return;
-
-        if (dstRgbTexture2D == null)
-        {
-            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-            meshGenerator.Generate(frame.Cols, frame.Rows);
-        }
-
-        dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
-        dstRgbTexture2D.Apply();
-
-        meshGenerator.Material.SetTexture("_MainTex", dstRgbTexture2D);
-    }
-
     void UpdateHieghtMap()
     {
         nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
 
-        if (frame == null)
+        if (frame == null || frame.Timestamp == depthFrameTimestamp)
             return;
 
-        if (depthRenderTexture == null || depthRenderTexture.width != frame.Cols || depthRenderTexture.height != frame.Rows)
+        depthFrameTimestamp = frame.Timestamp;
+
+        if (depthRenderTexture == null)
         {
             depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
             depthRenderTexture.enableRandomWrite = true;
@@ -146,13 +149,15 @@ public class Depth3D : MonoBehaviour
 
     void UpdateFloor()
     {
-        nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
+        nuitrack.UserFrame frame = NuitrackManager.UserFrame;
 
-        if (userFrame == null)
+        if (frame == null || frame.Timestamp == userFrameTimestamp)
             return;
 
-        Vector3 newFloorPoint = userFrame.Floor.ToVector3() * 0.001f;
-        Vector3 newFloorNormal = userFrame.FloorNormal.ToVector3().normalized;
+        userFrameTimestamp = frame.Timestamp;
+
+        Vector3 newFloorPoint = frame.Floor.ToVector3() * 0.001f;
+        Vector3 newFloorNormal = frame.FloorNormal.ToVector3().normalized;
 
         Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
 
@@ -177,11 +182,12 @@ public class Depth3D : MonoBehaviour
         Vector3 forward = Vector3.forward;
         Vector3.OrthoNormalize(ref reflectNormal, ref forward);
 
-        mainCamera.transform.rotation = Quaternion.RotateTowards(mainCamera.transform.rotation, Quaternion.LookRotation(forward, reflectNormal), Time.deltaTime * lerpMove);
+        Quaternion targetRotation = Quaternion.LookRotation(forward, reflectNormal);
+        mainCamera.transform.localRotation = Quaternion.RotateTowards(mainCamera.transform.localRotation, targetRotation, Time.deltaTime * lerpRotate);
 
-        Vector3 localRoot = mainCamera.transform.position;
+        Vector3 localRoot = mainCamera.transform.localPosition;
         localRoot.y = -floorSensor.y;
-        mainCamera.transform.position = Vector3.MoveTowards(mainCamera.transform.position, localRoot, Time.deltaTime * lerpMove);
+        mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, localRoot, Time.deltaTime * lerpMove);
     }
 
     private void OnDestroy()

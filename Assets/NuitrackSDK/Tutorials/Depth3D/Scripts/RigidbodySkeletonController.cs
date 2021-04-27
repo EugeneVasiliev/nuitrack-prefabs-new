@@ -53,7 +53,7 @@ public class RigidbodySkeletonController : MonoBehaviour
             Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.Key).Real.ToVector3() * 0.001f;
 
             Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
-            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothVal);
+            Vector3 lerpPosition = Vector3.MoveTowards(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothVal);
 
             rigidbodyJoint.Value.MovePosition(lerpPosition);
         }
