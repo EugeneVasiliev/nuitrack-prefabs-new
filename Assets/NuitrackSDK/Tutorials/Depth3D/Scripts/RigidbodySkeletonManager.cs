@@ -15,30 +15,29 @@ public class RigidbodySkeletonManager : MonoBehaviour
         NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
     }
 
+    void OnDestroy()
+    {
+        NuitrackManager.onSkeletonTrackerUpdate -= NuitrackManager_onSkeletonTrackerUpdate;
+    }
+
     void NuitrackManager_onSkeletonTrackerUpdate(nuitrack.SkeletonData skeletonData)
     {
         Dictionary<int, nuitrack.Skeleton> nuitrackSkeletons = NuitrackManager.SkeletonData.Skeletons.ToDictionary(k => k.ID, v => v);
 
         foreach (KeyValuePair<int, nuitrack.Skeleton> skeleton in nuitrackSkeletons)
-        {
             if (!skeletons.ContainsKey(skeleton.Key))
             {
-                GameObject skeletonObj = Instantiate(rigidBodySkeletonPrefab, space);
-                RigidbodySkeletonController rigidbodySkeletonController = skeletonObj.GetComponent<RigidbodySkeletonController>();
+                RigidbodySkeletonController rigidbodySkeleton = Instantiate(rigidBodySkeletonPrefab, space).GetComponent<RigidbodySkeletonController>();
+                rigidbodySkeleton.Initialize(skeleton.Key, space);
 
-                rigidbodySkeletonController.Initialize(skeleton.Key, space);
-
-                skeletons.Add(skeleton.Key, rigidbodySkeletonController);
+                skeletons.Add(skeleton.Key, rigidbodySkeleton);
             }
-        }
 
         foreach (KeyValuePair<int, RigidbodySkeletonController> sk in new Dictionary<int, RigidbodySkeletonController>(skeletons))
-        {
             if (!nuitrackSkeletons.ContainsKey(sk.Key))
             {
                 Destroy(skeletons[sk.Key].gameObject);
                 skeletons.Remove(sk.Key);
             }
-        }
     }
 }

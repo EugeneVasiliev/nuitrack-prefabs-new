@@ -1,6 +1,5 @@
-﻿using System.Runtime.InteropServices;
-
-using UnityEngine;
+﻿using UnityEngine;
+using System.Runtime.InteropServices;
 
 public class Depth3D : MonoBehaviour
 {
@@ -22,41 +21,40 @@ public class Depth3D : MonoBehaviour
     Plane floorPlane;
 
     [SerializeField] float deltaHieght = 0.1f;
-    [SerializeField] float deltaAndle = 5f;
-    [SerializeField] float deltaMove = 2f;
-    [SerializeField] float deltaRotate = 24f;
+    [SerializeField] float deltaAndle = 3f;
+    [SerializeField] float speedFloorCorrection = 8f;
 
-    ulong colorFrameTimestamp;
-    ulong depthFrameTimestamp;
-    ulong userFrameTimestamp;
+    ulong frameTimestamp;
 
     void Update()
     {
-        UpdateRGB();
-        UpdateHieghtMap();
- 
-        UpdateFloor();
-    }
+        nuitrack.ColorFrame colorFrame = NuitrackManager.ColorFrame;
+        nuitrack.DepthFrame depthFrame = NuitrackManager.DepthFrame;
+        nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
 
-    void UpdateRGB()
-    {
-        nuitrack.ColorFrame frame = NuitrackManager.ColorFrame;
-
-        if (frame == null || frame.Timestamp == colorFrameTimestamp)
+        if (colorFrame == null || depthFrame == null  || userFrame == null || frameTimestamp == depthFrame.Timestamp)
             return;
 
-        colorFrameTimestamp = frame.Timestamp;
+        frameTimestamp = depthFrame.Timestamp;
+ 
+        UpdateRGB(colorFrame);
+        UpdateHieghtMap(depthFrame);
+ 
+        UpdateFloor(userFrame);
+    }
 
+    void UpdateRGB(nuitrack.ColorFrame frame)
+    {
         if (dstRgbTexture2D == null)
         {
-            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
             meshGenerator.Generate(frame.Cols, frame.Rows);
+
+            dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+            meshGenerator.Material.SetTexture("_MainTex", dstRgbTexture2D);
         }
 
         dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
-        dstRgbTexture2D.Apply();
-
-        meshGenerator.Material.SetTexture("_MainTex", dstRgbTexture2D);
+        dstRgbTexture2D.Apply(); 
 
         FitMeshIntoFrame(frame);
     }
@@ -72,20 +70,15 @@ public class Depth3D : MonoBehaviour
         meshGenerator.transform.localScale = new Vector3(scale * 2, scale * 2, 1);
     }
 
-    void UpdateHieghtMap()
+    void UpdateHieghtMap(nuitrack.DepthFrame frame)
     {
-        nuitrack.DepthFrame frame = NuitrackManager.DepthFrame;
-
-        if (frame == null || frame.Timestamp == depthFrameTimestamp)
-            return;
-
-        depthFrameTimestamp = frame.Timestamp;
-
         if (sourceDataBuffer == null)
         {
-            int dataSize = frame.DataSize;
-            sourceDataBuffer = new ComputeBuffer(dataSize / 2, sizeof(uint));
-            depthDataArray = new byte[dataSize];
+            depthDataArray = new byte[frame.DataSize];
+
+            //We put the source data in the buffer, but the buffer does not support types
+            //that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32))
+            sourceDataBuffer = new ComputeBuffer(frame.DataSize / 2, sizeof(uint));
 
             meshGenerator.Material.SetInt("_textureWidth", frame.Cols);
             meshGenerator.Material.SetInt("_textureHeight", frame.Rows);
@@ -99,15 +92,8 @@ public class Depth3D : MonoBehaviour
         meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
     }
 
-    void UpdateFloor()
+    void UpdateFloor(nuitrack.UserFrame frame)
     {
-        nuitrack.UserFrame frame = NuitrackManager.UserFrame;
-
-        if (frame == null || frame.Timestamp == userFrameTimestamp)
-            return;
-
-        userFrameTimestamp = frame.Timestamp;
-
         Vector3 floorPoint = frame.Floor.ToVector3() * 0.001f;
         Vector3 floorNormal = frame.FloorNormal.ToVector3().normalized;
 
@@ -127,11 +113,11 @@ public class Depth3D : MonoBehaviour
         Vector3.OrthoNormalize(ref reflectNormal, ref forward);
 
         Quaternion targetRotation = Quaternion.LookRotation(forward, reflectNormal);
-        mainCamera.transform.localRotation = Quaternion.RotateTowards(mainCamera.transform.localRotation, targetRotation, Time.deltaTime * deltaRotate);
+        mainCamera.transform.localRotation = Quaternion.Lerp(mainCamera.transform.localRotation, targetRotation, Time.deltaTime * speedFloorCorrection);
 
         Vector3 localRoot = mainCamera.transform.localPosition;
         localRoot.y = -floorSensor.y;
-        mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, localRoot, Time.deltaTime * deltaMove);
+        mainCamera.transform.localPosition = Vector3.Lerp(mainCamera.transform.localPosition, localRoot, Time.deltaTime * speedFloorCorrection);
     }
 
     private void OnDestroy()
