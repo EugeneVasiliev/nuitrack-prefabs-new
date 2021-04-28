@@ -10,14 +10,8 @@ public class Depth3D : MonoBehaviour
     Texture2D dstRgbTexture2D;
 
     [Header("Segment shader")]
-    [SerializeField] ComputeShader depthToTexture;
-
     ComputeBuffer sourceDataBuffer;
     byte[] depthDataArray = null;
-    RenderTexture depthRenderTexture;
-
-    uint xDepth, yDepth, zDepth;
-    int depthKernelIndex;
 
     [Header("Mesh generator")]
     [SerializeField] MeshGenerator meshGenerator;
@@ -35,12 +29,6 @@ public class Depth3D : MonoBehaviour
     ulong colorFrameTimestamp;
     ulong depthFrameTimestamp;
     ulong userFrameTimestamp;
-
-    void Start()
-    {
-        depthKernelIndex = depthToTexture.FindKernel("Depth2Texture");
-        depthToTexture.GetKernelThreadGroupSizes(depthKernelIndex, out xDepth, out yDepth, out zDepth);
-    }
 
     void Update()
     {
@@ -93,40 +81,19 @@ public class Depth3D : MonoBehaviour
 
         depthFrameTimestamp = frame.Timestamp;
 
-        if (depthRenderTexture == null)
+        if (sourceDataBuffer == null)
         {
-            depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
-            depthRenderTexture.enableRandomWrite = true;
-            depthRenderTexture.filterMode = FilterMode.Point;
-
-            depthRenderTexture.Create();
-
-            depthToTexture.SetInt("textureWidth", depthRenderTexture.width);
-            depthToTexture.SetTexture(depthKernelIndex, "Result", depthRenderTexture);
-            depthToTexture.SetFloat("contrast", 0);
-
-            /*
-            We put the source data in the buffer, but the buffer does not support types 
-            that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32)).
-
-            For optimization, we specify a length half the original length,
-            since the data is correctly projected into memory
-            (sizeof(ushot) * sourceDataBuffer / 2 == sizeof(uint) * sourceDataBuffer / 2)
-            */
-
             int dataSize = frame.DataSize;
             sourceDataBuffer = new ComputeBuffer(dataSize / 2, sizeof(uint));
-            depthToTexture.SetBuffer(depthKernelIndex, "DepthFrame", sourceDataBuffer);
-
             depthDataArray = new byte[dataSize];
+
+            meshGenerator.Material.SetInt("_textureWidth", frame.Cols);
+            meshGenerator.Material.SetInt("_textureHeight", frame.Rows);
+            meshGenerator.Material.SetBuffer("_DepthFrame", sourceDataBuffer);
         }
 
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
-
-        depthToTexture.Dispatch(depthKernelIndex, depthRenderTexture.width / (int)xDepth, depthRenderTexture.height / (int)yDepth, (int)zDepth);
-
-        meshGenerator.Material.SetTexture("_HeightMap", depthRenderTexture);
 
         Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(mainCamera.transform.position);
         meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
@@ -169,7 +136,6 @@ public class Depth3D : MonoBehaviour
 
     private void OnDestroy()
     {
-        Destroy(depthRenderTexture);
         Destroy(dstRgbTexture2D);
     }
 }
