@@ -93,6 +93,11 @@ public class Depth3D : MonoBehaviour
 
         depthFrameTimestamp = frame.Timestamp;
 
+        nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+
+        float vFOV = mode.HFOV * ((float)frame.Rows / frame.Cols);
+        mainCamera.fieldOfView = vFOV * Mathf.Rad2Deg;
+
         if (depthRenderTexture == null)
         {
             depthRenderTexture = new RenderTexture(frame.Cols, frame.Rows, 0, RenderTextureFormat.ARGB32);
