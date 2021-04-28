@@ -40,6 +40,7 @@
 			uniform StructuredBuffer<uint> _DepthFrame : register(t1);
 			int _textureWidth;
 			int _textureHeight;
+			float _maxDepthSensor;
 
             v2f vert (appdata v)
             {
@@ -53,7 +54,8 @@
 				// Shift trick, because in the Shader we read two values (Int16) as one (Int32)
 				uint depthVal = rawIndex % 2 != 0 ? depthPairVal >> 16 : (depthPairVal << 16) >> 16;
 
-				float depth = 1 - (float(depthVal) / 16384.0F);
+				// *1000 because the depth is in millimeters
+				float depth = 1 - (float(depthVal) / (_maxDepthSensor * 1000));
 
 				if (depth == 1)
 					depth = 0;
