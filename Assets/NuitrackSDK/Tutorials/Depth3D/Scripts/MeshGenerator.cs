@@ -12,9 +12,6 @@ public class MeshGenerator : MonoBehaviour
     List<int> triangles = new List<int>();
     List<Vector2> uvs = new List<Vector2>();
 
-    int width;
-    int height;
-
     public Material Material
     {
         get
@@ -23,23 +20,22 @@ public class MeshGenerator : MonoBehaviour
         }
     }
 
-    public void Generate(int _width, int _height)
+    public void Generate(int width, int height)
     {
-        width = _width;
-        height = _height;
 
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
-        GeneratePointsAndUVS();
-        GenerateTriangles();
+        GeneratePointsAndUVS(width, height);
+        GenerateTriangles(width, height);
 
         meshFilter.mesh = mesh;
+
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
     }
 
-    void GeneratePointsAndUVS()
+    void GeneratePointsAndUVS(int width, int height)
     {
         float aspectRatio = (float)width / height;
 
@@ -67,7 +63,7 @@ public class MeshGenerator : MonoBehaviour
         mesh.SetUVs(0, uvs);
     }
 
-    void GenerateTriangles()
+    void GenerateTriangles(int width, int height)
     {
         int totalWidth = width + 1;
 
