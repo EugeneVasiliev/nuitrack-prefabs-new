@@ -76,6 +76,11 @@ public class Depth3D : MonoBehaviour
 
     void UpdateHieghtMap(nuitrack.DepthFrame frame)
     {
+        nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+
+        float vFOV = mode.HFOV * ((float)frame.Rows / frame.Cols);
+        camera.fieldOfView = vFOV * Mathf.Rad2Deg;
+
         if (depthDataBuffer == null)
         {
             depthDataArray = new byte[frame.DataSize];
