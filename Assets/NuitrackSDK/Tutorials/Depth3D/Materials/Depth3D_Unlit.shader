@@ -3,7 +3,6 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-		_HeightMap("Height map", 2D) = "white" {}
         _CameraPosition("Camera position", Vector) = (0,0,0,0)
     }
     SubShader
@@ -33,7 +32,6 @@
             };
 
             sampler2D _MainTex;
-			sampler2D _HeightMap;
 			float4 _CameraPosition;
             float4 _MainTex_ST;
 
