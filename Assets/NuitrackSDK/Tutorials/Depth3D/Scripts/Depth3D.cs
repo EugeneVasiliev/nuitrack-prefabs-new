@@ -27,13 +27,10 @@ public class Depth3D : MonoBehaviour
 
     Plane floorPlane;
 
-    Vector3 floorPoint;
-    Vector3 floorNormal;
-
     [SerializeField] float deltaHieght = 0.1f;
     [SerializeField] float deltaAndle = 5f;
-    [SerializeField] float lerpMove = 2f;
-    [SerializeField] float lerpRotate = 24f;
+    [SerializeField] float deltaMove = 2f;
+    [SerializeField] float deltaRotate = 24f;
 
     ulong colorFrameTimestamp;
     ulong depthFrameTimestamp;
@@ -79,22 +76,10 @@ public class Depth3D : MonoBehaviour
     void FitMeshIntoFrame(nuitrack.ColorFrame frame)
     {        
         float frameAspectRatio = (float)frame.Cols / frame.Rows;
+        float targetAspectRatio = mainCamera.aspect < frameAspectRatio ? mainCamera.aspect : frameAspectRatio;
 
-        float cameraToPlaneDist = Vector3.Distance(meshGenerator.transform.position, mainCamera.transform.position);
         float v_angle = mainCamera.fieldOfView * Mathf.Deg2Rad * 0.5f;
-
-        float scale;
-
-        if (mainCamera.aspect < frameAspectRatio)
-        {
-            float radHFOV = Mathf.Atan(Mathf.Tan(v_angle) * mainCamera.aspect);
-            scale = cameraToPlaneDist * Mathf.Tan(radHFOV);
-        }
-        else
-        {
-            scale = cameraToPlaneDist * Mathf.Tan(v_angle);
-            scale *= (float)frame.Cols / frame.Rows;
-        }
+        float scale = Vector3.Distance(meshGenerator.transform.position, mainCamera.transform.position) * Mathf.Tan(v_angle) * targetAspectRatio;
 
         meshGenerator.transform.localScale = new Vector3(scale * 2, scale * 2, 1);
     }
@@ -156,38 +141,30 @@ public class Depth3D : MonoBehaviour
 
         userFrameTimestamp = frame.Timestamp;
 
-        Vector3 newFloorPoint = frame.Floor.ToVector3() * 0.001f;
-        Vector3 newFloorNormal = frame.FloorNormal.ToVector3().normalized;
+        Vector3 floorPoint = frame.Floor.ToVector3() * 0.001f;
+        Vector3 floorNormal = frame.FloorNormal.ToVector3().normalized;
 
-        Plane newFloor = new Plane(newFloorNormal, newFloorPoint);
+        Plane newFloor = new Plane(floorNormal, floorPoint);
 
         if (floorPlane.Equals(default(Plane)))
-        {
-            floorPoint = newFloorPoint;
-            floorNormal = newFloorNormal;
             floorPlane = new Plane(floorNormal, floorPoint);
-        }
 
         Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(Vector3.zero);
         Vector3 floorSensor = floorPlane.ClosestPointOnPlane(Vector3.zero);
 
         if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAndle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHieght)
-        {
-            floorPoint = newFloorPoint;
-            floorNormal = newFloorNormal;
             floorPlane = new Plane(floorNormal, floorPoint);
-        }
 
-        Vector3 reflectNormal = Vector3.Reflect(-floorNormal, Vector3.up);
-        Vector3 forward = Vector3.forward;
+        Vector3 reflectNormal = Vector3.Reflect(-floorPlane.normal, Vector3.up);
+        Vector3 forward = sensorSpace.forward;
         Vector3.OrthoNormalize(ref reflectNormal, ref forward);
 
         Quaternion targetRotation = Quaternion.LookRotation(forward, reflectNormal);
-        mainCamera.transform.localRotation = Quaternion.RotateTowards(mainCamera.transform.localRotation, targetRotation, Time.deltaTime * lerpRotate);
+        mainCamera.transform.localRotation = Quaternion.RotateTowards(mainCamera.transform.localRotation, targetRotation, Time.deltaTime * deltaRotate);
 
         Vector3 localRoot = mainCamera.transform.localPosition;
         localRoot.y = -floorSensor.y;
-        mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, localRoot, Time.deltaTime * lerpMove);
+        mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, localRoot, Time.deltaTime * deltaMove);
     }
 
     private void OnDestroy()
