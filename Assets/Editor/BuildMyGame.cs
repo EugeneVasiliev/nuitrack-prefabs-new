@@ -19,7 +19,7 @@ public class BuildMyGame
     public static void BuildLinux()
     {
         // Build player.
-        BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.StandaloneLinuxUniversal, BuildOptions.None);
+        BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.StandaloneLinux64, BuildOptions.None);
     }
 
     public static void BuildApk()

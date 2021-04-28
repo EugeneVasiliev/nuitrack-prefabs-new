@@ -3,7 +3,7 @@ build_linux:
     - windows_x64
   script:
     - mkdir build
-    - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildLinux %cd%/build'
+    - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildLinux %cd%/build/Nui_Test.x86_64'
     - powershell Compress-Archive build build.zip
   artifacts:
     paths:
