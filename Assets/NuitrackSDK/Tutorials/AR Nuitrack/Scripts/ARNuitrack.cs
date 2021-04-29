@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Runtime.InteropServices;
 
-public class Depth3D : MonoBehaviour
+public class ARNuitrack : MonoBehaviour
 {
-    [SerializeField] Camera camera;
+    [SerializeField] new Camera camera;
 
     [Header("RGB shader")]
     Texture2D rgbTexture2D;
