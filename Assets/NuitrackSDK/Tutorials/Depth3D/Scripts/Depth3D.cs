@@ -97,11 +97,11 @@ public class Depth3D : MonoBehaviour
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         depthDataBuffer.SetData(depthDataArray);
 
-        Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(camera.transform.position);
-        meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
-
         meshGenerator.Material.SetFloat("_maxDepthSensor", maxDepthSensor);
         meshGenerator.transform.localPosition = Vector3.forward * maxDepthSensor;
+
+        Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(camera.transform.position);
+        meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
     }
 
     void UpdateFloor(nuitrack.UserFrame frame)
