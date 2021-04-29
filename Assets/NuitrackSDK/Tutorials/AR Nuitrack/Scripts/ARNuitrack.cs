@@ -3,10 +3,14 @@ using System.Runtime.InteropServices;
 
 public class ARNuitrack : MonoBehaviour
 {
-    [SerializeField] new Camera camera;
+    ulong frameTimestamp;
 
     [Header("RGB shader")]
     Texture2D rgbTexture2D;
+
+    [Header("Mesh generator")]
+    [SerializeField] MeshGenerator meshGenerator;
+    [SerializeField] new Camera camera;
 
     [Header("Sensor params")]
     [Tooltip("Check the specification of your sensor on the manufacturer's website")]
@@ -16,9 +20,6 @@ public class ARNuitrack : MonoBehaviour
     ComputeBuffer depthDataBuffer;
     byte[] depthDataArray = null;
 
-    [Header("Mesh generator")]
-    [SerializeField] MeshGenerator meshGenerator;
-
     [Header("Floor")]
     [SerializeField] Transform sensorSpace;
 
@@ -26,9 +27,7 @@ public class ARNuitrack : MonoBehaviour
 
     [SerializeField] float deltaHeight = 0.1f;
     [SerializeField] float deltaAngle = 3f;
-    [SerializeField] float floorCorrectionSpeed = 8f;
-
-    ulong frameTimestamp;
+    [SerializeField] float floorCorrectionSpeed = 8f;  
 
     void Update()
     {
@@ -68,8 +67,8 @@ public class ARNuitrack : MonoBehaviour
         float frameAspectRatio = (float)frame.Cols / frame.Rows;
         float targetAspectRatio = camera.aspect < frameAspectRatio ? camera.aspect : frameAspectRatio;
 
-        float v_angle = camera.fieldOfView * Mathf.Deg2Rad * 0.5f;
-        float scale = Vector3.Distance(meshGenerator.transform.position, camera.transform.position) * Mathf.Tan(v_angle) * targetAspectRatio;
+        float vAngle = camera.fieldOfView * Mathf.Deg2Rad * 0.5f;
+        float scale = Vector3.Distance(meshGenerator.transform.position, camera.transform.position) * Mathf.Tan(vAngle) * targetAspectRatio;
 
         meshGenerator.transform.localScale = new Vector3(scale * 2, scale * 2, 1);
     }
@@ -83,15 +82,15 @@ public class ARNuitrack : MonoBehaviour
 
         if (depthDataBuffer == null)
         {
-            depthDataArray = new byte[frame.DataSize];
-
             //We put the source data in the buffer, but the buffer does not support types
             //that take up less than 4 bytes(instead of ushot(Int16), we specify uint(Int32))
             depthDataBuffer = new ComputeBuffer(frame.DataSize / 2, sizeof(uint));
+            meshGenerator.Material.SetBuffer("_DepthFrame", depthDataBuffer);
 
             meshGenerator.Material.SetInt("_textureWidth", frame.Cols);
             meshGenerator.Material.SetInt("_textureHeight", frame.Rows);
-            meshGenerator.Material.SetBuffer("_DepthFrame", depthDataBuffer);
+
+            depthDataArray = new byte[frame.DataSize];
         }
 
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class MeshGenerator : MonoBehaviour
 {
-    [SerializeField] MeshFilter meshFilter;
     [SerializeField] MeshRenderer meshRenderer;
+    [SerializeField] MeshFilter meshFilter;
 
     Mesh mesh;
     List<Vector3> points = new List<Vector3>();
@@ -22,7 +22,6 @@ public class MeshGenerator : MonoBehaviour
 
     public void Generate(int width, int height)
     {
-
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
@@ -71,13 +70,13 @@ public class MeshGenerator : MonoBehaviour
         {
             for (int w = 0; w < width; w++) 
             {
-                triangles.Add(totalWidth * (h + 1) + (w + 1)); 
-                triangles.Add(totalWidth * h + (w + 1));
-                triangles.Add(totalWidth * h + w);
-
                 triangles.Add(totalWidth * h + w);
                 triangles.Add(totalWidth * (h + 1) + w);
+                triangles.Add(totalWidth * (h + 1) + (w + 1));
+
                 triangles.Add(totalWidth * (h + 1) + (w + 1)); 
+                triangles.Add(totalWidth * h + (w + 1));
+                triangles.Add(totalWidth * h + w); 
             }
         }
 
