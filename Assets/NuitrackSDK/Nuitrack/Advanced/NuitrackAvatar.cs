@@ -43,6 +43,7 @@ public class NuitrackAvatar : MonoBehaviour
         jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
         //extract the parent bone from the hierarchy to make it independent
         jointsRigged[targetJoint].parentBone.parent = transform.root;
+
     }
 
     void Update()
@@ -61,11 +62,11 @@ public class NuitrackAvatar : MonoBehaviour
             //Get joint from the Nuitrack
             nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
 
-            if(joint.Confidence > 0.1f)
-            {
-                //Get modelJoint
-                ModelJoint modelJoint = riggedJoint.Value;
+            //Get modelJoint
+            ModelJoint modelJoint = riggedJoint.Value;
 
+            if (joint.Confidence > 0.1f)
+            {
                 //Bone position
                 Vector3 newPos = 0.001f * joint.ToVector3();
                 modelJoint.bone.position = newPos;
