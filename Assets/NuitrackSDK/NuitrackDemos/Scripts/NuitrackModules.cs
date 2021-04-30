@@ -189,10 +189,26 @@ public class NuitrackModules : MonoBehaviour
     public void SwitchSensorFrame()
     {
         sensorFrameId++;
-        if (sensorFrameId > 1)
+        if (sensorFrameId > 2)
             sensorFrameId = 0;
 
-        sensorFrameWindowed.SetActive(sensorFrameId == 1);
-        sensorFrameFullscreen.SetActive(sensorFrameId == 2);
+        if(sensorFrameId == 1)
+        {
+            sensorFrameWindowed.SetActive(true);
+        } else if (sensorFrameId == 2)
+        {
+            sensorFrameWindowed.SetActive(false);
+            sensorFrameFullscreen.SetActive(true);
+        }
+        else if (sensorFrameId == 0)
+        {
+            sensorFrameWindowed.SetActive(false);
+            sensorFrameFullscreen.SetActive(false);
+        }
+    }
+
+    public void SwitchNuitrackAi()
+    {
+        NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
     }
 }

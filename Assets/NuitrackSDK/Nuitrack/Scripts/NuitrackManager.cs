@@ -37,6 +37,8 @@ public class NuitrackManager : MonoBehaviour
     [SerializeField] bool runInBackground = false;
     [Tooltip("Is not supported for Android")]
     [SerializeField] bool asyncInit = false;
+    [Tooltip("ONLY PC!")]
+    public bool useNuitrackAi = false;
 
     public static bool sensorConnected = false;
 
@@ -313,7 +315,12 @@ public class NuitrackManager : MonoBehaviour
                 nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
             }
             else
+            {
                 nuitrack.Nuitrack.Init();
+
+                if (useNuitrackAi)
+                    nuitrack.Nuitrack.SetConfigValue("Skeletonization.Type", "CNN_HPE");
+            }
 
             Debug.Log("Init OK");
 
@@ -550,6 +557,13 @@ public class NuitrackManager : MonoBehaviour
             gesturesRecognizerModuleOn,
             userTrackerModuleOn
         );
+    }
+
+    public void EnableNuitrackAI(bool use)
+    {
+        StopNuitrack();
+        useNuitrackAi = use;
+        StartNuitrack();
     }
 
     public void CloseUserGen()
