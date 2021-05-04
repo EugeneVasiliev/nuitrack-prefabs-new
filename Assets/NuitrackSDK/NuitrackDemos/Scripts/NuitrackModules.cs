@@ -78,11 +78,11 @@ public class NuitrackModules : MonoBehaviour
 
     bool currentDepth, currentColor, currentUser, currentSkeleton, currentHands, currentGestures;
 
-    public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
+    public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn, bool force = false)
     {
         try
         {
-            InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn);
+            InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn, force);
             //issuesProcessor = (GameObject)Instantiate(issuesProcessorPrefab);
         }
         catch (Exception ex)
@@ -91,30 +91,30 @@ public class NuitrackModules : MonoBehaviour
         }
     }
 
-    private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
+    private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn, bool force)
     {
         if(!NuitrackManager.Instance.nuitrackInitialized)
             exceptionsLogger.AddEntry(NuitrackManager.Instance.initException.ToString());
 
-        if (prevDepth != depthOn)
+        if (prevDepth != depthOn || force)
         {
             prevDepth = depthOn;
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
-        if (prevColor != colorOn)
+        if (prevColor != colorOn || force)
         {
             prevColor = colorOn;
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
-        if (prevUser != userOn)
+        if (prevUser != userOn || force)
         {
             prevUser = userOn;
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
-        if (skeletonOn != prevSkel)
+        if (skeletonOn != prevSkel || force)
         {
             prevSkel = skeletonOn;
             if (skelVisId == 0)
@@ -127,20 +127,20 @@ public class NuitrackModules : MonoBehaviour
                 indirectAvatar.SetActive(skeletonOn);
             if (skelVisId == 2)
                 directAvatar.SetActive(skeletonOn);
-            if (skelVisId == 1)
+            if (skelVisId == 3)
                 indirectAvatarMan.SetActive(skeletonOn);
-            if (skelVisId == 2)
+            if (skelVisId == 4)
                 directAvatarMan.SetActive(skeletonOn);
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
-        if (prevHand != handsOn)
+        if (prevHand != handsOn || force)
         {
             prevHand = handsOn;
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
         }
 
-        if (prevGesture != gesturesOn)
+        if (prevGesture != gesturesOn || force)
         {
             prevGesture = gesturesOn;
             NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
@@ -210,5 +210,6 @@ public class NuitrackModules : MonoBehaviour
     public void SwitchNuitrackAi()
     {
         NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
+        ChangeModules(prevDepth, prevColor, prevUser, prevSkel, prevHand, prevGesture, true);
     }
 }

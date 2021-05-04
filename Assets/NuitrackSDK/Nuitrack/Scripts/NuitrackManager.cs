@@ -319,7 +319,10 @@ public class NuitrackManager : MonoBehaviour
                 nuitrack.Nuitrack.Init();
 
                 if (useNuitrackAi)
+                {
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
                     nuitrack.Nuitrack.SetConfigValue("Skeletonization.Type", "CNN_HPE");
+                }
             }
 
             Debug.Log("Init OK");
