@@ -8,7 +8,7 @@ public class RigidbodySkeletonController : MonoBehaviour
     [SerializeField] List<nuitrack.JointType> targetJoints;
     [SerializeField] GameObject rigidBodyJoint;
 
-    [SerializeField] float smoothVal = 4f;
+    [SerializeField, Range(0.1f, 64f)] float smoothSpeed = 24f;
 
     Transform space;
 
@@ -53,7 +53,7 @@ public class RigidbodySkeletonController : MonoBehaviour
             Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.Key).Real.ToVector3() * 0.001f;
 
             Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
-            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothVal);
+            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothSpeed);
 
             rigidbodyJoint.Value.MovePosition(lerpPosition);
         }

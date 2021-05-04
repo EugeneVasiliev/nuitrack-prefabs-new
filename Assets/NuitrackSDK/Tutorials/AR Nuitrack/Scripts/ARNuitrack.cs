@@ -13,9 +13,8 @@ public class ARNuitrack : MonoBehaviour
     [SerializeField] new Camera camera;
 
     [Header("Sensor params")]
-    [Tooltip("Check the specification of your sensor on the manufacturer's website")]
-    [Range (0, 32)]
-    [SerializeField] float maxDepthSensor = 8;
+    [SerializeField, Range(0.1f, 32f), Tooltip("Check the specification of your sensor on the manufacturer's website")]
+    float maxDepthSensor = 8;
 
     ComputeBuffer depthDataBuffer;
     byte[] depthDataArray = null;
@@ -25,9 +24,9 @@ public class ARNuitrack : MonoBehaviour
 
     Plane floorPlane;
 
-    [SerializeField] float deltaHeight = 0.1f;
-    [SerializeField] float deltaAngle = 3f;
-    [SerializeField] float floorCorrectionSpeed = 8f;  
+    [SerializeField, Range(0.001f, 1f)] float deltaHeight = 0.1f;
+    [SerializeField, Range(0.1f, 90f)] float deltaAngle = 3f;
+    [SerializeField, Range(0.1f, 32f)] float floorCorrectionSpeed = 8f;  
 
     void Update()
     {
@@ -133,6 +132,10 @@ public class ARNuitrack : MonoBehaviour
 
     private void OnDestroy()
     {
-        Destroy(rgbTexture2D);
+        if(rgbTexture2D != null)
+            Destroy(rgbTexture2D);
+
+        if (depthDataBuffer != null)
+            depthDataBuffer.Release();
     }
 }

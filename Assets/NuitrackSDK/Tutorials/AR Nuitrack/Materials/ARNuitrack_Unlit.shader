@@ -3,7 +3,6 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _CameraPosition("Camera position", Vector) = (0,0,0,0)
     }
     SubShader
     {
