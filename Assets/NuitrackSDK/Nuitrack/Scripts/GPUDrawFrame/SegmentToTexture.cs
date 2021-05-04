@@ -29,6 +29,8 @@ public class SegmentToTexture : MonoBehaviour
         Color.grey
     };
 
+    ComputeShader instance;
+
     RenderTexture renderTexture;
 
     ComputeBuffer userColorsBuffer;
@@ -45,16 +47,18 @@ public class SegmentToTexture : MonoBehaviour
 
         if (SystemInfo.supportsComputeShaders)
         {
-            kernelIndex = segment2Texture.FindKernel("Segment2Texture");
-            segment2Texture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+            instance = Instantiate(segment2Texture);
+
+            kernelIndex = instance.FindKernel("Segment2Texture");
+            instance.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
 
             userColorsBuffer = new ComputeBuffer(defaultColors.Length, sizeof(float) * 4);
             userColorsBuffer.SetData(defaultColors);
 
-            segment2Texture.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
+            instance.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
         }
         else
-            Debug.LogError("Compute Shader is not support.");
+            Debug.LogError("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
     }
 
     void OnDisable()
@@ -66,6 +70,9 @@ public class SegmentToTexture : MonoBehaviour
             userColorsBuffer.Release();
             sourceDataBuffer.Release();
         }
+
+        Destroy(renderTexture);
+        Destroy(instance);
     }
 
     void NuitrackManager_onUserTrackerUpdate(nuitrack.UserFrame frame)
@@ -84,8 +91,8 @@ public class SegmentToTexture : MonoBehaviour
 
             rawImage.texture = renderTexture;
 
-            segment2Texture.SetInt("textureWidth", renderTexture.width);
-            segment2Texture.SetTexture(kernelIndex, "Result", renderTexture);
+            instance.SetInt("textureWidth", renderTexture.width);
+            instance.SetTexture(kernelIndex, "Result", renderTexture);
 
             /*
             We put the source data in the buffer, but the buffer does not support types 
@@ -103,7 +110,7 @@ public class SegmentToTexture : MonoBehaviour
         Marshal.Copy(frame.Data, segmentDataArray, 0, frame.DataSize);
         sourceDataBuffer.SetData(segmentDataArray);
 
-        segment2Texture.SetBuffer(kernelIndex, "UserIndexes", sourceDataBuffer);
-        segment2Texture.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z); 
+        instance.SetBuffer(kernelIndex, "UserIndexes", sourceDataBuffer);
+        instance.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z); 
     }
 }

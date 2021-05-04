@@ -320,8 +320,15 @@ public class NuitrackManager : MonoBehaviour
 
                 if (useNuitrackAi)
                 {
-                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
-                    nuitrack.Nuitrack.SetConfigValue("Skeletonization.Type", "CNN_HPE");
+                    if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.LinuxPlayer || Application.isEditor)
+                    {
+                        nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
+                        nuitrack.Nuitrack.SetConfigValue("Skeletonization.Type", "CNN_HPE");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("NuitrackAI doesn't support this platform: " + Application.platform + ". https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md");
+                    }
                 }
             }
 

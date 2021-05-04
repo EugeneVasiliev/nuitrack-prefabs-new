@@ -19,6 +19,8 @@ public class DepthToTexture : MonoBehaviour
     [Range (-1.0f, 1.0f)]
     [SerializeField] float contrast = 0f;
 
+    ComputeShader instance;
+
     ComputeBuffer sourceDataBuffer;
 
     byte[] depthDataArray = null;
@@ -33,11 +35,13 @@ public class DepthToTexture : MonoBehaviour
 
         if (SystemInfo.supportsComputeShaders)
         {
-            kernelIndex = depthToTexture.FindKernel("Depth2Texture");
-            depthToTexture.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+            instance = Instantiate(depthToTexture);
+
+            kernelIndex = instance.FindKernel("Depth2Texture");
+            instance.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         }
         else
-            Debug.LogError("Compute Shader is not support.");
+            Debug.LogError("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
     }
 
     void OnDisable()
@@ -49,6 +53,9 @@ public class DepthToTexture : MonoBehaviour
             NuitrackManager.onDepthUpdate -= DrawDepth;
             sourceDataBuffer.Release();
         }
+
+        Destroy(renderTexture);
+        Destroy(instance);
     }
 
     void DrawDepth(nuitrack.DepthFrame frame)
@@ -67,8 +74,8 @@ public class DepthToTexture : MonoBehaviour
 
             background.texture = renderTexture;
 
-            depthToTexture.SetInt("textureWidth", renderTexture.width);
-            depthToTexture.SetTexture(kernelIndex, "Result", renderTexture);
+            instance.SetInt("textureWidth", renderTexture.width);
+            instance.SetTexture(kernelIndex, "Result", renderTexture);
 
             /*
             We put the source data in the buffer, but the buffer does not support types 
@@ -81,7 +88,7 @@ public class DepthToTexture : MonoBehaviour
 
             int dataSize = frame.DataSize;
             sourceDataBuffer = new ComputeBuffer(dataSize / 2, sizeof(uint));
-            depthToTexture.SetBuffer(kernelIndex, "DepthFrame", sourceDataBuffer);
+            instance.SetBuffer(kernelIndex, "DepthFrame", sourceDataBuffer);
 
             depthDataArray = new byte[dataSize];
         }
@@ -89,7 +96,7 @@ public class DepthToTexture : MonoBehaviour
         Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
         sourceDataBuffer.SetData(depthDataArray);
 
-        depthToTexture.SetFloat("contrast", contrast);
-        depthToTexture.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
+        instance.SetFloat("contrast", contrast);
+        instance.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
     }
 }
