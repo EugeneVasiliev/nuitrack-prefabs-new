@@ -13,6 +13,7 @@ public class Avatar : MonoBehaviour
     [SerializeField] ModelJoint[] modelJoints;
     [SerializeField] MappingMode mappingMode;
     [SerializeField] nuitrack.JointType rootJoint = nuitrack.JointType.Waist;
+    [SerializeField] Transform rootModel;
 
     /// <summary> Model bones </summary> Dictionary with joints
     Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
@@ -37,9 +38,7 @@ public class Avatar : MonoBehaviour
 
             //Adding base distances between the child bone and the parent bone 
             if (modelJoints[i].parentJointType != nuitrack.JointType.None)
-            {
                 AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].parentJointType.TryGetMirrored());
-            }
         }
     }
 
@@ -55,7 +54,8 @@ public class Avatar : MonoBehaviour
         jointsRigged[targetJoint].baseDistanceToParent = Vector3.Distance(parentBonePos, targetBonePos);
         //record the Transform of the model parent bone
         jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
-        //print(jointsRigged[targetJoint].parentBone + " <---> " + jointsRigged[parentJoint].bone);
+        //extract the parent bone from the hierarchy to make it independent
+        //jointsRigged[targetJoint].parentBone.parent = transform.root;
     }
 
     void Update()
@@ -97,7 +97,7 @@ public class Avatar : MonoBehaviour
                     //extract the parent bone from the hierarchy to make it independent
                     defaultParents.Add(joint.Type, jointsRigged[joint.Type].parentBone.parent);
                     defaultTransform.Add(joint.Type, jointsRigged[joint.Type].parentBone.parent.localPosition);
-                    jointsRigged[joint.Type].parentBone.parent = transform.root;
+                    //jointsRigged[joint.Type].parentBone.parent = transform.root;
                 }
             }
         }
@@ -108,50 +108,54 @@ public class Avatar : MonoBehaviour
     /// </summary>
     void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
-        Vector3 rootPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(rootJoint).ToVector3());
-        transform.position = rootPos;
+        //Switch(skeleton);
+
+        if (mappingMode == MappingMode.Indirect)
+            rootModel.position = 0.001f * skeleton.GetJoint(rootJoint).ToVector3();
 
         foreach (var riggedJoint in jointsRigged)
         {
             if(mappingMode == MappingMode.Indirect)
             {
-                Switch(skeleton);
                 //Get joint from the Nuitrack
                 nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
 
                 ModelJoint modelJoint = riggedJoint.Value;
 
                 //Calculate the model bone rotation: take the mirrored joint orientation, add a basic rotation of the model bone, invert movement along the Z axis
-                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
+                Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
 
                 modelJoint.bone.rotation = jointOrient;
             }
             else
             {
-                Switch(skeleton);
                 //Get joint from the Nuitrack
                 nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
 
                 //Get modelJoint
                 ModelJoint modelJoint = riggedJoint.Value;
 
-                //Bone rotation
-                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
-                modelJoint.bone.rotation = jointOrient;
-
-                //Bone position
-                Vector3 newPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * joint.ToVector3());
-                modelJoint.bone.position = newPos;
-
-                //Bone scale
-                if (modelJoint.parentBone != null)
+                if (joint.Confidence > 0.1f)
                 {
-                    //Take the Transform of a parent bone
-                    Transform parentBone = modelJoint.parentBone;
-                    //calculate how many times the distance between the child bone and its parent bone has changed compared to the base distance (which was recorded at the start)
-                    float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
-                    //change the size of the bone to the resulting value (On default bone size (1,1,1))
-                    parentBone.localScale = Vector3.one / scaleDif;
+                    //Bone position
+                    Vector3 newPos = 0.001f * joint.ToVector3();
+                    modelJoint.bone.position = newPos;
+
+                    //Bone rotation
+                    Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
+                    modelJoint.bone.rotation = jointOrient;
+
+                    //Bone scale
+                    if (modelJoint.parentBone != null)
+                    {
+                        //Take the Transform of a parent bone
+                        Transform parentBone = modelJoint.parentBone;
+                        //calculate how many times the distance between the child bone and its parent bone has changed compared to the base distance (which was recorded at the start)
+                        float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
+                        //change the size of the bone to the resulting value (On default bone size (1,1,1))
+                        parentBone.localScale = Vector3.one / scaleDif;
+                        parentBone.localScale *= parentBone.localScale.x / parentBone.lossyScale.x;
+                    }
                 }
             }
         }

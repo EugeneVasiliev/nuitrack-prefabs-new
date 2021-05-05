@@ -42,8 +42,7 @@ public class NuitrackAvatar : MonoBehaviour
         //record the Transform of the model parent bone
         jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
         //extract the parent bone from the hierarchy to make it independent
-        jointsRigged[targetJoint].parentBone.parent = transform.root;
-
+        //jointsRigged[targetJoint].parentBone.parent = transform.root;
     }
 
     void Update()
@@ -84,6 +83,7 @@ public class NuitrackAvatar : MonoBehaviour
                     float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
                     //change the size of the bone to the resulting value (On default bone size (1,1,1))
                     parentBone.localScale = Vector3.one / scaleDif;
+                    parentBone.localScale *= parentBone.localScale.x / parentBone.lossyScale.x;
                 }
             }
         }
