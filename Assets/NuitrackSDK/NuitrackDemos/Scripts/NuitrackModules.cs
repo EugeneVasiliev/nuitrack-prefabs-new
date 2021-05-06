@@ -43,11 +43,6 @@ public class NuitrackModules : MonoBehaviour
         {
             exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
         }
-
-        //Add listener for when the value of the Dropdown changes, to take action
-        //dropdownModelSwitcher.onValueChanged.AddListener(delegate {
-        //    DropdownValueChanged(dropdownModelSwitcher);
-        //});
     }
 
     GameObject root;

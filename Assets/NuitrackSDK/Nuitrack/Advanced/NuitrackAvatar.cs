@@ -41,8 +41,6 @@ public class NuitrackAvatar : MonoBehaviour
         jointsRigged[targetJoint].baseDistanceToParent = Vector3.Distance(parentBonePos, targetBonePos);
         //record the Transform of the model parent bone
         jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
-        //extract the parent bone from the hierarchy to make it independent
-        //jointsRigged[targetJoint].parentBone.parent = transform.root;
     }
 
     void Update()
@@ -67,11 +65,11 @@ public class NuitrackAvatar : MonoBehaviour
             if (joint.Confidence > 0.1f)
             {
                 //Bone position
-                Vector3 newPos = 0.001f * joint.ToVector3();
+                Vector3 newPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * joint.ToVector3());
                 modelJoint.bone.position = newPos;
 
                 //Bone rotation
-                Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
+                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
                 modelJoint.bone.rotation = jointOrient;
 
                 //Bone scale
