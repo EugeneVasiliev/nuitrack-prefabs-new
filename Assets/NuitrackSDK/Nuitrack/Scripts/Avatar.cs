@@ -54,8 +54,6 @@ public class Avatar : MonoBehaviour
         jointsRigged[targetJoint].baseDistanceToParent = Vector3.Distance(parentBonePos, targetBonePos);
         //record the Transform of the model parent bone
         jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
-        //extract the parent bone from the hierarchy to make it independent
-        //jointsRigged[targetJoint].parentBone.parent = transform.root;
     }
 
     void Update()
@@ -64,52 +62,11 @@ public class Avatar : MonoBehaviour
         if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
     }
 
-    void Switch(nuitrack.Skeleton skeleton)
-    {
-        if (prevMappingMode == mappingMode)
-            return;
-
-        print("switch to " + mappingMode);
-        prevMappingMode = mappingMode;
-
-        if (mappingMode == MappingMode.Indirect)
-        {
-
-        }
-
-        foreach (var riggedJoint in jointsRigged)
-        {
-            ModelJoint modelJoint = riggedJoint.Value;
-            nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-
-            if (modelJoint.parentJointType != nuitrack.JointType.None)
-            {
-                if (mappingMode == MappingMode.Indirect)
-                {
-                    //extract the parent bone from the hierarchy to make it independent
-                    //print(jointsRigged[joint.Type].parentBone.parent + " <---> " + jointsRigged[jointsRigged[joint.Type].parentJointType].bone);
-                    jointsRigged[joint.Type].parentBone.parent = defaultParents[joint.Type];
-                    jointsRigged[joint.Type].parentBone.parent.localPosition = defaultTransform[joint.Type];
-                    //print(jointsRigged[joint.Type].parentBone.parent + " <---> " + jointsRigged[jointsRigged[joint.Type].parentJointType].bone);
-                }
-                else
-                {
-                    //extract the parent bone from the hierarchy to make it independent
-                    defaultParents.Add(joint.Type, jointsRigged[joint.Type].parentBone.parent);
-                    defaultTransform.Add(joint.Type, jointsRigged[joint.Type].parentBone.parent.localPosition);
-                    //jointsRigged[joint.Type].parentBone.parent = transform.root;
-                }
-            }
-        }
-    }
-
     /// <summary>
     /// Getting skeleton data from thr sensor and updating transforms of the model bones
     /// </summary>
     void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
-        //Switch(skeleton);
-
         if (mappingMode == MappingMode.Indirect)
             rootModel.position = 0.001f * skeleton.GetJoint(rootJoint).ToVector3();
 
@@ -154,6 +111,7 @@ public class Avatar : MonoBehaviour
                         float scaleDif = modelJoint.baseDistanceToParent / Vector3.Distance(newPos, parentBone.position);
                         //change the size of the bone to the resulting value (On default bone size (1,1,1))
                         parentBone.localScale = Vector3.one / scaleDif;
+                        //compensation for size due to hierarchy
                         parentBone.localScale *= parentBone.localScale.x / parentBone.lossyScale.x;
                     }
                 }

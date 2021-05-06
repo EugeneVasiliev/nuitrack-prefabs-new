@@ -39,6 +39,7 @@ public class NuitrackManager : MonoBehaviour
     [SerializeField] bool asyncInit = false;
     [Tooltip("ONLY PC!")]
     public bool useNuitrackAi = false;
+    public bool useFaceTracking = false;
 
     public static bool sensorConnected = false;
 
@@ -329,6 +330,12 @@ public class NuitrackManager : MonoBehaviour
                     {
                         Debug.LogWarning("NuitrackAI doesn't support this platform: " + Application.platform + ". https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md");
                     }
+                }
+
+                if (useFaceTracking)
+                {
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
+                    nuitrack.Nuitrack.SetConfigValue("Faces.ToUse", "true");
                 }
             }
 
