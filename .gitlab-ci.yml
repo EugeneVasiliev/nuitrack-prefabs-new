@@ -9,12 +9,7 @@ build_unity_package:
     - windows_x64
   script:
     - echo %username%
-    - pip install git+http://gitlab-ci-token:%CI_JOB_TOKEN%@tox.3divi.ru/3divi-devops/3divi-ctl-client.git@windows_fix
-    - call Scripts\3divi-ctl-win-wrapper.bat ../depth_scanner/arm32 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm32:Fittar_v0.35.1_v2.1
-    - call Scripts\3divi-ctl-win-wrapper.bat ../depth_scanner/arm64 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm64:Fittar_v0.35.1_v2.1
-    - copy /y "..\depth_scanner\arm64\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android-arm64\*.so" "Assets/Plugins/Android/libs/arm64-v8a"
-    - copy /y "..\depth_scanner\arm32\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android\*.so" "Assets/Plugins/Android/libs/armeabi-v7a"
-    - rmdir /s /q "..\depth_scanner"
+    - call Scripts\requirements.bat
     - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets/NuitrackSDK" "Assets/Plugins" %cd%/NuitrackSDK.unitypackage'
   artifacts:
     paths:

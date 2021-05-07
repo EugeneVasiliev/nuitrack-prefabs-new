@@ -1,5 +1,0 @@
-pushd .
-cd C:\Users\stranger\AppData\Local\Programs\Python\Python*
-set PYTHON_PATH=%cd%
-popd
-%PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output %~1 %~2
