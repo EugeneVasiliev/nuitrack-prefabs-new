@@ -1,0 +1,5 @@
+pushd .
+cd C:\Users\stranger\AppData\Local\Programs\Python\Python*\Scripts
+set SCRIPTS=%cd%
+popd
+python %SCRIPTS%\3divi-ctl get --output %~1 %~2
