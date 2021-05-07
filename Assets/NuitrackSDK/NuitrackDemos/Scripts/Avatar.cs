@@ -20,11 +20,8 @@ public class Avatar : MonoBehaviour
     Dictionary<nuitrack.JointType, Transform> defaultParents = new Dictionary<nuitrack.JointType, Transform>();
     Dictionary<nuitrack.JointType, Vector3> defaultTransform = new Dictionary<nuitrack.JointType, Vector3>();
 
-    MappingMode prevMappingMode;
-
     void Start()
     {
-        prevMappingMode = mappingMode;
         //Adding model bones and JointType keys
         //Adding rotation offsets of model bones and JointType keys
 
