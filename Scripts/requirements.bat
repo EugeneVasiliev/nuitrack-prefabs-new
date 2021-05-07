@@ -7,7 +7,16 @@ popd
 
 %PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output ../depth_scanner/arm32 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm32:Fittar_v0.35.1_v2.1
 %PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output ../depth_scanner/arm64 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm64:Fittar_v0.35.1_v2.1
+%PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output ../depth_scanner/lin64 artifact://3d/depth_scanner/ai_ubuntu-14.04.5-linux-x64:Fittar_v0.35.1_v2.1
+%PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output ../depth_scanner/ios64 artifact://3d/depth_scanner/macos-ios-arm64:Fittar_v0.35.1_v2.1
+
+copy /y "..\depth_scanner\arm64\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android-arm64\*.jar" "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly"
+
+copy /y "..\depth_scanner\arm64\depth_scanner\build_android64\Wrappers\CSharp\Nuitrack\nuitrack.net.dll" "Assets/NuitrackSDK/Nuitrack/IL2CPP/NuitrackAssembly"
+copy /y "..\depth_scanner\ios64\depth_scanner\build\Wrappers\CSharp\Nuitrack\nuitrack.net.dll" "Assets/NuitrackSDK/Nuitrack/iOS/NuitrackAssembly" 
+copy /y "..\depth_scanner\lin64\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\csharp\nuitrack.net.dll" "Assets/NuitrackSDK/Nuitrack/NuitrackAssembly"
 
 copy /y "..\depth_scanner\arm64\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android-arm64\*.so" "Assets/Plugins/Android/libs/arm64-v8a"
 copy /y "..\depth_scanner\arm32\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android\*.so" "Assets/Plugins/Android/libs/armeabi-v7a"
+
 rmdir /s /q "..\depth_scanner"
