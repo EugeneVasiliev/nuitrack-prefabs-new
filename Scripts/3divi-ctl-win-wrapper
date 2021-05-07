@@ -1,5 +1,5 @@
 pushd .
-cd C:\Users\stranger\AppData\Local\Programs\Python\Python*\Scripts
-set SCRIPTS=%cd%
+cd C:\Users\stranger\AppData\Local\Programs\Python\Python*
+set PYTHON_PATH=%cd%
 popd
-python %SCRIPTS%\3divi-ctl get --output %~1 %~2
+%PYTHON_PATH%\python.exe %PYTHON_PATH%\Scripts\3divi-ctl get --output %~1 %~2
