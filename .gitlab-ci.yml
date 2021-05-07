@@ -8,6 +8,7 @@ build_unity_package:
   tags:
     - windows_x64
   script:
+    - echo %username%
     - pip install git+http://gitlab-ci-token:%CI_JOB_TOKEN%@tox.3divi.ru/3divi-devops/3divi-ctl-client.git@windows_fix
     - call Scripts\3divi-ctl-win-wrapper.bat ../depth_scanner/arm32 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm32:Fittar_v0.35.1_v2.1
     - call Scripts\3divi-ctl-win-wrapper.bat ../depth_scanner/arm64 artifact://3d/depth_scanner/ubuntu-14.04.5-android-arm64:Fittar_v0.35.1_v2.1
