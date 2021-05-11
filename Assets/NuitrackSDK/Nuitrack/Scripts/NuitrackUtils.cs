@@ -50,7 +50,7 @@ public static class NuitrackUtils
     /// </summary>
     /// <param name="frame">Original nuitrack.ColorFrame</param>
     /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.ColorFrame) is deprecated, please use script RGBToTexture instead.")]
+    [Obsolete("Texture2D(nuitrack.ColorFrame) is deprecated, please use script FrameProvider.ColorFrame.")]
     public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
     {
         int datasize = frame.DataSize;
@@ -76,8 +76,8 @@ public static class NuitrackUtils
         return rgbTexture;
     }
 
-    static Color32 transparentColor = Color.clear;
-    static Color32[] defaultColors = new Color32[]
+    static Color transparentColor = Color.clear;
+    static Color[] defaultColors = new Color[]
     {
         Color.red,
         Color.green,
@@ -94,10 +94,10 @@ public static class NuitrackUtils
     /// <param name="frame">Original nuitrack.UserFrame</param>
     /// <param name="customListColors">Optional colors for users</param>
     /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.UserFrame) is deprecated, please use script SegmentToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, params Color32[] customListColors)
+    [Obsolete("Texture2D(nuitrack.UserFrame) is deprecated, please use FrameProvider.UserFrame.")]
+    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, params Color[] customListColors)
     {
-        Color32[] currentColorList = customListColors ?? defaultColors;
+        Color[] currentColorList = customListColors ?? defaultColors;
 
         byte[] outSegment = new byte[frame.Cols * frame.Rows * 4];
 
@@ -126,17 +126,17 @@ public static class NuitrackUtils
     /// To black-and-white representation of the image from the sensor depth
     /// </summary>
     /// <param name="frame">Original nuitrack.DepthFrame</param>
-    /// <param name="contrast">Contrast of the final image (0 - low contrast, 1 - high). Recommended range [0.8-0.95]</param>
+    /// <param name="maxSensorDepth">Maximum depth recognized by the sensor. See the information on the manufacturer's website.</param>
     /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.DepthFrame) is deprecated, please use script DepthToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, float contrast = 0.9f)
+    [Obsolete("Texture2D(nuitrack.DepthFrame) is deprecated, please use script FrameProvider.DepthFrame.")]
+    public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, float maxSensorDepth = 10f)
     {
         byte[] outDepth = new byte[(frame.DataSize / 2) * 3];
-        int de = 1 + 255 - (int)(contrast * 255);
 
         for (int i = 0; i < frame.DataSize / 2; i++)
         {
-            byte depth = (byte)(frame[i] / de);
+            float depthVal = frame[i] / (1000 * maxSensorDepth);
+            byte depth = (byte)(256 * depthVal);
 
             Color32 currentColor = new Color32(depth, depth, depth, 255);
 
