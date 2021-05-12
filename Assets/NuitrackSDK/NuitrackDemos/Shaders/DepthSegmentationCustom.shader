@@ -66,6 +66,7 @@
 			fixed _Cutoff;
 			float4 _SegmZeroColor;
 			int _ShowBorders;
+			float _maxSensorDepth;
 
 			v2f vert (appdata v)
 			{
@@ -75,7 +76,7 @@
 				float4 depthCol = tex2Dlod(_DepthTex, float4(v.depthPos, 0, 0));
 
 				//real positions of pixel:
-				float z = depthCol.r * _ScaleMult * 16384; // should be enough, as depth is ushort in C#
+				float z = depthCol.r * _ScaleMult * (1000 * _maxSensorDepth); // should be enough, as depth is ushort in C#
 				float x =  z * (v.depthPos.x - 0.5) / fX;
 				float y = -z * (v.depthPos.y - 0.5) / fY;
 
