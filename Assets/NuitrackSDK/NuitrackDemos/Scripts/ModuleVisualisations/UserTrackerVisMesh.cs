@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class UserTrackerVisMesh : MonoBehaviour
 {
@@ -13,7 +12,6 @@ public class UserTrackerVisMesh : MonoBehaviour
     //  List<Vector2[]> uv3s;
     //  List<Vector2[]> uv4s;
 
-    [SerializeField] Color defaultColor;
     Mesh[] meshes;
     GameObject[] visualizationParts;
     [SerializeField] Material meshMaterial;
