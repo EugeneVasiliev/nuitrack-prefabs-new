@@ -8,7 +8,6 @@ public class FrameUtils : MonoBehaviour
     public enum Operation
     {
         Cut = 0,
-        CutHard = 1,
         ReverseCut,
         //Mul,
         //Mix

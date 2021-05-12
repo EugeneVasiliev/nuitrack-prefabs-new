@@ -315,7 +315,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.CutHard);
+            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.Cut);
             visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else
