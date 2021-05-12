@@ -26,6 +26,14 @@ public class DepthToTexture : FrameToTexture
         }
     }
 
+    public float MaxSensorDepth
+    {
+        get
+        {
+            return maxDepthSensor;
+        }
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
