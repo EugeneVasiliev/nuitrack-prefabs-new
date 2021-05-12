@@ -29,30 +29,24 @@ public class RGBToTexture : FrameToTexture
 
     Texture2D GetCPUTexture(nuitrack.ColorFrame frame)
     {
-        if (frame.Timestamp == lastTimeStamp && outRgbTexture != null)
-            return outRgbTexture;
+        if (frame.Timestamp == lastTimeStamp && texture2D != null)
+            return texture2D;
         else
         {
-            outRgbTexture = frame.ToTexture2D();
+            texture2D = frame.ToTexture2D();
             lastTimeStamp = frame.Timestamp;
 
-            return outRgbTexture;
+            return texture2D;
         }       
     }
 
     RenderTexture GetGPUTexture(nuitrack.ColorFrame frame)
     {
-        if (frame.Timestamp == lastTimeStamp && outRgbTexture != null)
+        if (frame.Timestamp == lastTimeStamp && renderTexture != null)
             return renderTexture;
         else
         {
             lastTimeStamp = frame.Timestamp;
-
-            if (outRgbTexture == null)
-            {
-                outRgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-                rect = new Rect(0, 0, frame.Cols, frame.Rows);
-            }
 
             if (instanceShader == null)
                 InitShader("RGB2BGR");
@@ -74,6 +68,11 @@ public class RGBToTexture : FrameToTexture
         }
     }
 
+    /// <summary>
+    /// Get the ColorFrame as a RenderTexture. 
+    /// Recommended method for platforms with ComputeShader support.
+    /// </summary>
+    /// <returns>ColorFrame converted to RenderTexture</returns>
     public override RenderTexture GetRenderTexture()
     {
         if (SourceFrame == null)
@@ -83,13 +82,19 @@ public class RGBToTexture : FrameToTexture
             return GetGPUTexture(SourceFrame);
         else
         {
-            outRgbTexture = GetCPUTexture(SourceFrame);
-            CopyTexture2DToRenderTexture();
+            texture2D = GetCPUTexture(SourceFrame);
+            CopyTexture(texture2D, ref renderTexture);
 
             return renderTexture;
         }
     }
 
+    /// <summary>
+    /// Get a ColorFrame in the form of Texture2D. 
+    /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
+    /// If possible, use GetRenderTexture.
+    /// </summary>
+    /// <returns>ColorFrame converted to Texture2D</returns>
     public override Texture2D GetTexture2D()
     {
         if (SourceFrame == null)
@@ -100,8 +105,8 @@ public class RGBToTexture : FrameToTexture
         else
         {
             renderTexture = GetGPUTexture(SourceFrame);
-            CopyRenderTextureToTexture2D();
-            return outRgbTexture;
+            CopyTexture(renderTexture, ref texture2D);
+            return texture2D;
         }
     }
 }

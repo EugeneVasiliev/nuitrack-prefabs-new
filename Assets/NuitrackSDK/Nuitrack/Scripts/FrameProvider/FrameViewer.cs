@@ -18,7 +18,8 @@ public class FrameViewer : MonoBehaviour
     public enum TextureMode
     {
         RenderTexture = 0,
-        Texture2D
+        Texture2D = 1,
+        Texture = 2
     }
 
     [SerializeField] FrameMode frameMode;
@@ -28,14 +29,26 @@ public class FrameViewer : MonoBehaviour
 
     private void Update()
     {
-        Texture texture = null;
-
-        if (textureMode == TextureMode.Texture2D)
-            texture = GetFrameConverter().GetTexture2D();
-        else
-            texture = GetFrameConverter().GetRenderTexture();
+        Texture texture = GetTexture();
 
         onFrameUpdate.Invoke(texture);
+    }
+
+    Texture GetTexture()
+    {
+        FrameToTexture converter = GetFrameConverter();
+
+        switch (textureMode)
+        {
+            case TextureMode.RenderTexture:
+                return converter.GetRenderTexture();
+            case TextureMode.Texture2D:
+                return converter.GetTexture2D();
+            case TextureMode.Texture:
+                return converter.GetTexture();
+            default:
+                return null;
+        }
     }
 
     FrameToTexture GetFrameConverter()

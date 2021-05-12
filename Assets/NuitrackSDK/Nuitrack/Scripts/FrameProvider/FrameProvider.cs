@@ -8,11 +8,22 @@ public class FrameProvider : MonoBehaviour
     DepthToTexture depthToTexture;
     SegmentToTexture segmentToTexture;
 
+    public static FrameProvider Instance
+    {
+        get
+        {
+            if (instance == null)
+                Debug.LogError("FrameProvider not found. Add a prefab FrameProvider to the scene.");
+
+            return instance;
+        }
+    }
+
     public static RGBToTexture ColorFrame
     {
         get
         {
-            return instance.rgbToTexture;
+            return Instance.rgbToTexture;
         }
     }
 
@@ -20,7 +31,7 @@ public class FrameProvider : MonoBehaviour
     {
         get
         {
-            return instance.depthToTexture;
+            return Instance.depthToTexture;
         }
     }
 
@@ -28,11 +39,11 @@ public class FrameProvider : MonoBehaviour
     {
         get
         {
-            return instance.segmentToTexture;
+            return Instance.segmentToTexture;
         }
     }
 
-    private void Awake()
+    void Awake()
     {
         instance = this;
 

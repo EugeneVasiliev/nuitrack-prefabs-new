@@ -56,42 +56,34 @@ public class SegmentToTexture : FrameToTexture
         }
     }
 
-    Texture2D GetCPUTexture(nuitrack.UserFrame frame)
+    Texture2D GetCPUTexture(nuitrack.UserFrame frame, Color[] userColors = null)
     {
-        if (frame.Timestamp == lastTimeStamp && outRgbTexture != null)
-            return outRgbTexture;
+        if (frame.Timestamp == lastTimeStamp && texture2D != null)
+            return texture2D;
         else
         {
-            outRgbTexture = frame.ToTexture2D(defaultColors);
+            if (userColors == null)
+                userColors = defaultColors;
+
+            texture2D = frame.ToTexture2D(userColors);
             lastTimeStamp = frame.Timestamp;
 
-            return outRgbTexture;
+            return texture2D;
         }
     }
 
-    RenderTexture GetGPUTexture(nuitrack.UserFrame frame)
+    RenderTexture GetGPUTexture(nuitrack.UserFrame frame, Color[] userColors = null)
     {
-        if (frame.Timestamp == lastTimeStamp && outRgbTexture != null)
+        if (frame.Timestamp == lastTimeStamp && renderTexture != null)
             return renderTexture;
         else
         {
             lastTimeStamp = frame.Timestamp;
 
-            if (outRgbTexture == null)
-            {
-                outRgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-                rect = new Rect(0, 0, frame.Cols, frame.Rows);
-            }
-
             if (instanceShader == null)
             {
                 InitShader("Segment2Texture");
                 instanceShader.SetInt("textureWidth", frame.Cols);
-
-                userColorsBuffer = new ComputeBuffer(defaultColors.Length, sizeof(float) * 4);
-                userColorsBuffer.SetData(defaultColors);
-
-                instanceShader.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
 
                 /*
                    We put the source data in the buffer, but the buffer does not support types 
@@ -105,6 +97,17 @@ public class SegmentToTexture : FrameToTexture
                 sourceDataBuffer = new ComputeBuffer(frame.DataSize / 2, sizeof(uint));
                 instanceShader.SetBuffer(kernelIndex, "UserIndexes", sourceDataBuffer);
             }
+
+            if (userColors == null)
+                userColors = defaultColors;
+
+            if (userColorsBuffer == null || userColorsBuffer.count != userColors.Length)
+            {
+                userColorsBuffer = new ComputeBuffer(userColors.Length, sizeof(float) * 4);
+                instanceShader.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
+            }
+
+            userColorsBuffer.SetData(userColors);
 
             if (renderTexture == null)
             {
@@ -121,34 +124,84 @@ public class SegmentToTexture : FrameToTexture
         }
     }
 
+    /// <summary>
+    /// Get the UserFrame as a RenderTexture. 
+    /// Recommended method for platforms with ComputeShader support.
+    /// </summary>
+    /// <returns>UserFrame converted to RenderTexture</returns>
     public override RenderTexture GetRenderTexture()
+    {
+        return GetRenderTexture(defaultColors);
+    }
+
+    /// <summary>
+    /// Get the UserFrame as a RenderTexture. 
+    /// Recommended method for platforms with ComputeShader support.
+    /// </summary>
+    /// <param name="userColors">Colors for user segments.</param>
+    /// <returns>UserFrame converted to RenderTexture</returns>
+    public RenderTexture GetRenderTexture(Color[] userColors)
     {
         if (SourceFrame == null)
             return null;
 
-        if(SystemInfo.supportsComputeShaders)
-            return GetGPUTexture(SourceFrame);
+        if (SystemInfo.supportsComputeShaders)
+            return GetGPUTexture(SourceFrame, userColors);
         else
         {
-            outRgbTexture = GetCPUTexture(SourceFrame);
-            CopyTexture2DToRenderTexture();
+            texture2D = GetCPUTexture(SourceFrame, userColors);
+            CopyTexture(texture2D, ref renderTexture);
 
             return renderTexture;
         }
     }
 
+    /// <summary>
+    /// Get a UserFrame in the form of Texture2D. 
+    /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
+    /// If possible, use GetRenderTexture.
+    /// </summary>
+    /// <returns>UserFrame converted to Texture2D</returns>
     public override Texture2D GetTexture2D()
+    {
+        return GetTexture2D(defaultColors);
+    }
+
+    /// <summary>
+    /// Get a UserFrame in the form of Texture2D. 
+    /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
+    /// If possible, use GetRenderTexture.
+    /// </summary>
+    /// <param name="userColors">Colors for user segments.</param>
+    /// <returns>UserFrame converted to Texture2D</returns>
+    public Texture2D GetTexture2D(Color[] userColors)
     {
         if (SourceFrame == null)
             return null;
 
         if (!SystemInfo.supportsComputeShaders)
-            return GetCPUTexture(SourceFrame);
+            return GetCPUTexture(SourceFrame, userColors);
         else
         {
-            renderTexture = GetGPUTexture(SourceFrame);
-            CopyRenderTextureToTexture2D();
-            return outRgbTexture;
+            renderTexture = GetGPUTexture(SourceFrame, userColors);
+            CopyTexture(renderTexture, ref texture2D);
+            return texture2D;
         }
+    }
+
+    /// <summary>
+    /// Convert UserFrame to Texture. 
+    /// The method will select the most productive way to get the texture. 
+    /// This can be either RenderTexture or Texture2D. 
+    /// Use this method if you don't care about the texture type.
+    /// </summary>
+    /// <param name="userColors">Colors for user segments.</param>
+    /// <returns>Texture = (RenderTexture or Texture2D)</returns>
+    public Texture GetTexture(Color[] userColors)
+    {
+        if (SystemInfo.supportsComputeShaders)
+            return GetRenderTexture(userColors);
+        else
+            return GetTexture2D(userColors);
     }
 }

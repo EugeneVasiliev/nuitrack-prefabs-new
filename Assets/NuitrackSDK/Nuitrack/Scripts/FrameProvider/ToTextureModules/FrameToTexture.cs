@@ -6,7 +6,7 @@ public abstract class FrameToTexture : MonoBehaviour
     protected ComputeShader instanceShader;
 
     protected RenderTexture renderTexture;
-    protected Texture2D outRgbTexture;
+    protected Texture2D texture2D;
 
     protected Rect rect;
 
@@ -20,11 +20,11 @@ public abstract class FrameToTexture : MonoBehaviour
         if (!SystemInfo.supportsComputeShaders)
         {
 #if UNITY_EDITOR && !UNITY_STANDALONE
-            Debug.LogWarning("Compute shaders are not supported for the Android platform in the editor.\n" +
+            Debug.LogError("Compute shaders are not supported for the Android platform in the editor.\n" +
                 "A software conversion will be used (may cause performance issues)\n" +
                 "Switch the platform to Standalone (this is not relevant for the assembled project).");
 #else
-            Debug.LogWarning("Compute shaders are not supported. A software conversion will be used (may cause performance issues).");
+            Debug.LogError("Compute shaders are not supported. A software conversion will be used (may cause performance issues).");
 #endif
 
         }
@@ -53,7 +53,7 @@ public abstract class FrameToTexture : MonoBehaviour
     /// Get the frame as a RenderTexture. 
     /// Recommended method for platforms with ComputeShader support.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Frame converted to RenderTexture</returns>
     public abstract RenderTexture GetRenderTexture();
 
     /// <summary>
@@ -61,8 +61,23 @@ public abstract class FrameToTexture : MonoBehaviour
     /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
     /// If possible, use GetRenderTexture.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>Frame converted to Texture2D</returns>
     public abstract Texture2D GetTexture2D();
+
+    /// <summary>
+    /// Convert Frame to Texture. 
+    /// The method will select the most productive way to get the texture. 
+    /// This can be either RenderTexture or Texture2D. 
+    /// Use this method if you don't care about the texture type.
+    /// </summary>
+    /// <returns>Texture = (RenderTexture or Texture2D)</returns>
+    public Texture GetTexture()
+    {
+        if (SystemInfo.supportsComputeShaders)
+            return GetRenderTexture();
+        else
+            return GetTexture2D();
+    }
 
     protected virtual void OnDestroy()
     {
@@ -71,21 +86,49 @@ public abstract class FrameToTexture : MonoBehaviour
 
         if (renderTexture != null)
             Destroy(renderTexture);
+
+        if (texture2D != null)
+            Destroy(texture2D);
     }
 
-    protected void CopyTexture2DToRenderTexture()
+    protected void CopyTexture(Texture2D source, ref RenderTexture dest)
     {
-        if (renderTexture == null)
-            renderTexture = new RenderTexture(outRgbTexture.width, outRgbTexture.height, 0);
+        if (dest == null || dest.width != source.width || dest.height != source.height)
+            dest = new RenderTexture(source.width, source.height, 0);
 
-        RenderTexture.active = renderTexture;
-        Graphics.Blit(outRgbTexture, renderTexture);
+        RenderTexture saveCameraRT = null;
+
+        if (Camera.main != null)
+        {
+            saveCameraRT = Camera.main.targetTexture;
+            Camera.main.targetTexture = null;
+        }
+
+        RenderTexture saveRT = RenderTexture.active;
+
+        RenderTexture.active = dest;
+        Graphics.Blit(source, dest);
+
+        RenderTexture.active = saveRT;
+
+        if (Camera.main != null)
+            Camera.main.targetTexture = saveCameraRT;
     }
 
-    protected void CopyRenderTextureToTexture2D()
+    protected void CopyTexture(RenderTexture source, ref Texture2D dest)
     {
-        RenderTexture.active = renderTexture;
-        outRgbTexture.ReadPixels(rect, 0, 0, false);
-        outRgbTexture.Apply();
+        if (dest == null || dest.width != rect.width || dest.height != rect.height)
+        {
+            dest = new Texture2D(source.width, source.height, TextureFormat.ARGB32, false);
+            rect = new Rect(0, 0, source.width, source.height);
+        }
+
+        RenderTexture saveRT = RenderTexture.active;
+
+        RenderTexture.active = source;
+        dest.ReadPixels(rect, 0, 0, false);
+        dest.Apply();
+
+        RenderTexture.active = saveRT;
     }
 }
