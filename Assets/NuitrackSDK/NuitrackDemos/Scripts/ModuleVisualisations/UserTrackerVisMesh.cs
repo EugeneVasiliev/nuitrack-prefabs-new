@@ -19,10 +19,11 @@ public class UserTrackerVisMesh : MonoBehaviour
     [SerializeField] Material meshMaterial;
     [SerializeField] Color[] userCols;
 
-    Texture2D depthTexture, rgbTexture, segmentationTexture;
-    Color[] depthColors;
+    RenderTexture depthTexture, rgbTexture, segmentationTexture;
 
     bool active = false;
+
+    bool showBackground = true;
 
     public void SetActive(bool _active)
     {
@@ -31,7 +32,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     public void SetShaderProperties(bool showBackground, bool showBorders)
     {
-        meshMaterial.SetInt("_ShowBackground", showBackground ? 1 : 0);
+        this.showBackground = showBackground;
         meshMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
     }
 
@@ -61,15 +62,6 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     void InitMeshes(int cols, int rows, float hfov)
     {
-        depthColors = new Color[cols * rows];
-
-        depthTexture = new Texture2D(cols, rows, TextureFormat.RFloat, false);
-        depthTexture.filterMode = FilterMode.Point;
-        depthTexture.wrapMode = TextureWrapMode.Clamp;
-        depthTexture.Apply();
-
-        meshMaterial.SetTexture("_DepthTex", depthTexture);
-
         float fX, fY;
         fX = 0.5f / Mathf.Tan(0.5f * hfov);
         fY = fX * cols / rows;
@@ -78,9 +70,9 @@ public class UserTrackerVisMesh : MonoBehaviour
         meshMaterial.SetFloat("fY", fY);
 
         int numMeshes;
-        const int maxVertices = int.MaxValue;
+        const uint maxVertices = uint.MaxValue;
 
-        numMeshes = (cols * rows) / maxVertices + (((cols * rows) % maxVertices == 0) ? 0 : 1);
+        numMeshes = (int)((cols * rows) / maxVertices + (((cols * rows) % maxVertices == 0) ? 0 : 1));
 
         Debug.Log("Num meshes: " + numMeshes.ToString());
 
@@ -183,6 +175,8 @@ public class UserTrackerVisMesh : MonoBehaviour
         }
     }
 
+    RenderTexture rgbRenderTexture = null;
+
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
         for (int i = 0; i < visualizationParts.Length; i++)
@@ -190,23 +184,26 @@ public class UserTrackerVisMesh : MonoBehaviour
             if (!visualizationParts[i].activeSelf) visualizationParts[i].SetActive(true);
         }
 
-        System.DateTime t1 = System.DateTime.Now;
-        for (int i = 0, pointIndex = 0; i < depthFrame.Rows; i++)
+        if (colorFrame == null)
+            rgbTexture = FrameProvider.DepthFrame.GetRenderTexture();
+        else
+            rgbTexture = FrameProvider.ColorFrame.GetRenderTexture();
+
+        if (!showBackground)
         {
-            for (int j = 0; j < depthFrame.Cols; j++, ++pointIndex)
-            {
-                depthColors[pointIndex].r = depthFrame[i, j] / 16384f;
-            }
+            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.CutHard);
+            meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
-        
-        rgbTexture = FrameProvider.ColorFrame.GetTexture2D();
-        segmentationTexture = FrameProvider.UserFrame.GetTexture2D();
+        else
+            meshMaterial.SetTexture("_RGBTex", rgbTexture);
 
+        depthTexture = FrameProvider.DepthFrame.GetRenderTexture();
+        segmentationTexture = FrameProvider.UserFrame.GetRenderTexture(userCols);
+
+        meshMaterial.SetTexture("_DepthTex", depthTexture);
         meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
-        meshMaterial.SetTexture("_RGBTex", rgbTexture);
+        
 
-        depthTexture.SetPixels(depthColors);
-        depthTexture.Apply();
-
+        meshMaterial.SetFloat("_maxSensorDepth", FrameProvider.DepthFrame.MaxSensorDepth);
     }
 }

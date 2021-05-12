@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using nuitrack.issues;
 
 public class UserTrackerVisualization : MonoBehaviour
@@ -23,7 +24,7 @@ public class UserTrackerVisualization : MonoBehaviour
     [SerializeField] float meshScaling = 1f;
     [SerializeField] Material visualizationMaterial;
 
-    int pointsPerVis;
+    int pointsPerVis, parts;
 
     int vertsPerMesh, trisPerMesh;
     int[] sampleTriangles;
@@ -42,8 +43,8 @@ public class UserTrackerVisualization : MonoBehaviour
 
     Color[] userCurrentCols;
 
-    GameObject visualizationPart;
-    Mesh visualizationMesh;
+    GameObject[] visualizationParts;
+    Mesh[] visualizationMeshes;
 
     RenderTexture depthTexture, rgbTexture, segmentationTexture;
 
@@ -52,6 +53,8 @@ public class UserTrackerVisualization : MonoBehaviour
     bool active = false;
     bool initialized = false;
 
+    bool showBackground = true;
+
     #endregion
 
     public void SetActive(bool _active)
@@ -59,12 +62,12 @@ public class UserTrackerVisualization : MonoBehaviour
         active = _active;
     }
 
-    public void SetShaderProperties(Color newZeroColor, bool showBorders)
+    public void SetShaderProperties(bool showBackground, bool showBorders)
     {
-        StartCoroutine(WaitSetShaderProperties(newZeroColor, showBorders));
+        StartCoroutine(WaitSetShaderProperties(showBackground, showBorders));
     }
 
-    IEnumerator WaitSetShaderProperties(Color newZeroColor, bool showBorders)
+    IEnumerator WaitSetShaderProperties(bool showBackground, bool showBorders)
     {
         while (!NuitrackManager.Instance.nuitrackInitialized)
         {
@@ -73,10 +76,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
         if (!initialized) Initialize();
 
-        userCols[0] = newZeroColor;
-        userCurrentCols[0] = newZeroColor;
-        occludedUserCols[0] = newZeroColor;
-        visualizationMaterial.SetColor("_SegmZeroColor", newZeroColor);
+        this.showBackground = showBackground;
         visualizationMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
     }
 
@@ -163,10 +163,11 @@ public class UserTrackerVisualization : MonoBehaviour
 
         colors = new List<Color[]>();
 
-        pointsPerVis = int.MaxValue;
+        pointsPerVis = (int)(uint.MaxValue / vertsPerMesh); //can't go over the limit for number of mesh vertices in one mesh
+        parts = (numPoints / pointsPerVis) + (((numPoints % pointsPerVis) != 0) ? 1 : 0);
 
-        visualizationMesh = new Mesh();
-        visualizationMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        visualizationParts = new GameObject[parts];
+        visualizationMeshes = new Mesh[parts];
 
         float fX, fY;
         fX = 0.5f / Mathf.Tan(0.5f * hfov);
@@ -177,9 +178,9 @@ public class UserTrackerVisualization : MonoBehaviour
 
         //generation of triangle indexes, vertices, uvs and normals for all visualization parts
 
-        for (int i = 0, row = 0, col = 0; i < 1; i++)
+        for (int i = 0, row = 0, col = 0; i < parts; i++)
         {
-            int numPartPoints = cols * rows;
+            int numPartPoints = Mathf.Min(pointsPerVis, numPoints - i * pointsPerVis);
 
             int[] partTriangles = new int[numPartPoints * trisPerMesh];
             Vector3[] partVertices = new Vector3[numPartPoints * vertsPerMesh];
@@ -221,26 +222,28 @@ public class UserTrackerVisualization : MonoBehaviour
             uv3s.Add(partUv3s);
             colors.Add(partColors);
 
-            visualizationMesh.vertices = vertices[i];
-            visualizationMesh.triangles = triangles[i];
-            visualizationMesh.normals = normals[i];
-            visualizationMesh.uv = uvs[i];
-            visualizationMesh.uv2 = uv2s[i];
-            visualizationMesh.uv3 = uv3s[i];
-            visualizationMesh.colors = colors[i];
+            visualizationMeshes[i] = new Mesh();
+            visualizationMeshes[i].indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            visualizationMeshes[i].vertices = vertices[i];
+            visualizationMeshes[i].triangles = triangles[i];
+            visualizationMeshes[i].normals = normals[i];
+            visualizationMeshes[i].uv = uvs[i];
+            visualizationMeshes[i].uv2 = uv2s[i];
+            visualizationMeshes[i].uv3 = uv3s[i];
+            visualizationMeshes[i].colors = colors[i];
 
             Bounds meshBounds = new Bounds(500f * new Vector3(0f, 0f, 1f), 2000f * Vector3.one);
-            visualizationMesh.bounds = meshBounds;
-            visualizationMesh.MarkDynamic();
+            visualizationMeshes[i].bounds = meshBounds;
+            visualizationMeshes[i].MarkDynamic();
 
-            visualizationPart = new GameObject();
-            visualizationPart.name = "Visualization_" + i.ToString();
-            visualizationPart.transform.position = Vector3.zero;
-            visualizationPart.transform.rotation = Quaternion.identity;
-            visualizationPart.AddComponent<MeshFilter>();
-            visualizationPart.GetComponent<MeshFilter>().mesh = visualizationMesh;
-            visualizationPart.AddComponent<MeshRenderer>();
-            visualizationPart.GetComponent<Renderer>().sharedMaterial = visualizationMaterial;
+            visualizationParts[i] = new GameObject();
+            visualizationParts[i].name = "Visualization_" + i.ToString();
+            visualizationParts[i].transform.position = Vector3.zero;
+            visualizationParts[i].transform.rotation = Quaternion.identity;
+            visualizationParts[i].AddComponent<MeshFilter>();
+            visualizationParts[i].GetComponent<MeshFilter>().mesh = visualizationMeshes[i];
+            visualizationParts[i].AddComponent<MeshRenderer>();
+            visualizationParts[i].GetComponent<Renderer>().sharedMaterial = visualizationMaterial;
         }
     }
     #endregion
@@ -268,14 +271,20 @@ public class UserTrackerVisualization : MonoBehaviour
 
     void HideVisualization()
     {
-        if (visualizationPart.activeSelf)
-            visualizationPart.SetActive(false);
+        for (int i = 0; i < parts; i++)
+        {
+            if (visualizationParts[i].activeSelf) visualizationParts[i].SetActive(false);
+        }
     }
+
+    RenderTexture rgbRenderTexture = null;
 
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
-        if (!visualizationPart.activeSelf)
-            visualizationPart.SetActive(true);
+        for (int i = 0; i < parts; i++)
+        {
+            if (!visualizationParts[i].activeSelf) visualizationParts[i].SetActive(true);
+        }
 
         if (userFrame != null)
         {
@@ -304,9 +313,15 @@ public class UserTrackerVisualization : MonoBehaviour
         depthTexture = FrameProvider.DepthFrame.GetRenderTexture();
         segmentationTexture = FrameProvider.UserFrame.GetRenderTexture(userCurrentCols);
 
-        visualizationMaterial.SetFloat("_maxSensorDepth", FrameProvider.DepthFrame.MaxSensorDepth);
+        if (!showBackground)
+        {
+            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.CutHard);
+            visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
+        }
+        else
+            visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
 
-        visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
+        visualizationMaterial.SetFloat("_maxSensorDepth", FrameProvider.DepthFrame.MaxSensorDepth);
         visualizationMaterial.SetTexture("_DepthTex", depthTexture);
         visualizationMaterial.SetTexture("_SegmentationTex", segmentationTexture);
     }
@@ -319,8 +334,13 @@ public class UserTrackerVisualization : MonoBehaviour
         DebugDepth.depthMat.mainTexture = null;
         DebugDepth.segmentationMat.mainTexture = null;
 
-        if (visualizationPart != null)
-            Destroy(visualizationPart);
+        if (visualizationParts != null)
+        {
+            for (int i = 0; i < visualizationParts.Length; i++)
+            {
+                Destroy(visualizationParts[i]);
+            }
+        }
 
         if (issuesProcessor != null) Destroy(issuesProcessor.gameObject);
     }
