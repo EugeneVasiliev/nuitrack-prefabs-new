@@ -29,10 +29,10 @@ void Mul(uint3 id : SV_DispatchThreadID)
 }
 
 [numthreads(8,8,1)]
-void Mix(uint3 id : SV_DispatchThreadID)
+void MixMask(uint3 id : SV_DispatchThreadID)
 {
-	float4 col = (Texture[id.xy] * Mask[id.xy]) * 0.5f;
-	col.w = Texture[id.xy].w;
-
-	Output[id.xy] = col;
+	if(Mask[id.xy].w != 0)
+		Output[id.xy] = (Texture[id.xy] + Mask[id.xy]) * 0.5f;
+	else
+		Output[id.xy] = Texture[id.xy];
 }

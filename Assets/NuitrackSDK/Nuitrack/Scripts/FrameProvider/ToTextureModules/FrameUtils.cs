@@ -9,8 +9,8 @@ public class FrameUtils : MonoBehaviour
     {
         Cut = 0,
         ReverseCut,
-        //Mul,
-        //Mix
+        Mul,
+        MixMask
     }
 
     ComputeShader ComputeShader
