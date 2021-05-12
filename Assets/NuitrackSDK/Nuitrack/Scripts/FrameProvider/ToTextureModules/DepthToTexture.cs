@@ -34,6 +34,33 @@ public class DepthToTexture : FrameToTexture
         }
     }
 
+    /// <summary>
+    /// Get the hFOV of the DepthFrame in degrees
+    /// </summary>
+    public float hFOV
+    {
+        get
+        {
+            nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+            return mode.HFOV * Mathf.Rad2Deg;
+        }
+    }
+
+    /// <summary>
+    /// Get the vFOV of the DepthFrame in degrees
+    /// </summary>
+    public float vFOV
+    {
+        get
+        {
+            nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+
+            float vFOV = mode.HFOV * ((float)mode.YRes / mode.XRes);
+            return vFOV * Mathf.Rad2Deg;
+
+        }
+    }
+
     protected override void OnDestroy()
     {
         base.OnDestroy();
