@@ -17,6 +17,7 @@ public class DepthToTexture : FrameToTexture
     ComputeBuffer sourceDataBuffer;
 
     byte[] depthDataArray = null;
+    byte[] outDepth = null;
 
     public nuitrack.DepthFrame SourceFrame
     {
@@ -80,7 +81,29 @@ public class DepthToTexture : FrameToTexture
             return texture2D;
         else
         {
-            texture2D = frame.ToTexture2D(maxDepthSensor);
+            if (outDepth == null || outDepth.Length != (frame.DataSize / 2) * 3)
+                outDepth = new byte[(frame.DataSize / 2) * 3];
+
+            for (int i = 0; i < frame.DataSize / 2; i++)
+            {
+                float depthVal = frame[i] / (1000 * maxDepthSensor);
+                byte depth = (byte)(256 * depthVal);
+
+                Color32 currentColor = new Color32(depth, depth, depth, 255);
+
+                int ptr = i * 3;
+
+                outDepth[ptr] = currentColor.r;
+                outDepth[ptr + 1] = currentColor.g;
+                outDepth[ptr + 2] = currentColor.b;
+            }
+
+            if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
+                texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+
+            texture2D.LoadRawTextureData(outDepth);
+            texture2D.Apply();
+
             lastTimeStamp = frame.Timestamp;
 
             return texture2D;

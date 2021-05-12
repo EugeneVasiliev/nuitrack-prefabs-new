@@ -28,6 +28,7 @@ public class SegmentToTexture : FrameToTexture
     ComputeBuffer sourceDataBuffer;
 
     byte[] segmentDataArray = null;
+    byte[] outSegment = null;
 
     protected override void OnDestroy()
     {
@@ -65,7 +66,25 @@ public class SegmentToTexture : FrameToTexture
             if (userColors == null)
                 userColors = defaultColors;
 
-            texture2D = frame.ToTexture2D(userColors);
+            if(outSegment == null || outSegment.Length != (frame.Cols * frame.Rows * 4))
+                outSegment = new byte[frame.Cols * frame.Rows * 4];
+
+            for (int i = 0; i < (frame.Cols * frame.Rows); i++)
+            {
+                Color32 currentColor = userColors[frame[i]];
+
+                int ptr = i * 4;
+                outSegment[ptr] = currentColor.a;
+                outSegment[ptr + 1] = currentColor.r;
+                outSegment[ptr + 2] = currentColor.g;
+                outSegment[ptr + 3] = currentColor.b;
+            }
+
+            if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
+                texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
+
+            texture2D.LoadRawTextureData(outSegment);
+            texture2D.Apply();
             lastTimeStamp = frame.Timestamp;
 
             return texture2D;

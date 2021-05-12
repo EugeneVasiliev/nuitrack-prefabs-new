@@ -7,10 +7,12 @@
 
 
 using UnityEngine;
+using System.Runtime.InteropServices;
 
 public class RGBToTexture : FrameToTexture
 {
     Texture2D dstRgbTexture2D;
+    byte[] colorDataArray = null;
 
     public nuitrack.ColorFrame SourceFrame
     {
@@ -33,7 +35,26 @@ public class RGBToTexture : FrameToTexture
             return texture2D;
         else
         {
-            texture2D = frame.ToTexture2D();
+            int datasize = frame.DataSize;
+
+            if (colorDataArray == null || colorDataArray.Length != datasize)
+                colorDataArray = new byte[datasize];
+
+            Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
+
+            for (int i = 0; i < datasize; i += 3)
+            {
+                byte temp = colorDataArray[i];
+                colorDataArray[i] = colorDataArray[i + 2];
+                colorDataArray[i + 2] = temp;
+            }
+
+            if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
+                texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+
+            texture2D.LoadRawTextureData(colorDataArray);
+            texture2D.Apply();
+
             lastTimeStamp = frame.Timestamp;
 
             return texture2D;
