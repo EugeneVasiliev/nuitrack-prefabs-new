@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 
+[RequireComponent (typeof(RGBToTexture))]
+[RequireComponent (typeof(DepthToTexture))]
+[RequireComponent (typeof(SegmentToTexture))]
+[RequireComponent(typeof(FrameUtils))]
+
 public class FrameProvider : MonoBehaviour
 {
     static FrameProvider instance;
@@ -7,6 +12,7 @@ public class FrameProvider : MonoBehaviour
     RGBToTexture rgbToTexture;
     DepthToTexture depthToTexture;
     SegmentToTexture segmentToTexture;
+    FrameUtils frameUtils;
 
     public static FrameProvider Instance
     {
@@ -43,6 +49,14 @@ public class FrameProvider : MonoBehaviour
         }
     }
 
+    public static FrameUtils FrameUtils
+    {
+        get
+        {
+            return instance.frameUtils;
+        }
+    }
+
     void Awake()
     {
         instance = this;
@@ -50,6 +64,7 @@ public class FrameProvider : MonoBehaviour
         rgbToTexture = GetComponent<RGBToTexture>();
         depthToTexture = GetComponent<DepthToTexture>();
         segmentToTexture = GetComponent<SegmentToTexture>();
+        frameUtils = GetComponent<FrameUtils>();
     }
 
 }
