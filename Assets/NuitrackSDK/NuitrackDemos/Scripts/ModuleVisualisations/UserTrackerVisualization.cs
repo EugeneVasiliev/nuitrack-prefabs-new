@@ -306,16 +306,16 @@ public class UserTrackerVisualization : MonoBehaviour
         }
 
         if (colorFrame == null)
-            rgbTexture = FrameProvider.DepthFrame.GetRenderTexture();
+            rgbTexture = depthFrame.ToRenderTexture();
         else
-            rgbTexture = FrameProvider.ColorFrame.GetRenderTexture();
+            rgbTexture = colorFrame.ToRenderTexture();
 
-        depthTexture = FrameProvider.DepthFrame.GetRenderTexture();
-        segmentationTexture = FrameProvider.UserFrame.GetRenderTexture(userCurrentCols);
+        depthTexture = colorFrame.ToRenderTexture();
+        segmentationTexture = userFrame.ToRenderTexture(userCurrentCols);
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.Cut);
+            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, TextureUtils.Operation.Cut);  // Refactor it
             visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else

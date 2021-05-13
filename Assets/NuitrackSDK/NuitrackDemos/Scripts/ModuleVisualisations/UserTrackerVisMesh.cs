@@ -183,20 +183,20 @@ public class UserTrackerVisMesh : MonoBehaviour
         }
 
         if (colorFrame == null)
-            rgbTexture = FrameProvider.DepthFrame.GetRenderTexture();
+            rgbTexture = depthFrame.ToRenderTexture();
         else
-            rgbTexture = FrameProvider.ColorFrame.GetRenderTexture();
+            rgbTexture = colorFrame.ToRenderTexture();
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, FrameUtils.Operation.Cut);
+            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, TextureUtils.Operation.Cut);  // Refactor it
             meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else
             meshMaterial.SetTexture("_RGBTex", rgbTexture);
 
-        depthTexture = FrameProvider.DepthFrame.GetRenderTexture();
-        segmentationTexture = FrameProvider.UserFrame.GetRenderTexture(userCols);
+        depthTexture = depthFrame.ToRenderTexture();
+        segmentationTexture = userFrame.ToRenderTexture(userCols);
 
         meshMaterial.SetTexture("_DepthTex", depthTexture);
         meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);

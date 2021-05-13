@@ -39,13 +39,16 @@ public class BackTextureCreator : MonoBehaviour
 
     void Update()
     {
-        if (FrameProvider.ColorFrame.SourceFrame != null)
-            tex = FrameProvider.ColorFrame.GetRenderTexture();
+        if (NuitrackManager.ColorFrame == null && NuitrackManager.DepthFrame == null)
+            return;
+
+        if (NuitrackManager.ColorFrame != null)
+            tex = NuitrackManager.ColorFrame.ToRenderTexture();
         else
-            tex = FrameProvider.DepthFrame.GetRenderTexture();
+            tex = NuitrackManager.DepthFrame.ToRenderTexture();
 
         if (userColorizeEnable)
-            userTex = FrameProvider.UserFrame.GetRenderTexture();
+            userTex = NuitrackManager.UserFrame.ToRenderTexture();
 
         if (tex != null)
         {
