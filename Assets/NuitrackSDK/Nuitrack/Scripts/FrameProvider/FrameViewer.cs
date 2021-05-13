@@ -3,12 +3,11 @@
 using UnityEngine.Events;
 using FrameProviderModules;
 
-[System.Serializable]
-public class TextureEvent : UnityEvent<Texture> { }
-
-
 public class FrameViewer : MonoBehaviour
 {
+    [System.Serializable]
+    public class TextureEvent : UnityEvent<Texture> { }
+
     public enum FrameMode
     {
         Color = 0,
