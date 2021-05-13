@@ -189,7 +189,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Join(rgbTexture, segmentationTexture, ref rgbRenderTexture, TextureUtils.Operation.Cut);  // Refactor it
+            FrameProvider.FrameUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
             meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else
