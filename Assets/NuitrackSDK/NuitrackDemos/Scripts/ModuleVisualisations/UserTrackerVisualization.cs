@@ -310,7 +310,7 @@ public class UserTrackerVisualization : MonoBehaviour
         else
             rgbTexture = colorFrame.ToRenderTexture();
 
-        depthTexture = colorFrame.ToRenderTexture();
+        depthTexture = depthFrame.ToRenderTexture();
         segmentationTexture = userFrame.ToRenderTexture(userCurrentCols);
 
         if (!showBackground)
