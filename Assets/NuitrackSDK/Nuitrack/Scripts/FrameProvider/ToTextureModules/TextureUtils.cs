@@ -83,7 +83,15 @@ namespace FrameProviderModules
         void JoinTextures(Texture texture, Texture mask, string kernelName, ref RenderTexture dest)
         {
             if (!SystemInfo.supportsComputeShaders)
-                Debug.LogError("//////");
+            {
+#if UNITY_EDITOR && !UNITY_STANDALONE
+            Debug.LogError("Compute shaders are not supported for the Android platform in the editor.\n" +
+                "Switch the platform to Standalone (this is not relevant for the assembled project).");
+#else
+                Debug.LogError("Compute shaders are not supported.");
+#endif
+                return;
+            }
 
             if (texture == null && mask == null)
                 return;
