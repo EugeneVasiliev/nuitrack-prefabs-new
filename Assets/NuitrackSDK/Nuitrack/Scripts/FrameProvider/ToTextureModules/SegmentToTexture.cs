@@ -70,21 +70,26 @@ namespace FrameProviderModules
                 if (userColors == null)
                     userColors = defaultColors;
 
-                if (outSegment == null || outSegment.Length != (frame.Cols * frame.Rows * 4))
+                if (outSegment == null)
                     outSegment = new byte[frame.Cols * frame.Rows * 4];
 
-                for (int i = 0; i < (frame.Cols * frame.Rows); i++)
-                {
-                    Color32 currentColor = userColors[frame[i]];
+                Marshal.Copy(frame.Data, outSegment, 0, frame.DataSize);
 
-                    int ptr = i * 4;
-                    outSegment[ptr] = currentColor.a;
-                    outSegment[ptr + 1] = currentColor.r;
-                    outSegment[ptr + 2] = currentColor.g;
-                    outSegment[ptr + 3] = currentColor.b;
+                for (int i = frame.DataSize - 1, ptr = outSegment.Length - 1; i > 0; i -= 2, ptr -= 4)
+                {
+                    byte firstByte = outSegment[i];
+                    byte secondByte = outSegment[i - 1];
+
+                    int userIndex = firstByte << 8 | secondByte;
+                    Color currentColor = userColors[userIndex];
+
+                    outSegment[ptr - 3] = (byte)(255f * currentColor.a);
+                    outSegment[ptr - 2] = (byte)(255f * currentColor.r);
+                    outSegment[ptr - 1] = (byte)(255f * currentColor.g);
+                    outSegment[ptr] = (byte)(255f * currentColor.b);
                 }
 
-                if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
+                if (texture2D == null)
                     texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
                 texture2D.LoadRawTextureData(outSegment);
@@ -166,12 +171,12 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (SystemInfo.supportsComputeShaders)
+            if (GPUSupported)
                 return GetGPUTexture(SourceFrame, userColors);
             else
             {
                 texture2D = GetCPUTexture(SourceFrame, userColors);
-                CopyTexture(texture2D, ref renderTexture);
+                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
@@ -196,14 +201,14 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (!SystemInfo.supportsComputeShaders)
-                return GetCPUTexture(SourceFrame, userColors);
-            else
+            if (GPUSupported)
             {
                 renderTexture = GetGPUTexture(SourceFrame, userColors);
-                CopyTexture(renderTexture, ref texture2D);
+                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
-            }
+            }     
+            else
+                return GetCPUTexture(SourceFrame, userColors);
         }
 
         /// <summary>
@@ -213,7 +218,7 @@ namespace FrameProviderModules
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
         public Texture GetTexture(Color[] userColors)
         {
-            if (SystemInfo.supportsComputeShaders)
+            if (GPUSupported)
                 return GetRenderTexture(userColors);
             else
                 return GetTexture2D(userColors);

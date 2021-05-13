@@ -4,6 +4,10 @@ namespace FrameProviderModules
 {
     public abstract class FrameToTexture : MonoBehaviour
     {
+#if UNITY_EDITOR
+        bool DEBUG_USE_CPU = false;
+#endif
+
         [SerializeField] ComputeShader computeShader;
         protected ComputeShader instanceShader;
 
@@ -15,11 +19,23 @@ namespace FrameProviderModules
         protected uint x, y, z;
         protected int kernelIndex;
 
-        protected ulong lastTimeStamp;
+        protected ulong lastTimeStamp = 0;
+
+        protected bool GPUSupported
+        {
+            get
+            {
+#if UNITY_EDITOR
+                return SystemInfo.supportsComputeShaders && !DEBUG_USE_CPU;
+#else
+                return SystemInfo.supportsComputeShaders;
+#endif
+            }
+        }
 
         protected virtual void Awake()
         {
-            if (!SystemInfo.supportsComputeShaders)
+            if (!GPUSupported)
             {
 #if UNITY_EDITOR && !UNITY_STANDALONE
             Debug.LogError("Compute shaders are not supported for the Android platform in the editor.\n" +
@@ -28,7 +44,6 @@ namespace FrameProviderModules
 #else
                 Debug.LogError("Compute shaders are not supported. A software conversion will be used (may cause performance issues).");
 #endif
-
             }
         }
 
@@ -75,7 +90,7 @@ namespace FrameProviderModules
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
         public Texture GetTexture()
         {
-            if (SystemInfo.supportsComputeShaders)
+            if (GPUSupported)
                 return GetRenderTexture();
             else
                 return GetTexture2D();
@@ -91,47 +106,6 @@ namespace FrameProviderModules
 
             if (texture2D != null)
                 Destroy(texture2D);
-        }
-
-        protected void CopyTexture(Texture2D source, ref RenderTexture dest)
-        {
-            if (dest == null || dest.width != source.width || dest.height != source.height)
-                dest = new RenderTexture(source.width, source.height, 0);
-
-            RenderTexture saveCameraRT = null;
-
-            if (Camera.main != null)
-            {
-                saveCameraRT = Camera.main.targetTexture;
-                Camera.main.targetTexture = null;
-            }
-
-            RenderTexture saveRT = RenderTexture.active;
-
-            RenderTexture.active = dest;
-            Graphics.Blit(source, dest);
-
-            RenderTexture.active = saveRT;
-
-            if (Camera.main != null)
-                Camera.main.targetTexture = saveCameraRT;
-        }
-
-        protected void CopyTexture(RenderTexture source, ref Texture2D dest)
-        {
-            if (dest == null || dest.width != rect.width || dest.height != rect.height)
-            {
-                dest = new Texture2D(source.width, source.height, TextureFormat.ARGB32, false);
-                rect = new Rect(0, 0, source.width, source.height);
-            }
-
-            RenderTexture saveRT = RenderTexture.active;
-
-            RenderTexture.active = source;
-            dest.ReadPixels(rect, 0, 0, false);
-            dest.Apply();
-
-            RenderTexture.active = saveRT;
         }
     }
 }

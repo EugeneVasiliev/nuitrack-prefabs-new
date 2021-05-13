@@ -42,20 +42,25 @@ namespace FrameProviderModules
             {
                 int datasize = frame.DataSize;
 
-                if (colorDataArray == null || colorDataArray.Length != datasize)
-                    colorDataArray = new byte[datasize];
+                if (colorDataArray == null)
+                    colorDataArray = new byte[frame.Cols * frame.Rows * 4];
 
                 Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
 
-                for (int i = 0; i < datasize; i += 3)
+                for (int i = datasize - 1, ptr = colorDataArray.Length - 1; i > 0; i -= 3, ptr -= 4)
                 {
-                    byte temp = colorDataArray[i];
-                    colorDataArray[i] = colorDataArray[i + 2];
-                    colorDataArray[i + 2] = temp;
+                    byte r = colorDataArray[i - 2];
+                    byte g = colorDataArray[i - 1];
+                    byte b = colorDataArray[i];
+
+                    colorDataArray[ptr - 3] = 255;
+                    colorDataArray[ptr - 2] = b;
+                    colorDataArray[ptr - 1] = g;
+                    colorDataArray[ptr] = r;
                 }
 
-                if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
-                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+                if (texture2D == null)
+                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
                 texture2D.LoadRawTextureData(colorDataArray);
                 texture2D.Apply();
@@ -103,12 +108,12 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (SystemInfo.supportsComputeShaders)
+            if (GPUSupported)
                 return GetGPUTexture(SourceFrame);
             else
             {
                 texture2D = GetCPUTexture(SourceFrame);
-                CopyTexture(texture2D, ref renderTexture);
+                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
@@ -123,14 +128,14 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (!SystemInfo.supportsComputeShaders)
-                return GetCPUTexture(SourceFrame);
-            else
+            if (GPUSupported)
             {
                 renderTexture = GetGPUTexture(SourceFrame);
-                CopyTexture(renderTexture, ref texture2D);
+                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
-            }
+            }       
+            else
+                return GetCPUTexture(SourceFrame);
         }
     }
 }

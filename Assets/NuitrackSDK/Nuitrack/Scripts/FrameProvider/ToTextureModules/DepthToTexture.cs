@@ -86,25 +86,30 @@ namespace FrameProviderModules
                 return texture2D;
             else
             {
-                if (outDepth == null || outDepth.Length != (frame.DataSize / 2) * 3)
-                    outDepth = new byte[(frame.DataSize / 2) * 3];
+                if (outDepth == null)
+                    outDepth = new byte[(frame.Cols * frame.Rows) * 4];
 
-                for (int i = 0; i < frame.DataSize / 2; i++)
+                Marshal.Copy(frame.Data, outDepth, 0, frame.DataSize);
+
+                float depthDivisor = 1 / (1000 * maxDepthSensor);
+
+                for (int i = frame.DataSize - 1, ptr = outDepth.Length - 1; i > 0; i -= 2, ptr -= 4)
                 {
-                    float depthVal = frame[i] / (1000 * maxDepthSensor);
-                    byte depth = (byte)(256 * depthVal);
+                    byte firstByte = outDepth[i];
+                    byte secondByte = outDepth[i - 1];
 
-                    Color32 currentColor = new Color32(depth, depth, depth, 255);
+                    float uDepth = firstByte << 8 | secondByte;
+                    float depthVal = uDepth * depthDivisor;
+                    byte depth = (byte)(255f * depthVal);
 
-                    int ptr = i * 3;
-
-                    outDepth[ptr] = currentColor.r;
-                    outDepth[ptr + 1] = currentColor.g;
-                    outDepth[ptr + 2] = currentColor.b;
+                    outDepth[ptr - 3] = 255;
+                    outDepth[ptr - 2] = depth;
+                    outDepth[ptr - 1] = depth;
+                    outDepth[ptr] = depth;
                 }
 
-                if (texture2D == null || texture2D.width != frame.Cols || texture2D.height != frame.Rows)
-                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
+                if (texture2D == null)
+                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
                 texture2D.LoadRawTextureData(outDepth);
                 texture2D.Apply();
@@ -166,12 +171,12 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (SystemInfo.supportsComputeShaders)
+            if (GPUSupported)
                 return GetGPUTexture(SourceFrame);
             else
             {
                 texture2D = GetCPUTexture(SourceFrame);
-                CopyTexture(texture2D, ref renderTexture);
+                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
@@ -186,14 +191,14 @@ namespace FrameProviderModules
             if (SourceFrame == null)
                 return null;
 
-            if (!SystemInfo.supportsComputeShaders)
-                return GetCPUTexture(SourceFrame);
-            else
+            if (GPUSupported)
             {
                 renderTexture = GetGPUTexture(SourceFrame);
-                CopyTexture(renderTexture, ref texture2D);
+                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
-            }
+            }   
+            else
+                return GetCPUTexture(SourceFrame);
         }
     }
 }
