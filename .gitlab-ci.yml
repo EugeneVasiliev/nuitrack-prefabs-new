@@ -35,6 +35,7 @@ build_apk:
     policy: pull
   artifacts:
     paths:
+      - build_log.txt
       - NuitrackDemo.apk
     expire_in: 14d
 
