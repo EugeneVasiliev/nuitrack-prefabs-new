@@ -21,6 +21,8 @@ copy /y "..\depth_scanner\lin64\depth_scanner\deployment\NuitrackSDK\Nuitrack\li
 copy /y "..\depth_scanner\arm64\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android-arm64\*.so"      "Assets/Plugins/Android/libs/arm64-v8a"
 copy /y "..\depth_scanner\arm32\depth_scanner\deployment\NuitrackSDK\Nuitrack\lib\android\*.so"            "Assets/Plugins/Android/libs/armeabi-v7a"
 
+xcopy "..\depth_scanner\lin64\depth_scanner\deployment\NuitrackSDK\Nuitrack\assets" 				   	   "Assets/Plugins/Android/assets"   /y /s /e
+
 del /s "Assets\NuitrackSDK\Nuitrack\NuitrackAssembly\nuitrackhelper*"
 
 rmdir /s /q "..\depth_scanner"
