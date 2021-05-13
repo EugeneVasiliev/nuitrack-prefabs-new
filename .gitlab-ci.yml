@@ -16,6 +16,7 @@ build_unity_package:
     paths:
       - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
       - Assets/Plugins/Android/libs
+      - Assets/Plugins/Android/assets
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
@@ -32,6 +33,7 @@ build_apk:
     paths:
       - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
       - Assets/Plugins/Android/libs
+      - Assets/Plugins/Android/assets
     policy: pull
   artifacts:
     paths:
@@ -50,6 +52,7 @@ build_aab:
     paths:
       - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
       - Assets/Plugins/Android/libs
+      - Assets/Plugins/Android/assets
     policy: pull
   artifacts:
     paths:
