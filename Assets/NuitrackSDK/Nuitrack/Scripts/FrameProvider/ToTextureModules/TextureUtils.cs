@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using FrameProviderModules;
 
-public class FrameUtils : MonoBehaviour
+public class TextureUtils : MonoBehaviour
 {
     [SerializeField] ComputeShader computeShader;
     ComputeShader instanceShader;
@@ -21,6 +22,15 @@ public class FrameUtils : MonoBehaviour
                 instanceShader = Instantiate(computeShader);
 
             return instanceShader;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (instanceShader != null)
+        {
+            Destroy(instanceShader);
+            instanceShader = null;
         }
     }
 

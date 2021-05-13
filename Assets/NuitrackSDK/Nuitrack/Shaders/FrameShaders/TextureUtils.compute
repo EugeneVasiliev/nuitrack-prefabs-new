@@ -1,7 +1,7 @@
 ﻿#pragma kernel Cut
 #pragma kernel ReverseCut
 #pragma kernel Mul
-#pragma kernel Mix
+#pragma kernel MixMask
 
 Texture2D<float4> Texture;
 Texture2D<float4> Mask;

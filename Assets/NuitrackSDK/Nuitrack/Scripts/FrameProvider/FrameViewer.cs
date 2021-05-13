@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using UnityEngine.Events;
+using FrameProviderModules;
 
 [System.Serializable]
 public class TextureEvent : UnityEvent<Texture> { }
