@@ -11,6 +11,11 @@ build_unity_package:
     - echo %username%
     - call Scripts\requirements.bat
     - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -exportPackage "Assets/NuitrackSDK" "Assets/Plugins" %cd%/NuitrackSDK.unitypackage'
+  cache:
+    key: gems
+    paths:
+      - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
+      - Assets/Plugins/Android/libs
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
@@ -22,6 +27,12 @@ build_apk:
     - windows_x64
   script:
     - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildApk %cd%/NuitrackDemo.apk'
+  cache:
+    key: gems
+    paths:
+      - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
+      - Assets/Plugins/Android/libs
+    policy: pull
   artifacts:
     paths:
       - NuitrackDemo.apk
@@ -33,6 +44,12 @@ build_aab:
     - windows_x64
   script:
     - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildAab %cd%/NuitrackDemo.aab'
+  cache:
+    key: gems
+    paths:
+      - Assets/NuitrackSDK/Nuitrack/NuitrackAssembly
+      - Assets/Plugins/Android/libs
+    policy: pull
   artifacts:
     paths:
       - NuitrackDemo.aab
