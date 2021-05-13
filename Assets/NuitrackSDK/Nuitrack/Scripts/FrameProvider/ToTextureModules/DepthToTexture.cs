@@ -91,21 +91,17 @@ namespace FrameProviderModules
 
                 Marshal.Copy(frame.Data, outDepth, 0, frame.DataSize);
 
-                float depthDivisor = 1 / (1000 * maxDepthSensor);
+                float depthDivisor = 1f / (1000 * maxDepthSensor);
 
                 for (int i = frame.DataSize - 1, ptr = outDepth.Length - 1; i > 0; i -= 2, ptr -= 4)
                 {
-                    byte firstByte = outDepth[i];
-                    byte secondByte = outDepth[i - 1];
+                    float uDepth = outDepth[i] << 8 | outDepth[i - 1];
+                    byte depth = (byte)(255f * uDepth * depthDivisor);
 
-                    float uDepth = firstByte << 8 | secondByte;
-                    float depthVal = uDepth * depthDivisor;
-                    byte depth = (byte)(255f * depthVal);
-
-                    outDepth[ptr - 3] = 255;
-                    outDepth[ptr - 2] = depth;
-                    outDepth[ptr - 1] = depth;
-                    outDepth[ptr] = depth;
+                    outDepth[ptr - 3] = 255;    // a
+                    outDepth[ptr - 2] = depth;  // r
+                    outDepth[ptr - 1] = depth;  // g
+                    outDepth[ptr] = depth;      // b
                 }
 
                 if (texture2D == null)

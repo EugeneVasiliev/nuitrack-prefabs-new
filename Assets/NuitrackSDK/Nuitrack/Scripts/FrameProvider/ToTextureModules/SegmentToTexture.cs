@@ -77,10 +77,7 @@ namespace FrameProviderModules
 
                 for (int i = frame.DataSize - 1, ptr = outSegment.Length - 1; i > 0; i -= 2, ptr -= 4)
                 {
-                    byte firstByte = outSegment[i];
-                    byte secondByte = outSegment[i - 1];
-
-                    int userIndex = firstByte << 8 | secondByte;
+                    int userIndex = outSegment[i] << 8 | outSegment[i - 1];
                     Color currentColor = userColors[userIndex];
 
                     outSegment[ptr - 3] = (byte)(255f * currentColor.a);
