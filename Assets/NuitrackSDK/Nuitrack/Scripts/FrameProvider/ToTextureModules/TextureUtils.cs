@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+
+using UnityEngine;
 using FrameProviderModules;
 
 using CopyTextureSupport = UnityEngine.Rendering.CopyTextureSupport;
@@ -81,10 +83,32 @@ public class TextureUtils : MonoBehaviour
         return (SystemInfo.copyTextureSupport & textureSupport) == textureSupport;
     }
 
+    bool EqualsFormats<T>(Enum currentFormat)
+    {
+        return Enum.IsDefined(typeof(T), currentFormat.ToString());
+    }
+
+    T ConvertFormat<T>(Enum currentFormat)
+    {
+        return (T)Enum.Parse(typeof(T), currentFormat.ToString());
+    }
+
+    /// <summary>
+    /// Copy Texture2D to RenderTexture.
+    /// </summary>
+    /// <param name="source">Source Texture2D</param>
+    /// <param name="dest">Destination RenderTexture. Can be null. 
+    /// If not null and the resolution or format does not match, the RenderTexture will be reinitialized.</param>
+    /// <exception cref="Exception">If there is no format for RenderTexture corresponding to Texture2D.</exception>
     public void Copy(Texture2D source, ref RenderTexture dest)
     {
-        if (dest == null || dest.width != source.width || dest.height != source.height)
-            dest = new RenderTexture(source.width, source.height, 0, RenderTextureFormat.ARGB32);
+        if(!EqualsFormats<RenderTextureFormat>(source.format))
+            throw new Exception(string.Format("Unable to copy Texture2D to RenderTexture. RenderTexture does not have the corresponding {0} format.", source.format));
+
+        RenderTextureFormat textureFormat = ConvertFormat<RenderTextureFormat>(source.format);
+
+        if (dest == null || dest.width != source.width || dest.height != source.height || dest.format != textureFormat)
+            dest = new RenderTexture(source.width, source.height, 0, textureFormat);
 
         if (CopyTextureSupportType(CopyTextureSupport.TextureToRT))
             Graphics.CopyTexture(source, dest);
@@ -110,12 +134,29 @@ public class TextureUtils : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Copy RenderTexture to Texture2D.
+    /// </summary>
+    /// <param name="source">Source RenderTexture</param>
+    /// <param name="dest">Destination Texture2D. Can be null.
+    /// If not null and the resolution or format does not match, the Texture2D will be reinitialized.</param>
     public void Copy(RenderTexture source, ref Texture2D dest)
     {
-        if (dest == null || dest.width != source.width || dest.height != source.height)
-            dest = new Texture2D(source.width, source.height, TextureFormat.ARGB32, false);
+        bool fastCopySupported = false;
+        TextureFormat textureFormat;
 
-        if (CopyTextureSupportType(CopyTextureSupport.RTToTexture))
+        if (EqualsFormats<TextureFormat>(source.format))
+        {
+            fastCopySupported = true;
+            textureFormat = ConvertFormat<TextureFormat>(source.format);
+        }
+        else
+            textureFormat = TextureFormat.ARGB32;
+
+        if (dest == null || dest.width != source.width || dest.height != source.height || dest.format != textureFormat)
+            dest = new Texture2D(source.width, source.height, textureFormat, false);
+
+        if (fastCopySupported && CopyTextureSupportType(CopyTextureSupport.RTToTexture))
             Graphics.CopyTexture(source, dest);
         else
         {
