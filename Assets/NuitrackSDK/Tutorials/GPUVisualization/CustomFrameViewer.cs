@@ -23,16 +23,16 @@ public class CustomFrameViewer : MonoBehaviour
         switch(mode)
         {
             case Mode.Cut:
-                FrameProvider.FrameUtils.Cut(mainTexture, altTexture, ref renderTexture);
+                FrameUtils.TextureUtils.Cut(mainTexture, altTexture, ref renderTexture);
                 break;
             case Mode.ReverseCut:
-                FrameProvider.FrameUtils.ReverseCut(mainTexture, altTexture, ref renderTexture);
+                FrameUtils.TextureUtils.ReverseCut(mainTexture, altTexture, ref renderTexture);
                 break;
             case Mode.Mul:
-                FrameProvider.FrameUtils.Mul(mainTexture, altTexture, ref renderTexture);
+                FrameUtils.TextureUtils.Mul(mainTexture, altTexture, ref renderTexture);
                 break;
             case Mode.Mix:
-                FrameProvider.FrameUtils.MixMask(mainTexture, altTexture, ref renderTexture);
+                FrameUtils.TextureUtils.MixMask(mainTexture, altTexture, ref renderTexture);
                 break;
         }
 

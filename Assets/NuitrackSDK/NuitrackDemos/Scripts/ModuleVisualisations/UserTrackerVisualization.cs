@@ -315,13 +315,13 @@ public class UserTrackerVisualization : MonoBehaviour
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
+            FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
             visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else
             visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
 
-        visualizationMaterial.SetFloat("_maxSensorDepth", FrameProvider.DepthFrame.MaxSensorDepth);
+        visualizationMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
         visualizationMaterial.SetTexture("_DepthTex", depthTexture);
         visualizationMaterial.SetTexture("_SegmentationTex", segmentationTexture);
     }

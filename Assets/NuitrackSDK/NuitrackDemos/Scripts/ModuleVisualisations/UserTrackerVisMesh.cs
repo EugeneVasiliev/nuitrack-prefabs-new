@@ -189,7 +189,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
         if (!showBackground)
         {
-            FrameProvider.FrameUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
+            FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
             meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
         else
@@ -202,6 +202,6 @@ public class UserTrackerVisMesh : MonoBehaviour
         meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
         
 
-        meshMaterial.SetFloat("_maxSensorDepth", FrameProvider.DepthFrame.MaxSensorDepth);
+        meshMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
     }
 }
