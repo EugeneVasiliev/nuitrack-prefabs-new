@@ -22,8 +22,7 @@ public class NuitrackModules : MonoBehaviour
     [SerializeField] GameObject standardCamera, threeViewCamera;
     [SerializeField] GameObject indirectAvatar, directAvatar, indirectAvatarMan, directAvatarMan;
 
-    [SerializeField] GameObject sensorFrameWindowed;
-    [SerializeField] GameObject sensorFrameFullscreen;
+    [SerializeField] GameObject sensorFrame;
 
     [SerializeField] Dropdown dropdownModelSwitcher;
 
@@ -184,21 +183,16 @@ public class NuitrackModules : MonoBehaviour
     public void SwitchSensorFrame()
     {
         sensorFrameId++;
-        if (sensorFrameId > 2)
+        if (sensorFrameId > 1)
             sensorFrameId = 0;
 
         if(sensorFrameId == 1)
         {
-            sensorFrameWindowed.SetActive(true);
-        } else if (sensorFrameId == 2)
-        {
-            sensorFrameWindowed.SetActive(false);
-            sensorFrameFullscreen.SetActive(true);
+            sensorFrame.SetActive(true);
         }
         else if (sensorFrameId == 0)
         {
-            sensorFrameWindowed.SetActive(false);
-            sensorFrameFullscreen.SetActive(false);
+            sensorFrame.SetActive(false);
         }
     }
 
