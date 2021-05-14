@@ -12,18 +12,10 @@ using System.Runtime.InteropServices;
 
 namespace FrameProviderModules
 {
-    public class RGBToTexture : FrameToTexture
+    public class RGBToTexture : FrameToTexture<nuitrack.ColorFrame, nuitrack.Color3>
     {
         Texture2D dstRgbTexture2D;
         byte[] colorDataArray = null;
-
-        public nuitrack.ColorFrame SourceFrame
-        {
-            get
-            {
-                return NuitrackManager.ColorFrame;
-            }
-        }
 
         protected override void OnDestroy()
         {
@@ -47,6 +39,9 @@ namespace FrameProviderModules
 
                 Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
 
+                //The conversion can be performed without an additional array, 
+                //since after copying, the bytes are clumped at the beginning of the array.
+                //Let's start the crawl from the end of the array by "stretching" the source data.
                 for (int i = datasize - 1, ptr = colorDataArray.Length - 1; i > 0; i -= 3, ptr -= 4)
                 {
                     byte r = colorDataArray[i - 2];
@@ -100,42 +95,42 @@ namespace FrameProviderModules
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetRenderTexture"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture()
+        public override RenderTexture GetRenderTexture(nuitrack.ColorFrame frame)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(SourceFrame);
+                return GetGPUTexture(frame);
             else
             {
-                texture2D = GetCPUTexture(SourceFrame);
-                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
+                texture2D = GetCPUTexture(frame);
+                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetTexture2D"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D()
+        public override Texture2D GetTexture2D(nuitrack.ColorFrame frame)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(SourceFrame);
-                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
+                renderTexture = GetGPUTexture(frame);
+                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
             }       
             else
-                return GetCPUTexture(SourceFrame);
+                return GetCPUTexture(frame);
         }
     }
 }

@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace FrameProviderModules
 {
-    public class DepthToTexture : FrameToTexture
+    public class DepthToTexture : FrameToTexture<nuitrack.DepthFrame, ushort>
     {
         [Range(0f, 32.0f)]
         [SerializeField] float maxDepthSensor = 10f;
@@ -22,14 +22,6 @@ namespace FrameProviderModules
 
         byte[] depthDataArray = null;
         byte[] outDepth = null;
-
-        public nuitrack.DepthFrame SourceFrame
-        {
-            get
-            {
-                return NuitrackManager.DepthFrame;
-            }
-        }
 
         public float MaxSensorDepth
         {
@@ -93,6 +85,9 @@ namespace FrameProviderModules
 
                 float depthDivisor = 1f / (1000 * maxDepthSensor);
 
+                //The conversion can be performed without an additional array, 
+                //since after copying, the bytes are clumped at the beginning of the array.
+                //Let's start the crawl from the end of the array by "stretching" the source data.
                 for (int i = frame.DataSize - 1, ptr = outDepth.Length - 1; i > 0; i -= 2, ptr -= 4)
                 {
                     float uDepth = outDepth[i] << 8 | outDepth[i - 1];
@@ -159,42 +154,42 @@ namespace FrameProviderModules
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetRenderTexture"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture()
+        public override RenderTexture GetRenderTexture(nuitrack.DepthFrame frame)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(SourceFrame);
+                return GetGPUTexture(frame);
             else
             {
-                texture2D = GetCPUTexture(SourceFrame);
-                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
+                texture2D = GetCPUTexture(frame);
+                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetTexture2D"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D()
+        public override Texture2D GetTexture2D(nuitrack.DepthFrame frame)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(SourceFrame);
-                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
+                renderTexture = GetGPUTexture(frame);
+                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
             }   
             else
-                return GetCPUTexture(SourceFrame);
+                return GetCPUTexture(frame);
         }
     }
 }

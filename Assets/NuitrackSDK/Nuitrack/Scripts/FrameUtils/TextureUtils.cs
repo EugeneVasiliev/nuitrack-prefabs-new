@@ -6,7 +6,6 @@ using CopyTextureSupport = UnityEngine.Rendering.CopyTextureSupport;
 
 namespace FrameProviderModules
 {
-
     public class TextureUtils : MonoBehaviour
     {
         [SerializeField] ComputeShader computeShader;
@@ -20,6 +19,19 @@ namespace FrameProviderModules
                     instanceShader = Instantiate(computeShader);
 
                 return instanceShader;
+            }
+        }
+
+        protected virtual void Awake()
+        {
+            if (!SystemInfo.supportsComputeShaders)
+            {
+#if UNITY_EDITOR && !UNITY_STANDALONE
+            Debug.LogError("Compute shaders are not supported for the Android platform in the editor.\n" +
+                "Switch the platform to Standalone (this is not relevant for the assembled project).");
+#else
+                Debug.LogError("Compute shaders are not supported.");
+#endif
             }
         }
 
@@ -124,12 +136,12 @@ namespace FrameProviderModules
             return (SystemInfo.copyTextureSupport & textureSupport) == textureSupport;
         }
 
-        bool EqualsFormats<T>(Enum currentFormat)
+        bool EqualsEnum<T>(Enum currentFormat)
         {
             return Enum.IsDefined(typeof(T), currentFormat.ToString());
         }
 
-        T ConvertFormat<T>(Enum currentFormat)
+        T ConvertEnum<T>(Enum currentFormat)
         {
             return (T)Enum.Parse(typeof(T), currentFormat.ToString());
         }
@@ -143,10 +155,10 @@ namespace FrameProviderModules
         /// <exception cref="Exception">If there is no format for RenderTexture corresponding to Texture2D.</exception>
         public void Copy(Texture2D source, ref RenderTexture dest)
         {
-            if (!EqualsFormats<RenderTextureFormat>(source.format))
+            if (!EqualsEnum<RenderTextureFormat>(source.format))
                 throw new Exception(string.Format("Unable to copy Texture2D to RenderTexture. RenderTexture does not have the corresponding {0} format.", source.format));
 
-            RenderTextureFormat textureFormat = ConvertFormat<RenderTextureFormat>(source.format);
+            RenderTextureFormat textureFormat = ConvertEnum<RenderTextureFormat>(source.format);
 
             if (dest == null || dest.width != source.width || dest.height != source.height || dest.format != textureFormat)
                 dest = new RenderTexture(source.width, source.height, 0, textureFormat);
@@ -186,10 +198,10 @@ namespace FrameProviderModules
             bool fastCopySupported = false;
             TextureFormat textureFormat;
 
-            if (EqualsFormats<TextureFormat>(source.format))
+            if (EqualsEnum<TextureFormat>(source.format))
             {
                 fastCopySupported = true;
-                textureFormat = ConvertFormat<TextureFormat>(source.format);
+                textureFormat = ConvertEnum<TextureFormat>(source.format);
             }
             else
                 textureFormat = TextureFormat.ARGB32;

@@ -2,7 +2,9 @@
 
 namespace FrameProviderModules
 {
-    public abstract class FrameToTexture : MonoBehaviour
+    public abstract class FrameToTexture<T, U> : MonoBehaviour
+        where T : nuitrack.Frame<U>
+        where U : struct
     {
 #if UNITY_EDITOR
         bool DEBUG_USE_CPU = false;
@@ -70,30 +72,33 @@ namespace FrameProviderModules
         /// Get the frame as a RenderTexture. 
         /// Recommended method for platforms with ComputeShader support.
         /// </summary>
+        /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
         /// <returns>Frame converted to RenderTexture</returns>
-        public abstract RenderTexture GetRenderTexture();
+        public abstract RenderTexture GetRenderTexture(T SourceFrame);
 
         /// <summary>
         /// Get a frame in the form of Texture2D. 
         /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
         /// If possible, use GetRenderTexture.
         /// </summary>
+        /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
         /// <returns>Frame converted to Texture2D</returns>
-        public abstract Texture2D GetTexture2D();
+        public abstract Texture2D GetTexture2D(T SourceFrame);
 
         /// <summary>
         /// Convert Frame to Texture. 
         /// The method will select the most productive way to get the texture. 
         /// This can be either RenderTexture or Texture2D. 
         /// Use this method if you don't care about the texture type.
+        /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
         /// </summary>
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-        public Texture GetTexture()
+        public virtual Texture GetTexture(T SourceFrame)
         {
             if (GPUSupported)
-                return GetRenderTexture();
+                return GetRenderTexture(SourceFrame);
             else
-                return GetTexture2D();
+                return GetTexture2D(SourceFrame);
         }
 
         protected virtual void OnDestroy()

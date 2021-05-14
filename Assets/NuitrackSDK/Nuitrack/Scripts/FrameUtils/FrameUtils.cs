@@ -6,28 +6,28 @@ using FrameProviderModules;
 [RequireComponent (typeof(DepthToTexture))]
 [RequireComponent (typeof(SegmentToTexture))]
 [RequireComponent(typeof(TextureUtils))]
-
-public class FrameProvider : MonoBehaviour
+public class FrameUtils : MonoBehaviour
 {
-    static FrameProvider instance;
+    static FrameUtils instance;
 
     RGBToTexture rgbToTexture;
     DepthToTexture depthToTexture;
     SegmentToTexture segmentToTexture;
-    TextureUtils frameUtils;
 
-    public static FrameProvider Instance
+    TextureUtils textureUtils;
+
+    public static FrameUtils Instance
     {
         get
         {
             if (instance == null)
-                Debug.LogError("FrameProvider not found. Add a prefab FrameProvider to the scene.");
+                Debug.LogError("FrameUtils not found. Add a prefab FrameUtils to the scene.");
 
             return instance;
         }
     }
 
-    public static RGBToTexture ColorFrame
+    public static RGBToTexture RGBToTexture
     {
         get
         {
@@ -35,7 +35,7 @@ public class FrameProvider : MonoBehaviour
         }
     }
 
-    public static DepthToTexture DepthFrame
+    public static DepthToTexture DepthToTexture
     {
         get
         {
@@ -43,7 +43,7 @@ public class FrameProvider : MonoBehaviour
         }
     }
 
-    public static SegmentToTexture UserFrame
+    public static SegmentToTexture SegmentToTexture
     {
         get
         {
@@ -51,11 +51,11 @@ public class FrameProvider : MonoBehaviour
         }
     }
 
-    public static TextureUtils FrameUtils
+    public static TextureUtils TextureUtils
     {
         get
         {
-            return instance.frameUtils;
+            return instance.textureUtils;
         }
     }
 
@@ -66,11 +66,11 @@ public class FrameProvider : MonoBehaviour
         rgbToTexture = GetComponent<RGBToTexture>();
         depthToTexture = GetComponent<DepthToTexture>();
         segmentToTexture = GetComponent<SegmentToTexture>();
-        frameUtils = GetComponent<TextureUtils>();
+        textureUtils = GetComponent<TextureUtils>();
     }
 }
 
-public static class FrameUtils
+public static class FrameOverloadUtils
 {
     #region ColorFrame
 
@@ -81,7 +81,7 @@ public static class FrameUtils
     /// <returns>ColorFrame converted to RenderTexture</returns>
     public static RenderTexture ToRenderTexture(this nuitrack.ColorFrame frame)
     {
-        return FrameProvider.ColorFrame.GetRenderTexture();
+        return FrameUtils.RGBToTexture.GetRenderTexture(frame);
     }
 
     /// <summary>
@@ -92,16 +92,16 @@ public static class FrameUtils
     /// <returns>ColorFrame converted to RenderTexture</returns>
     public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
     {
-        return FrameProvider.ColorFrame.GetTexture2D();
+        return FrameUtils.RGBToTexture.GetTexture2D(frame);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture.GetTexture"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
     /// </summary>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
     public static Texture ToTexture(this nuitrack.ColorFrame frame)
     {
-        return FrameProvider.ColorFrame.GetTexture();
+        return FrameUtils.RGBToTexture.GetTexture(frame);
     }
 
     #endregion
@@ -115,7 +115,7 @@ public static class FrameUtils
     /// <returns>DepthFrame converted to RenderTexture</returns>
     public static RenderTexture ToRenderTexture(this nuitrack.DepthFrame frame)
     {
-        return FrameProvider.DepthFrame.GetRenderTexture();
+        return FrameUtils.DepthToTexture.GetRenderTexture(frame);
     }
 
     /// <summary>
@@ -126,16 +126,16 @@ public static class FrameUtils
     /// <returns>DepthFrame converted to Texture2D</returns>
     public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame)
     {
-        return FrameProvider.DepthFrame.GetTexture2D();
+        return FrameUtils.DepthToTexture.GetTexture2D(frame);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture.GetTexture"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
     /// </summary>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
     public static Texture ToTexture(this nuitrack.DepthFrame frame)
     {
-        return FrameProvider.DepthFrame.GetTexture();
+        return FrameUtils.DepthToTexture.GetTexture(frame);
     }
 
     #endregion
@@ -150,7 +150,7 @@ public static class FrameUtils
     /// <returns>UserFrame converted to RenderTexture</returns>
     public static RenderTexture ToRenderTexture(this nuitrack.UserFrame frame, Color[] userColors = null)
     {
-        return FrameProvider.UserFrame.GetRenderTexture(userColors);
+        return FrameUtils.SegmentToTexture.GetRenderTexture(frame, userColors);
     }
 
     /// <summary>
@@ -162,20 +162,18 @@ public static class FrameUtils
     /// <returns>UserFrame converted to Texture2D</returns>
     public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, Color[] userColors = null)
     {
-        return FrameProvider.UserFrame.GetTexture2D(userColors);
+        return FrameUtils.SegmentToTexture.GetTexture2D(frame, userColors);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture.GetTexture"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
     /// </summary>
     /// <param name="userColors">Colors for user segments (optional)</param>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
     public static Texture ToTexture(this nuitrack.UserFrame frame, Color[] userColors = null)
     {
-        return FrameProvider.UserFrame.GetTexture(userColors);
+        return FrameUtils.SegmentToTexture.GetTexture(frame, userColors);
     }
-
-  
 
     #endregion
 }

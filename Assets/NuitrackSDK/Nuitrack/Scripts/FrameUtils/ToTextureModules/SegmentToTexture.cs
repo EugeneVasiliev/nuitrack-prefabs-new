@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 
 namespace FrameProviderModules
 {
-    public class SegmentToTexture : FrameToTexture
+    public class SegmentToTexture : FrameToTexture<nuitrack.UserFrame, ushort>
     {
         [SerializeField]
         Color[] defaultColors = new Color[]
@@ -53,14 +53,6 @@ namespace FrameProviderModules
             outSegment = null;
         }
 
-        public nuitrack.UserFrame SourceFrame
-        {
-            get
-            {
-                return NuitrackManager.UserFrame;
-            }
-        }
-
         Texture2D GetCPUTexture(nuitrack.UserFrame frame, Color[] userColors = null)
         {
             if (frame.Timestamp == lastTimeStamp && texture2D != null)
@@ -75,6 +67,9 @@ namespace FrameProviderModules
 
                 Marshal.Copy(frame.Data, outSegment, 0, frame.DataSize);
 
+                //The conversion can be performed without an additional array, 
+                //since after copying, the bytes are clumped at the beginning of the array.
+                //Let's start the crawl from the end of the array by "stretching" the source data.
                 for (int i = frame.DataSize - 1, ptr = outSegment.Length - 1; i > 0; i -= 2, ptr -= 4)
                 {
                     int userIndex = outSegment[i] << 8 | outSegment[i - 1];
@@ -150,75 +145,75 @@ namespace FrameProviderModules
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetRenderTexture"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
         /// </summary>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture()
+        public override RenderTexture GetRenderTexture(nuitrack.UserFrame frame)
         {
-            return GetRenderTexture(defaultColors);
+            return GetRenderTexture(frame, defaultColors);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetRenderTexture"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public RenderTexture GetRenderTexture(Color[] userColors)
+        public RenderTexture GetRenderTexture(nuitrack.UserFrame frame, Color[] userColors)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(SourceFrame, userColors);
+                return GetGPUTexture(frame, userColors);
             else
             {
-                texture2D = GetCPUTexture(SourceFrame, userColors);
-                FrameProvider.FrameUtils.Copy(texture2D, ref renderTexture);
+                texture2D = GetCPUTexture(frame, userColors);
+                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
 
                 return renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetTexture2D"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
         /// </summary>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D()
+        public override Texture2D GetTexture2D(nuitrack.UserFrame frame)
         {
-            return GetTexture2D(defaultColors);
+            return GetTexture2D(frame, defaultColors);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetTexture2D"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public Texture2D GetTexture2D(Color[] userColors)
+        public Texture2D GetTexture2D(nuitrack.UserFrame frame, Color[] userColors)
         {
-            if (SourceFrame == null)
+            if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(SourceFrame, userColors);
-                FrameProvider.FrameUtils.Copy(renderTexture, ref texture2D);
+                renderTexture = GetGPUTexture(frame, userColors);
+                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
                 return texture2D;
             }     
             else
-                return GetCPUTexture(SourceFrame, userColors);
+                return GetCPUTexture(frame, userColors);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture.GetTexture"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-        public Texture GetTexture(Color[] userColors)
+        public Texture GetTexture(nuitrack.UserFrame frame, Color[] userColors)
         {
             if (GPUSupported)
-                return GetRenderTexture(userColors);
+                return GetRenderTexture(frame, userColors);
             else
-                return GetTexture2D(userColors);
+                return GetTexture2D(frame, userColors);
         }
     }
 }
