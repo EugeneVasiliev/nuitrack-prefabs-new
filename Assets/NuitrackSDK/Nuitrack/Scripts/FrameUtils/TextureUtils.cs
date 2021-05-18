@@ -27,10 +27,11 @@ namespace FrameProviderModules
             if (!SystemInfo.supportsComputeShaders)
             {
 #if UNITY_EDITOR && !UNITY_STANDALONE
-            Debug.LogError("Compute shaders are not supported for the Android platform in the editor.\n" +
-                "Switch the platform to Standalone (this is not relevant for the assembled project).");
+                Debug.LogError("Compute shaders are not supported for the not Standalone platform in the editor.\n" +
+                    "TextureUtils will return the source RenderTexture dest.\n" +
+                    "Switch the platform to Standalone (this is not relevant for the assembled project).");
 #else
-                Debug.LogError("Compute shaders are not supported.");
+                Debug.LogError("Compute shaders are not supported. TextureUtils will return the source RenderTexture dest.");
 #endif
             }
         }
@@ -50,6 +51,8 @@ namespace FrameProviderModules
         /// <summary>
         /// Cut images by the alpha channel of the mask by removing the background. 
         /// A hard transition of the alpha channel is used (alpha > 0)
+        /// 
+        /// <para>Note: For the correct result, the textures must have the same resolution.</para>
         /// </summary>
         /// <param name="texture">Source texture</param>
         /// <param name="mask">Source mask</param>
@@ -62,6 +65,8 @@ namespace FrameProviderModules
         /// <summary>
         /// Cut the images by the alpha channel of the mask leaving the background. 
         /// A hard transition of the alpha channel is used (alpha > 0)
+        /// 
+        /// <para>Note: For the correct result, the textures must have the same resolution.</para>
         /// </summary>
         /// <param name="texture">Source texture</param>
         /// <param name="mask">Source mask</param>
@@ -73,6 +78,8 @@ namespace FrameProviderModules
 
         /// <summary>
         /// Mix textures by multiplying them.
+        ///
+        /// <para>Note: For the correct result, the textures must have the same resolution.</para>
         /// </summary>
         /// <param name="dest">The RenderTexture to which the converted image will be saved.</param>
         public void Mul(Texture texture1, Texture texture2, ref RenderTexture dest)
@@ -83,6 +90,8 @@ namespace FrameProviderModules
         /// <summary>
         /// Blend textures by mask by getting the average value.
         /// A hard transition of the alpha channel is used (alpha > 0)
+        /// 
+        /// <para>Note: For the correct result, the textures must have the same resolution.</para>
         /// </summary>
         /// <param name="texture"></param>
         /// <param name="mask"></param>

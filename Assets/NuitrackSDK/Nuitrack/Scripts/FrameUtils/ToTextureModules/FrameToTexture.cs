@@ -35,7 +35,7 @@ namespace FrameProviderModules
             }
         }
 
-        protected virtual void Awake()
+        protected void InitShader(string kernelName)
         {
             if (!GPUSupported)
             {
@@ -47,12 +47,6 @@ namespace FrameProviderModules
                 Debug.LogError("Compute shaders are not supported. A software conversion will be used (may cause performance issues).");
 #endif
             }
-        }
-
-        protected void InitShader(string kernelName)
-        {
-            if (instanceShader != null)
-                Destroy(instanceShader);
 
             instanceShader = Instantiate(computeShader);
             kernelIndex = instanceShader.FindKernel(kernelName);
