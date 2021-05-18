@@ -1,5 +1,6 @@
 stages:
 - build_package
+- build_linux
 - build_demo_apk
 - build_demo_abb
 
@@ -34,4 +35,17 @@ build_aab:
   artifacts:
     paths:
       - NuitrackDemo.aab
+    expire_in: 14d
+
+build_linux:
+  stage: "build_linux"
+  tags:
+    - windows_x64
+  script:
+    - mkdir build
+    - '"C:\Program Files\Unity2018.3\Editor\Unity.exe" -batchmode -quit -projectPath %cd% -logFile %cd%/build_log.txt -executeMethod BuildMyGame.BuildLinux %cd%/build/Nui_Test.x86_64'
+    - powershell Compress-Archive build build.zip
+  artifacts:
+    paths:
+      - build.zip
     expire_in: 14d
