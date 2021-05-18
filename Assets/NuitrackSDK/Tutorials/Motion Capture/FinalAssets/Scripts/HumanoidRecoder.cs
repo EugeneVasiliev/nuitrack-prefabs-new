@@ -19,7 +19,7 @@ public class HumanoidRecoder : IRecordable
     {
         rootOffset = animator.transform.position;
         humanPoseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
-
+        
         foreach (HumanBodyBones unityBoneType in humanBodyBones)
         {
             for (int dofIndex = 0; dofIndex < 3; dofIndex++)

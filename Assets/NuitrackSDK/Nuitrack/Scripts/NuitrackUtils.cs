@@ -167,8 +167,8 @@ public static class NuitrackUtils
         {JointType.Neck,                HumanBodyBones.Neck},
         {JointType.LeftCollar,          HumanBodyBones.LeftShoulder},
         {JointType.RightCollar,         HumanBodyBones.RightShoulder},
-        {JointType.Torso,               HumanBodyBones.Hips},
-        {JointType.Waist,               HumanBodyBones.Hips},   // temporarily
+        {JointType.Torso,               HumanBodyBones.Spine},
+        {JointType.Waist,               HumanBodyBones.Hips},
 
 
         {JointType.LeftFingertip,       HumanBodyBones.LeftMiddleDistal},
@@ -202,7 +202,10 @@ public static class NuitrackUtils
     /// <returns>HumanBodyBones</returns>
     public static HumanBodyBones ToUnityBones(this JointType nuitrackJoint)
     {
-        return nuitrackToUnity[nuitrackJoint];
+        if (nuitrackToUnity.ContainsKey(nuitrackJoint))
+            return nuitrackToUnity[nuitrackJoint];
+        else
+            return HumanBodyBones.LastBone;
     }
 
     static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
@@ -232,6 +235,44 @@ public static class NuitrackUtils
         }
 
         return mirroredJoint;
+    }
+
+    static readonly Dictionary<JointType, JointType> parentJoints = new Dictionary<JointType, JointType>()
+    {
+        {JointType.Head,                JointType.Neck},
+        {JointType.Neck,                JointType.LeftCollar | JointType.RightCollar},
+        {JointType.LeftCollar,          JointType.Torso},
+        {JointType.RightCollar,         JointType.Torso},     
+        {JointType.Torso,               JointType.Waist},
+        {JointType.Waist,               JointType.None},
+
+        {JointType.LeftShoulder,        JointType.LeftCollar},
+        {JointType.LeftElbow,           JointType.LeftShoulder},
+        {JointType.LeftWrist,           JointType.LeftElbow},
+        {JointType.LeftHand,            JointType.LeftWrist},
+
+        {JointType.RightShoulder,       JointType.RightCollar},
+        {JointType.RightElbow,          JointType.RightShoulder},
+        {JointType.RightWrist,          JointType.RightElbow},
+        {JointType.RightHand,           JointType.RightWrist},
+
+        {JointType.LeftHip,             JointType.Waist},
+        {JointType.LeftKnee,            JointType.LeftHip},
+        {JointType.LeftAnkle,           JointType.LeftKnee},
+        {JointType.LeftFoot,            JointType.LeftAnkle},
+
+        {JointType.RightHip,            JointType.Waist},
+        {JointType.RightKnee,           JointType.RightHip},
+        {JointType.RightAnkle,          JointType.RightKnee},
+        {JointType.RightFoot,           JointType.RightAnkle},
+    };
+
+    public static JointType GetParent(this JointType jointType)
+    {
+        if (parentJoints.ContainsKey(jointType))
+            return parentJoints[jointType];
+        else
+            return JointType.None;
     }
 
     #endregion

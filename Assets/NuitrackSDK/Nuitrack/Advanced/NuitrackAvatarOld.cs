@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class NuitrackAvatar : MonoBehaviour
+public class NuitrackAvatarOld : MonoBehaviour
 {
     [Header("Rigged model")]
     [SerializeField]
