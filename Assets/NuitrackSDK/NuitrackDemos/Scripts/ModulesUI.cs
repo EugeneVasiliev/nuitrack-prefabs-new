@@ -13,6 +13,7 @@ public class ModulesUI : MonoBehaviour
     [SerializeField] bool bordersOn = true;
 
     [SerializeField] GameObject settingsContainer;
+    [SerializeField] GameObject nuitrackAiButton;
 
     [SerializeField]
     Toggle
@@ -34,6 +35,8 @@ public class ModulesUI : MonoBehaviour
 
     void Start()
     {
+        nuitrackAiButton.SetActive(Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.LinuxPlayer || Application.isEditor);
+
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         settingsContainer.SetActive(false);
         nuitrackModules = FindObjectOfType<NuitrackModules>();

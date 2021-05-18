@@ -101,7 +101,7 @@ public class SimpleSkeletonAvatar : MonoBehaviour
         for (int i = 0; i < jointsInfo.Length; i++)
         {
             nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
-            if (j.Confidence > 0.5f)
+            if (j.Confidence > 0.01f)
             {
                 joints[jointsInfo[i]].SetActive(true);
                 joints[jointsInfo[i]].transform.position = new Vector2(j.Proj.X * Screen.width, Screen.height - j.Proj.Y * Screen.height);
