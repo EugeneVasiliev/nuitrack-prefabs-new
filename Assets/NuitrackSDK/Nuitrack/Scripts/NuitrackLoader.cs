@@ -29,7 +29,7 @@ public static class NuitrackLoader
 			AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
 			AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
 			AndroidJavaClass javaNuitrackClass = new AndroidJavaClass("com.tdv.nuitrack.sdk.Nuitrack");
-			javaNuitrackClass.CallStatic("init", jo, true, new NuitrackCallback());
+			javaNuitrackClass.CallStatic("init", jo, new NuitrackCallback());
 			while (!initComplete)
 			{
 				Thread.Sleep(50);
