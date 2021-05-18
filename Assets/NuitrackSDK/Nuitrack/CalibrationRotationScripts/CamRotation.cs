@@ -2,6 +2,8 @@
 
 public class CamRotation : MonoBehaviour
 {
+    TPoseCalibration poseCalibration;
+
     void NativeRecenter(Quaternion rot)
     {
         UnityEngine.XR.InputTracking.Recenter();
@@ -9,11 +11,12 @@ public class CamRotation : MonoBehaviour
 
     private void OnEnable()
     {
-        FindObjectOfType<TPoseCalibration>().onSuccess += NativeRecenter;
+        poseCalibration = FindObjectOfType<TPoseCalibration>();
+        poseCalibration.onSuccess += NativeRecenter;
     }
 
     void OnDisable()
     {
-        FindObjectOfType<TPoseCalibration>().onSuccess -= NativeRecenter;
+        poseCalibration.onSuccess -= NativeRecenter;
     }
 }
