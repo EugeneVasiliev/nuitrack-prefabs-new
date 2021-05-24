@@ -17,8 +17,6 @@ public class Avatar : MonoBehaviour
 
     /// <summary> Model bones </summary> Dictionary with joints
     Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
-    Dictionary<nuitrack.JointType, Transform> defaultParents = new Dictionary<nuitrack.JointType, Transform>();
-    Dictionary<nuitrack.JointType, Vector3> defaultTransform = new Dictionary<nuitrack.JointType, Vector3>();
 
     void Start()
     {
@@ -30,7 +28,7 @@ public class Avatar : MonoBehaviour
         //then the model bones and their jointType are added to the jointsRigged dictionary
         for (int i = 0; i < modelJoints.Length; i++)
         {
-            modelJoints[i].baseRotOffset = modelJoints[i].bone.rotation;
+            modelJoints[i].baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoints[i].bone.rotation;
             jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
 
             //Adding base distances between the child bone and the parent bone 
@@ -65,39 +63,25 @@ public class Avatar : MonoBehaviour
     void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
         if (mappingMode == MappingMode.Indirect)
-            rootModel.position = 0.001f * skeleton.GetJoint(rootJoint).ToVector3();
+            rootModel.localPosition = -0.001f * skeleton.GetJoint(rootJoint).ToVector3() / transform.localScale.x;
 
         foreach (var riggedJoint in jointsRigged)
         {
-            if(mappingMode == MappingMode.Indirect)
+            //Get joint from the Nuitrack
+            nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
+            if (joint.Confidence > 0.01f)
             {
-                //Get joint from the Nuitrack
-                nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-
-                ModelJoint modelJoint = riggedJoint.Value;
-
-                //Calculate the model bone rotation: take the mirrored joint orientation, add a basic rotation of the model bone, invert movement along the Z axis
-                Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
-
-                modelJoint.bone.rotation = jointOrient;
-            }
-            else
-            {
-                //Get joint from the Nuitrack
-                nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-
                 //Get modelJoint
                 ModelJoint modelJoint = riggedJoint.Value;
 
-                if (joint.Confidence > 0.1f)
+                //Bone rotation
+                modelJoint.bone.rotation = transform.rotation * joint.ToQuaternionMirrored() * modelJoint.baseRotOffset;
+
+                if (mappingMode == MappingMode.Direct)
                 {
                     //Bone position
-                    Vector3 newPos = 0.001f * joint.ToVector3();
+                    Vector3 newPos = Quaternion.Euler(0, 180, 0) * (transform.rotation * ((0.001f * joint.ToVector3())));
                     modelJoint.bone.position = newPos;
-
-                    //Bone rotation
-                    Quaternion jointOrient = joint.ToQuaternion() * modelJoint.baseRotOffset;
-                    modelJoint.bone.rotation = jointOrient;
 
                     //Bone scale
                     if (modelJoint.parentBone != null)

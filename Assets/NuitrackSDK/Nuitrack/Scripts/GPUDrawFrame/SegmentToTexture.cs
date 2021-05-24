@@ -58,7 +58,7 @@ public class SegmentToTexture : MonoBehaviour
             instance.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
         }
         else
-            Debug.LogError("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
+            Debug.LogWarning("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
     }
 
     void OnDisable()

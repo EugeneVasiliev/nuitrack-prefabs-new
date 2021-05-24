@@ -41,7 +41,7 @@ public class DepthToTexture : MonoBehaviour
             instance.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         }
         else
-            Debug.LogError("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
+            Debug.LogWarning("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
     }
 
     void OnDisable()
