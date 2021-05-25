@@ -28,6 +28,9 @@ public class Avatar : MonoBehaviour
         //then the model bones and their jointType are added to the jointsRigged dictionary
         for (int i = 0; i < modelJoints.Length; i++)
         {
+            if (transform == rootModel || transform == modelJoints[i].bone)
+                Debug.LogError("Base transform can't be bone!");
+
             modelJoints[i].baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoints[i].bone.rotation;
             jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
 
