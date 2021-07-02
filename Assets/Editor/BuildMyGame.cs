@@ -4,8 +4,6 @@ using UnityEditor;
 
 public class BuildMyGame
 {
-
-    //[MenuItem("MyTools/Android Build With Postprocess")]
     public static void BuildAab()
     {
         SetProject();
