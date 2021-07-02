@@ -5,6 +5,7 @@
 !.gitignore
 
 !.gitlab-ci.yml
+!deploy.sh
 !/Packages
 !/Assets
 
