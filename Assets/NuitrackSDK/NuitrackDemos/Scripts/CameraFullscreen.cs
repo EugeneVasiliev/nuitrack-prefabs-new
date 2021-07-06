@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraFullscreen : MonoBehaviour
 {
-    Camera camera;
+    Camera cam;
 
     [SerializeField] GameObject[] hideObjects;
 
@@ -13,8 +11,8 @@ public class CameraFullscreen : MonoBehaviour
 
     private void Start()
     {
-        camera = GetComponent<Camera>();
-        defaultRect = camera.rect;
+        cam = GetComponent<Camera>();
+        defaultRect = cam.rect;
     }
 
     public void SwitchFullscreen()
@@ -23,11 +21,11 @@ public class CameraFullscreen : MonoBehaviour
 
         if (fullscreen)
         {
-            camera.rect = new Rect(0, 0, 1, 1);
+            cam.rect = new Rect(0, 0, 1, 1);
         }
         else
         {
-            camera.rect = defaultRect;
+            cam.rect = defaultRect;
         }
 
         for (int i = 0; i < hideObjects.Length; i++)

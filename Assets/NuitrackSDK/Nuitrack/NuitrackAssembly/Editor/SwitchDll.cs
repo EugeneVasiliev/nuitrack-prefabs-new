@@ -88,6 +88,17 @@ public class SwitchDll : IPreprocessBuildWithReport
             SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, true);
             SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
+
+        try
+        {
+            nuitrack.Nuitrack.Init();
+            nuitrack.Nuitrack.Release();
+            Debug.Log("Test Nuitrack init was successful!");
+        }
+        catch
+        {
+            Debug.LogWarning("Test Nuitrack init failed!");
+        }
     }
 
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
@@ -98,7 +109,7 @@ public class SwitchDll : IPreprocessBuildWithReport
         plugin.SetCompatibleWithAnyPlatform(false);
         plugin.SetCompatibleWithPlatform(BuildTarget.iOS, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.Android, value);
-        plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneLinux, value);
+        //plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneLinux, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneLinux64, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneOSX, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, value);
