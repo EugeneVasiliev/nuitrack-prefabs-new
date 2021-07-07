@@ -371,7 +371,16 @@ public class NuitrackManager : MonoBehaviour
         catch (System.Exception ex)
         {
             initException = ex;
-            Debug.LogError(ex.ToString());
+            if (ex.ToString().Contains("TBB"))
+            {
+                string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
+                string nuitrackTbbPath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME") + "\\bin\\tbb.dll";
+                Debug.LogError("!!!You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)");
+            }
+            else
+            {
+                Debug.LogError(ex.ToString());
+            }
         }
     }
 
