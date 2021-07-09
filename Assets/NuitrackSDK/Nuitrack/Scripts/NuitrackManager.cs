@@ -383,6 +383,7 @@ public class NuitrackManager : MonoBehaviour
         catch (System.Exception ex)
         {
             initException = ex;
+#if UNITY_EDITOR
             if (ex.ToString().Contains("TBB"))
             {
                 string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
@@ -393,6 +394,7 @@ public class NuitrackManager : MonoBehaviour
             {
                 Debug.LogError(ex.ToString());
             }
+#endif
         }
     }
 
