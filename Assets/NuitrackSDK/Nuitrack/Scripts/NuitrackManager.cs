@@ -36,7 +36,7 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
-    [Tooltip("Is not supported for Android")]
+    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
     [SerializeField] bool asyncInit = false;
 
     [Header("Config stats")]
