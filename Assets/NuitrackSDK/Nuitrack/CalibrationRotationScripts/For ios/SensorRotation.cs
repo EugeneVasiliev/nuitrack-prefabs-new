@@ -1,6 +1,4 @@
-﻿using UnityEngine.VR;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 
 public class SensorRotation : MonoBehaviour 
 {
@@ -43,10 +41,10 @@ public class SensorRotation : MonoBehaviour
 
 	void FixedUpdate () 
 	{
-		RotateMethod2();
+		RotateMethod();
 	}
 
-	void RotateMethod2()
+	void RotateMethod()
 	{
 		magneticHeading = Input.compass.rawVector; 
 		magneticHeading = new Vector3(-magneticHeading.y, magneticHeading.x, -magneticHeading.z); // for landscape left

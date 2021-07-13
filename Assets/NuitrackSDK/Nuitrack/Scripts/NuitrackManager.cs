@@ -17,6 +17,7 @@ enum WifiConnect
     none, VicoVR, TVico,
 }
 
+[HelpURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/")]
 public class NuitrackManager : MonoBehaviour
 {
     bool _threadRunning;
@@ -32,13 +33,18 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
+    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
-    [Tooltip("Is not supported for Android")]
+    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
     [SerializeField] bool asyncInit = false;
-    [Tooltip("ONLY PC!")]
+
+    [Header("Config stats")]
+    [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
+    public bool depth2ColorRegistration = false;
+    [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware\n MORE: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md")]
     public bool useNuitrackAi = false;
+    [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).\n Tutotial: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md")]
     public bool useFaceTracking = false;
 
     public static bool sensorConnected = false;
@@ -312,12 +318,18 @@ public class NuitrackManager : MonoBehaviour
             }
             else if (wifiConnect == WifiConnect.TVico)
             {
+                Debug.Log("If something doesn't work, then read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case");
                 nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
                 nuitrack.Nuitrack.SetConfigValue("Settings.IPAddress", "192.168.43.1");
             }
             else
             {
                 nuitrack.Nuitrack.Init();
+
+                if (depth2ColorRegistration)
+                {
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
+                }
 
                 if (useNuitrackAi)
                 {
@@ -371,7 +383,18 @@ public class NuitrackManager : MonoBehaviour
         catch (System.Exception ex)
         {
             initException = ex;
-            Debug.LogError(ex.ToString());
+#if UNITY_EDITOR
+            if (ex.ToString().Contains("TBB"))
+            {
+                string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
+                string nuitrackTbbPath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME") + "\\bin\\tbb.dll";
+                Debug.LogError("!!!You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)");
+            }
+            else
+            {
+                Debug.LogError(ex.ToString());
+            }
+#endif
         }
     }
 
