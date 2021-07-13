@@ -17,14 +17,14 @@ namespace FrameProviderModules
         [SerializeField]
         Color[] defaultColors = new Color[]
         {
-        Color.clear,
-        Color.red,
-        Color.green,
-        Color.blue,
-        Color.magenta,
-        Color.yellow,
-        Color.cyan,
-        Color.grey
+            Color.clear,
+            Color.red,
+            Color.green,
+            Color.blue,
+            Color.magenta,
+            Color.yellow,
+            Color.cyan,
+            Color.grey
         };
 
         ComputeBuffer userColorsBuffer;
@@ -53,10 +53,12 @@ namespace FrameProviderModules
             outSegment = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.UserFrame frame, Color[] userColors = null)
+        Texture2D GetCPUTexture(nuitrack.UserFrame frame, TextureCache textureCache, Color[] userColors = null)
         {
-            if (frame.Timestamp == lastTimeStamp && texture2D != null)
-                return texture2D;
+            ref Texture2D destTexture = ref textureCache.texture2D;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.texture2D && localCache.texture2D != null)
+                return localCache.texture2D;
             else
             {
                 if (userColors == null)
@@ -81,24 +83,28 @@ namespace FrameProviderModules
                     outSegment[ptr] = (byte)(255f * currentColor.b);
                 }
 
-                if (texture2D == null)
-                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
+                if (destTexture == null)
+                    destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                texture2D.LoadRawTextureData(outSegment);
-                texture2D.Apply();
-                lastTimeStamp = frame.Timestamp;
+                destTexture.LoadRawTextureData(outSegment);
+                destTexture.Apply();
 
-                return texture2D;
+
+                textureCache.timeStamp = frame.Timestamp;
+
+                return destTexture;
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.UserFrame frame, Color[] userColors = null)
+        RenderTexture GetGPUTexture(nuitrack.UserFrame frame, TextureCache textureCache, Color[] userColors = null)
         {
-            if (frame.Timestamp == lastTimeStamp && renderTexture != null)
-                return renderTexture;
+            ref RenderTexture destTexture = ref textureCache.renderTexture;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.renderTexture && localCache.renderTexture != null)
+                return localCache.renderTexture;
             else
             {
-                lastTimeStamp = frame.Timestamp;
+                textureCache.timeStamp = frame.Timestamp;
 
                 if (instanceShader == null)
                 {
@@ -129,91 +135,103 @@ namespace FrameProviderModules
 
                 userColorsBuffer.SetData(userColors);
 
-                if (renderTexture == null)
-                {
-                    InitRenderTexture(frame.Cols, frame.Rows);
+                if (destTexture == null)
+                    destTexture = InitRenderTexture(frame.Cols, frame.Rows);
+
+                instanceShader.SetTexture(kernelIndex, "Result", destTexture);
+
+                if (segmentDataArray == null)
                     segmentDataArray = new byte[frame.DataSize];
-                }
 
                 Marshal.Copy(frame.Data, segmentDataArray, 0, frame.DataSize);
                 sourceDataBuffer.SetData(segmentDataArray);
 
-                instanceShader.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
+                instanceShader.Dispatch(kernelIndex, destTexture.width / (int)x, destTexture.height / (int)y, (int)z);
 
-                return renderTexture;
+                return destTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.UserFrame frame)
+        public override RenderTexture GetRenderTexture(nuitrack.UserFrame frame, TextureCache textureCache = null)
         {
-            return GetRenderTexture(frame, defaultColors);
+            return GetRenderTexture(frame, defaultColors, textureCache);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public RenderTexture GetRenderTexture(nuitrack.UserFrame frame, Color[] userColors)
+        public RenderTexture GetRenderTexture(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(frame, userColors);
+                return GetGPUTexture(frame, textureCache != null ? textureCache : localCache, userColors);
             else
             {
-                texture2D = GetCPUTexture(frame, userColors);
-                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
+                TextureCache cache = textureCache != null ? textureCache : localCache;
 
-                return renderTexture;
+                cache.texture2D = GetCPUTexture(frame, cache, userColors);
+                FrameUtils.TextureUtils.Copy(cache.texture2D, ref cache.renderTexture);
+
+                return cache.renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.UserFrame frame)
+        public override Texture2D GetTexture2D(nuitrack.UserFrame frame, TextureCache textureCache = null)
         {
-            return GetTexture2D(frame, defaultColors);
+            return GetTexture2D(frame, defaultColors, textureCache);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public Texture2D GetTexture2D(nuitrack.UserFrame frame, Color[] userColors)
+        public Texture2D GetTexture2D(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(frame, userColors);
-                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
-                return texture2D;
-            }     
+                TextureCache cache = textureCache != null ? textureCache : localCache;
+
+                cache.renderTexture = GetGPUTexture(frame, cache, userColors);
+                FrameUtils.TextureUtils.Copy(cache.renderTexture, ref cache.texture2D);
+                return cache.texture2D;
+            }
             else
-                return GetCPUTexture(frame, userColors);
+                return GetCPUTexture(frame, textureCache != null ? textureCache : localCache);
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <param name="userColors">Colors for user segments.</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-        public Texture GetTexture(nuitrack.UserFrame frame, Color[] userColors)
+        public Texture GetTexture(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (GPUSupported)
-                return GetRenderTexture(frame, userColors);
+                return GetRenderTexture(frame, userColors, textureCache);
             else
-                return GetTexture2D(frame, userColors);
+                return GetTexture2D(frame, userColors, textureCache);
         }
     }
 }

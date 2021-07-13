@@ -2,6 +2,15 @@
 
 namespace FrameProviderModules
 {
+    [System.Serializable]
+    public class TextureCache
+    {
+        public RenderTexture renderTexture;
+        public Texture2D texture2D;
+
+        public ulong timeStamp;
+    }
+
     public abstract class FrameToTexture<T, U> : MonoBehaviour
         where T : nuitrack.Frame<U>
         where U : struct
@@ -13,15 +22,12 @@ namespace FrameProviderModules
         [SerializeField] ComputeShader computeShader;
         protected ComputeShader instanceShader;
 
-        protected RenderTexture renderTexture;
-        protected Texture2D texture2D;
+        protected TextureCache localCache = new TextureCache();
 
         protected Rect rect;
 
         protected uint x, y, z;
         protected int kernelIndex;
-
-        protected ulong lastTimeStamp = 0;
 
         protected bool GPUSupported
         {
@@ -53,13 +59,13 @@ namespace FrameProviderModules
             instanceShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         }
 
-        protected void InitRenderTexture(int width, int height)
+        protected RenderTexture InitRenderTexture(int width, int height)
         {
-            renderTexture = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
+            RenderTexture renderTexture = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
             renderTexture.enableRandomWrite = true;
             renderTexture.Create();
 
-            instanceShader.SetTexture(kernelIndex, "Result", renderTexture);
+            return renderTexture;
         }
 
         /// <summary>
@@ -67,8 +73,10 @@ namespace FrameProviderModules
         /// Recommended method for platforms with ComputeShader support.
         /// </summary>
         /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>Frame converted to RenderTexture</returns>
-        public abstract RenderTexture GetRenderTexture(T SourceFrame);
+        public abstract RenderTexture GetRenderTexture(T SourceFrame, TextureCache textureCache = null);
 
         /// <summary>
         /// Get a frame in the form of Texture2D. 
@@ -76,23 +84,27 @@ namespace FrameProviderModules
         /// If possible, use GetRenderTexture.
         /// </summary>
         /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>Frame converted to Texture2D</returns>
-        public abstract Texture2D GetTexture2D(T SourceFrame);
+        public abstract Texture2D GetTexture2D(T SourceFrame, TextureCache textureCache = null);
 
         /// <summary>
         /// Convert Frame to Texture. 
         /// The method will select the most productive way to get the texture. 
         /// This can be either RenderTexture or Texture2D. 
         /// Use this method if you don't care about the texture type.
-        /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
         /// </summary>
+        /// <param name="SourceFrame">Source frame of nuitrack.Frame</param>
+        /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+        /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-        public virtual Texture GetTexture(T SourceFrame)
+        public virtual Texture GetTexture(T SourceFrame, TextureCache textureCache = null)
         {
             if (GPUSupported)
-                return GetRenderTexture(SourceFrame);
+                return GetRenderTexture(SourceFrame, textureCache);
             else
-                return GetTexture2D(SourceFrame);
+                return GetTexture2D(SourceFrame, textureCache);
         }
 
         protected virtual void OnDestroy()
@@ -100,11 +112,11 @@ namespace FrameProviderModules
             if (instanceShader != null)
                 Destroy(instanceShader);
 
-            if (renderTexture != null)
-                Destroy(renderTexture);
+            if (localCache.renderTexture != null)
+                Destroy(localCache.renderTexture);
 
-            if (texture2D != null)
-                Destroy(texture2D);
+            if (localCache.texture2D != null)
+                Destroy(localCache.texture2D);
         }
     }
 }

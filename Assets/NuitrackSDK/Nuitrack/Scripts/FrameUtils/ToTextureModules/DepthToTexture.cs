@@ -7,7 +7,6 @@
 */
 
 
-
 using UnityEngine;
 using System.Runtime.InteropServices;
 
@@ -72,10 +71,12 @@ namespace FrameProviderModules
             outDepth = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.DepthFrame frame)
+        Texture2D GetCPUTexture(nuitrack.DepthFrame frame, TextureCache textureCache)
         {
-            if (frame.Timestamp == lastTimeStamp && texture2D != null)
-                return texture2D;
+            ref Texture2D destTexture = ref textureCache.texture2D;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.texture2D && localCache.texture2D != null)
+                return localCache.texture2D;
             else
             {
                 if (outDepth == null)
@@ -99,25 +100,27 @@ namespace FrameProviderModules
                     outDepth[ptr] = depth;      // b
                 }
 
-                if (texture2D == null)
-                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
+                if (destTexture == null)
+                    destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                texture2D.LoadRawTextureData(outDepth);
-                texture2D.Apply();
+                destTexture.LoadRawTextureData(outDepth);
+                destTexture.Apply();
 
-                lastTimeStamp = frame.Timestamp;
+                textureCache.timeStamp = frame.Timestamp;
 
-                return texture2D;
+                return destTexture;
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.DepthFrame frame)
+        RenderTexture GetGPUTexture(nuitrack.DepthFrame frame, TextureCache textureCache)
         {
-            if (frame.Timestamp == lastTimeStamp && renderTexture != null)
-                return renderTexture;
+            ref RenderTexture destTexture = ref textureCache.renderTexture;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.renderTexture && localCache.renderTexture != null)
+                return localCache.renderTexture;
             else
             {
-                lastTimeStamp = frame.Timestamp;
+                textureCache.timeStamp = frame.Timestamp;
 
                 if (instanceShader == null)
                 {
@@ -137,59 +140,65 @@ namespace FrameProviderModules
                     instanceShader.SetBuffer(kernelIndex, "DepthFrame", sourceDataBuffer);
                 }
 
-                if (renderTexture == null)
-                {
-                    InitRenderTexture(frame.Cols, frame.Rows);
+                if (destTexture == null)
+                    destTexture = InitRenderTexture(frame.Cols, frame.Rows);
+
+                if(depthDataArray == null)
                     depthDataArray = new byte[frame.DataSize];
-                }
+
+                instanceShader.SetTexture(kernelIndex, "Result", destTexture);
 
                 Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
                 sourceDataBuffer.SetData(depthDataArray);
 
                 instanceShader.SetFloat("maxDepthSensor", maxDepthSensor);
-                instanceShader.Dispatch(kernelIndex, renderTexture.width / (int)x, renderTexture.height / (int)y, (int)z);
+                instanceShader.Dispatch(kernelIndex, destTexture.width / (int)x, destTexture.height / (int)y, (int)z);
 
-                return renderTexture;
+                return destTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.DepthFrame frame)
+        public override RenderTexture GetRenderTexture(nuitrack.DepthFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(frame);
+                return GetGPUTexture(frame, textureCache != null ? textureCache : localCache);
             else
             {
-                texture2D = GetCPUTexture(frame);
-                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
+                TextureCache cache = textureCache != null ? textureCache : localCache;
 
-                return renderTexture;
+                cache.texture2D = GetCPUTexture(frame, cache);
+                FrameUtils.TextureUtils.Copy(cache.texture2D, ref cache.renderTexture);
+
+                return cache.renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.DepthFrame frame)
+        public override Texture2D GetTexture2D(nuitrack.DepthFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(frame);
-                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
-                return texture2D;
-            }   
+                TextureCache cache = textureCache != null ? textureCache : localCache;
+
+                cache.renderTexture = GetGPUTexture(frame, cache);
+                FrameUtils.TextureUtils.Copy(cache.renderTexture, ref cache.texture2D);
+                return cache.texture2D;
+            }
             else
-                return GetCPUTexture(frame);
+                return GetCPUTexture(frame, textureCache != null ? textureCache : localCache);
         }
     }
 }

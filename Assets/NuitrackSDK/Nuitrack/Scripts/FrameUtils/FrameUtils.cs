@@ -78,10 +78,12 @@ public static class FrameOverloadUtils
     /// Get the ColorFrame as a RenderTexture. 
     /// Recommended method for platforms with ComputeShader support.
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>ColorFrame converted to RenderTexture</returns>
-    public static RenderTexture ToRenderTexture(this nuitrack.ColorFrame frame)
+    public static RenderTexture ToRenderTexture(this nuitrack.ColorFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.RGBToTexture.GetRenderTexture(frame);
+        return FrameUtils.RGBToTexture.GetRenderTexture(frame, textureCache);
     }
 
     /// <summary>
@@ -89,19 +91,23 @@ public static class FrameOverloadUtils
     /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
     /// If possible, use GetRenderTexture.
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>ColorFrame converted to RenderTexture</returns>
-    public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
+    public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.RGBToTexture.GetTexture2D(frame);
+        return FrameUtils.RGBToTexture.GetTexture2D(frame, textureCache);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T, TextureCache)"/> 
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-    public static Texture ToTexture(this nuitrack.ColorFrame frame)
+    public static Texture ToTexture(this nuitrack.ColorFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.RGBToTexture.GetTexture(frame);
+        return FrameUtils.RGBToTexture.GetTexture(frame, textureCache);
     }
 
     #endregion
@@ -112,10 +118,12 @@ public static class FrameOverloadUtils
     /// Get the DepthFrame as a RenderTexture. 
     /// Recommended method for platforms with ComputeShader support.
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>DepthFrame converted to RenderTexture</returns>
-    public static RenderTexture ToRenderTexture(this nuitrack.DepthFrame frame)
+    public static RenderTexture ToRenderTexture(this nuitrack.DepthFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.DepthToTexture.GetRenderTexture(frame);
+        return FrameUtils.DepthToTexture.GetRenderTexture(frame, textureCache);
     }
 
     /// <summary>
@@ -123,19 +131,23 @@ public static class FrameOverloadUtils
     /// For platforms with ComputeShader support, it may be slower than GetRenderTexture. 
     /// If possible, use GetRenderTexture.
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>DepthFrame converted to Texture2D</returns>
-    public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame)
+    public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.DepthToTexture.GetTexture2D(frame);
+        return FrameUtils.DepthToTexture.GetTexture2D(frame, textureCache);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T, TextureCache)"/> 
     /// </summary>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-    public static Texture ToTexture(this nuitrack.DepthFrame frame)
+    public static Texture ToTexture(this nuitrack.DepthFrame frame, TextureCache textureCache = null)
     {
-        return FrameUtils.DepthToTexture.GetTexture(frame);
+        return FrameUtils.DepthToTexture.GetTexture(frame, textureCache);
     }
 
     #endregion
@@ -147,10 +159,12 @@ public static class FrameOverloadUtils
     /// Recommended method for platforms with ComputeShader support.
     /// </summary>
     /// <param name="userColors">Colors for user segments (optional).</param>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>UserFrame converted to RenderTexture</returns>
-    public static RenderTexture ToRenderTexture(this nuitrack.UserFrame frame, Color[] userColors = null)
+    public static RenderTexture ToRenderTexture(this nuitrack.UserFrame frame, Color[] userColors = null, TextureCache textureCache = null)
     {
-        return FrameUtils.SegmentToTexture.GetRenderTexture(frame, userColors);
+        return FrameUtils.SegmentToTexture.GetRenderTexture(frame, userColors, textureCache);
     }
 
     /// <summary>
@@ -159,20 +173,24 @@ public static class FrameOverloadUtils
     /// If possible, use GetRenderTexture.
     /// </summary>
     /// <param name="userColors">Colors for user segments (optional).</param>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>UserFrame converted to Texture2D</returns>
-    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, Color[] userColors = null)
+    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, Color[] userColors = null, TextureCache textureCache = null)
     {
-        return FrameUtils.SegmentToTexture.GetTexture2D(frame, userColors);
+        return FrameUtils.SegmentToTexture.GetTexture2D(frame, userColors, textureCache);
     }
 
     /// <summary>
-    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T)"/> 
+    /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture(T, TextureCache)"/> 
     /// </summary>
     /// <param name="userColors">Colors for user segments (optional)</param>
+    /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
+    /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
     /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-    public static Texture ToTexture(this nuitrack.UserFrame frame, Color[] userColors = null)
+    public static Texture ToTexture(this nuitrack.UserFrame frame, Color[] userColors = null, TextureCache textureCache = null)
     {
-        return FrameUtils.SegmentToTexture.GetTexture(frame, userColors);
+        return FrameUtils.SegmentToTexture.GetTexture(frame, userColors, textureCache);
     }
 
     #endregion

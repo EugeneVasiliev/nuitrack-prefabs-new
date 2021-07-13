@@ -26,10 +26,12 @@ namespace FrameProviderModules
             colorDataArray = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.ColorFrame frame)
+        Texture2D GetCPUTexture(nuitrack.ColorFrame frame, TextureCache textureCache)
         {
-            if (frame.Timestamp == lastTimeStamp && texture2D != null)
-                return texture2D;
+            ref Texture2D destTexture = ref textureCache.texture2D;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.texture2D && localCache.texture2D != null)
+                return localCache.texture2D;
             else
             {
                 int datasize = frame.DataSize;
@@ -53,84 +55,93 @@ namespace FrameProviderModules
                     colorDataArray[ptr - 1] = g;
                     colorDataArray[ptr] = r;
                 }
+  
+                if(destTexture == null)
+                    destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                if (texture2D == null)
-                    texture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
+                destTexture.LoadRawTextureData(colorDataArray);
+                destTexture.Apply();
 
-                texture2D.LoadRawTextureData(colorDataArray);
-                texture2D.Apply();
+                textureCache.timeStamp = frame.Timestamp;
 
-                lastTimeStamp = frame.Timestamp;
-
-                return texture2D;
+                return destTexture;
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.ColorFrame frame)
+        RenderTexture GetGPUTexture(nuitrack.ColorFrame frame, TextureCache textureCache)
         {
-            if (frame.Timestamp == lastTimeStamp && renderTexture != null)
-                return renderTexture;
+            ref RenderTexture destTexture = ref textureCache.renderTexture;
+
+            if (frame.Timestamp == textureCache.timeStamp && destTexture == localCache.renderTexture && localCache.renderTexture != null)
+                return localCache.renderTexture;
             else
             {
-                lastTimeStamp = frame.Timestamp;
+                textureCache.timeStamp = frame.Timestamp;
 
                 if (instanceShader == null)
                     InitShader("RGB2BGR");
 
-                if (renderTexture == null)
+                if (dstRgbTexture2D == null)
                 {
                     dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
                     instanceShader.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
-
-                    InitRenderTexture(frame.Cols, frame.Rows);
                 }
+
+                if (destTexture == null)
+                    destTexture = InitRenderTexture(frame.Cols, frame.Rows);
+
+                instanceShader.SetTexture(kernelIndex, "Result", destTexture);
 
                 dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
                 dstRgbTexture2D.Apply();
 
                 instanceShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
 
-                return renderTexture;
+                return destTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.ColorFrame frame)
+        public override RenderTexture GetRenderTexture(nuitrack.ColorFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(frame);
+                return GetGPUTexture(frame, textureCache != null ? textureCache : localCache);
             else
             {
-                texture2D = GetCPUTexture(frame);
-                FrameUtils.TextureUtils.Copy(texture2D, ref renderTexture);
+                TextureCache cache = textureCache != null ? textureCache : localCache;
 
-                return renderTexture;
+                cache.texture2D = GetCPUTexture(frame, cache);
+                FrameUtils.TextureUtils.Copy(cache.texture2D, ref cache.renderTexture);
+
+                return cache.renderTexture;
             }
         }
 
         /// <summary>
-        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T)"/> 
+        /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.ColorFrame frame)
+        public override Texture2D GetTexture2D(nuitrack.ColorFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
 
             if (GPUSupported)
             {
-                renderTexture = GetGPUTexture(frame);
-                FrameUtils.TextureUtils.Copy(renderTexture, ref texture2D);
-                return texture2D;
-            }       
+                TextureCache cache = textureCache != null ? textureCache : localCache;
+
+                cache.renderTexture = GetGPUTexture(frame, cache);
+                FrameUtils.TextureUtils.Copy(cache.renderTexture, ref cache.texture2D);
+                return cache.texture2D;
+            }
             else
-                return GetCPUTexture(frame);
+                return GetCPUTexture(frame, textureCache != null ? textureCache : localCache);
         }
     }
 }
