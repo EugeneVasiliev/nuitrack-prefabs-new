@@ -10,9 +10,9 @@
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-namespace FrameProviderModules
+namespace nuitrack.Frame
 {
-    public class DepthToTexture : FrameToTexture<nuitrack.DepthFrame, ushort>
+    public class DepthToTexture : FrameToTexture<DepthFrame, ushort>
     {
         [Range(0f, 32.0f)]
         [SerializeField] float maxDepthSensor = 10f;
@@ -37,7 +37,7 @@ namespace FrameProviderModules
         {
             get
             {
-                nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+                OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
                 return mode.HFOV * Mathf.Rad2Deg;
             }
         }
@@ -49,7 +49,7 @@ namespace FrameProviderModules
         {
             get
             {
-                nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+                OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
 
                 float vFOV = mode.HFOV * ((float)mode.YRes / mode.XRes);
                 return vFOV * Mathf.Rad2Deg;
@@ -71,7 +71,7 @@ namespace FrameProviderModules
             outDepth = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.DepthFrame frame, TextureCache textureCache)
+        Texture2D GetCPUTexture(DepthFrame frame, TextureCache textureCache)
         {
             ref Texture2D destTexture = ref textureCache.texture2D;
 
@@ -112,7 +112,7 @@ namespace FrameProviderModules
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.DepthFrame frame, TextureCache textureCache)
+        RenderTexture GetGPUTexture(DepthFrame frame, TextureCache textureCache)
         {
             ref RenderTexture destTexture = ref textureCache.renderTexture;
 
@@ -162,7 +162,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.DepthFrame frame, TextureCache textureCache = null)
+        public override RenderTexture GetRenderTexture(DepthFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
@@ -184,7 +184,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>DepthFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.DepthFrame frame, TextureCache textureCache = null)
+        public override Texture2D GetTexture2D(DepthFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;

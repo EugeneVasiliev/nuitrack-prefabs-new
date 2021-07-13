@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 using UnityEngine.Events;
+using nuitrack.Frame;
 
 public class FrameViewer : MonoBehaviour
 {

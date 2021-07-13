@@ -10,9 +10,9 @@
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-namespace FrameProviderModules
+namespace nuitrack.Frame
 {
-    public class SegmentToTexture : FrameToTexture<nuitrack.UserFrame, ushort>
+    public class SegmentToTexture : FrameToTexture<UserFrame, ushort>
     {
         [SerializeField]
         Color[] defaultColors = new Color[]
@@ -53,7 +53,7 @@ namespace FrameProviderModules
             outSegment = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.UserFrame frame, TextureCache textureCache, Color[] userColors = null)
+        Texture2D GetCPUTexture(UserFrame frame, TextureCache textureCache, Color[] userColors = null)
         {
             ref Texture2D destTexture = ref textureCache.texture2D;
 
@@ -96,7 +96,7 @@ namespace FrameProviderModules
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.UserFrame frame, TextureCache textureCache, Color[] userColors = null)
+        RenderTexture GetGPUTexture(UserFrame frame, TextureCache textureCache, Color[] userColors = null)
         {
             ref RenderTexture destTexture = ref textureCache.renderTexture;
 
@@ -156,7 +156,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.UserFrame frame, TextureCache textureCache = null)
+        public override RenderTexture GetRenderTexture(UserFrame frame, TextureCache textureCache = null)
         {
             return GetRenderTexture(frame, defaultColors, textureCache);
         }
@@ -168,7 +168,7 @@ namespace FrameProviderModules
         /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
         /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>UserFrame converted to RenderTexture</returns>
-        public RenderTexture GetRenderTexture(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
+        public RenderTexture GetRenderTexture(UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
@@ -190,7 +190,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.UserFrame frame, TextureCache textureCache = null)
+        public override Texture2D GetTexture2D(UserFrame frame, TextureCache textureCache = null)
         {
             return GetTexture2D(frame, defaultColors, textureCache);
         }
@@ -202,7 +202,7 @@ namespace FrameProviderModules
         /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
         /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>UserFrame converted to Texture2D</returns>
-        public Texture2D GetTexture2D(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
+        public Texture2D GetTexture2D(UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
@@ -226,7 +226,7 @@ namespace FrameProviderModules
         /// <param name="textureCache">(optional) If you want to get a separate copy of the texture, 
         /// and not a cached version, pass a reference to the local texture (may affect performance)</param>
         /// <returns>Texture = (RenderTexture or Texture2D)</returns>
-        public Texture GetTexture(nuitrack.UserFrame frame, Color[] userColors, TextureCache textureCache = null)
+        public Texture GetTexture(UserFrame frame, Color[] userColors, TextureCache textureCache = null)
         {
             if (GPUSupported)
                 return GetRenderTexture(frame, userColors, textureCache);

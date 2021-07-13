@@ -10,9 +10,9 @@
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-namespace FrameProviderModules
+namespace nuitrack.Frame
 {
-    public class RGBToTexture : FrameToTexture<nuitrack.ColorFrame, nuitrack.Color3>
+    public class RGBToTexture : FrameToTexture<ColorFrame, Color3>
     {
         Texture2D dstRgbTexture2D;
         byte[] colorDataArray = null;
@@ -26,7 +26,7 @@ namespace FrameProviderModules
             colorDataArray = null;
         }
 
-        Texture2D GetCPUTexture(nuitrack.ColorFrame frame, TextureCache textureCache)
+        Texture2D GetCPUTexture(ColorFrame frame, TextureCache textureCache)
         {
             ref Texture2D destTexture = ref textureCache.texture2D;
 
@@ -68,7 +68,7 @@ namespace FrameProviderModules
             }
         }
 
-        RenderTexture GetGPUTexture(nuitrack.ColorFrame frame, TextureCache textureCache)
+        RenderTexture GetGPUTexture(ColorFrame frame, TextureCache textureCache)
         {
             ref RenderTexture destTexture = ref textureCache.renderTexture;
 
@@ -105,7 +105,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetRenderTexture(T, TextureCache)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to RenderTexture</returns>
-        public override RenderTexture GetRenderTexture(nuitrack.ColorFrame frame, TextureCache textureCache = null)
+        public override RenderTexture GetRenderTexture(ColorFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;
@@ -127,7 +127,7 @@ namespace FrameProviderModules
         /// See the method description: <see cref="FrameToTexture{T, U}.GetTexture2D(T, TextureCache)"/> 
         /// </summary>
         /// <returns>ColorFrame converted to Texture2D</returns>
-        public override Texture2D GetTexture2D(nuitrack.ColorFrame frame, TextureCache textureCache = null)
+        public override Texture2D GetTexture2D(ColorFrame frame, TextureCache textureCache = null)
         {
             if (frame == null)
                 return null;

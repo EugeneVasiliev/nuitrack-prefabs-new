@@ -4,7 +4,7 @@ using UnityEngine;
 using CopyTextureSupport = UnityEngine.Rendering.CopyTextureSupport;
 
 
-namespace FrameProviderModules
+namespace nuitrack.Frame
 {
     public class TextureUtils : MonoBehaviour
     {

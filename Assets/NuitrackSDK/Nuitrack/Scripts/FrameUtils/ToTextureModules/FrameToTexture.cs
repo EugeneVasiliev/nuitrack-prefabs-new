@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FrameProviderModules
+namespace nuitrack.Frame
 {
     [System.Serializable]
     public class TextureCache
@@ -12,7 +12,7 @@ namespace FrameProviderModules
     }
 
     public abstract class FrameToTexture<T, U> : MonoBehaviour
-        where T : nuitrack.Frame<U>
+        where T : Frame<U>
         where U : struct
     {
 #if UNITY_EDITOR
