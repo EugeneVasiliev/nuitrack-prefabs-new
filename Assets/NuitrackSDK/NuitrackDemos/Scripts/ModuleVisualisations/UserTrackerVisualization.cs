@@ -279,6 +279,8 @@ public class UserTrackerVisualization : MonoBehaviour
 
     RenderTexture rgbRenderTexture = null;
 
+    FrameProviderModules.TextureCache textureCache = new FrameProviderModules.TextureCache();
+
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
         for (int i = 0; i < parts; i++)
@@ -311,7 +313,7 @@ public class UserTrackerVisualization : MonoBehaviour
             rgbTexture = colorFrame.ToRenderTexture();
 
         depthTexture = depthFrame.ToRenderTexture();
-        segmentationTexture = userFrame.ToRenderTexture(userCurrentCols);
+        segmentationTexture = userFrame.ToRenderTexture(userCurrentCols, textureCache);
 
         if (!showBackground)
         {
@@ -330,6 +332,15 @@ public class UserTrackerVisualization : MonoBehaviour
     {
         if (depthTexture != null) Destroy(depthTexture);
         if (rgbTexture != null) Destroy(rgbTexture);
+
+        if (rgbRenderTexture != null)
+            Destroy(rgbRenderTexture);
+
+        if (textureCache.renderTexture != null)
+            Destroy(textureCache.renderTexture);
+
+        if (textureCache.texture2D != null)
+            Destroy(textureCache.texture2D);
 
         DebugDepth.depthMat.mainTexture = null;
         DebugDepth.segmentationMat.mainTexture = null;

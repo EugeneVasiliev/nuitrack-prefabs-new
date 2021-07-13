@@ -175,6 +175,8 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     RenderTexture rgbRenderTexture = null;
 
+    FrameProviderModules.TextureCache textureCache = new FrameProviderModules.TextureCache();
+
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
         for (int i = 0; i < visualizationParts.Length; i++)
@@ -196,12 +198,24 @@ public class UserTrackerVisMesh : MonoBehaviour
             meshMaterial.SetTexture("_RGBTex", rgbTexture);
 
         depthTexture = depthFrame.ToRenderTexture();
-        segmentationTexture = userFrame.ToRenderTexture(userCols);
+        segmentationTexture = userFrame.ToRenderTexture(userCols, textureCache);
 
         meshMaterial.SetTexture("_DepthTex", depthTexture);
         meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
         
 
         meshMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
+    }
+
+    void OnDestroy()
+    {
+        if (rgbRenderTexture != null)
+            Destroy(rgbRenderTexture);
+
+        if (textureCache.renderTexture != null)
+            Destroy(textureCache.renderTexture);
+
+        if (textureCache.texture2D != null)
+            Destroy(textureCache.texture2D);
     }
 }
