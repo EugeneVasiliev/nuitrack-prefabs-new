@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+using nuitrack.Frame;
+
 public class BackTextureCreator : MonoBehaviour
 {
     [SerializeField] bool userColorizeEnable = false;

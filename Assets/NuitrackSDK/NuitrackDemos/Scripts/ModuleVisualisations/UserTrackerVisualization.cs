@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System;
 using nuitrack.issues;
 
+using nuitrack.Frame;
+
 public class UserTrackerVisualization : MonoBehaviour
 {
     #region Fields
@@ -279,7 +281,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
     RenderTexture rgbRenderTexture = null;
 
-    FrameProviderModules.TextureCache textureCache = new FrameProviderModules.TextureCache();
+    TextureCache textureCache = new TextureCache();
 
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {

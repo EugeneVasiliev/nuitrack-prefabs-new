@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 
+using nuitrack.Frame;
+
 public class CustomFrameViewer : MonoBehaviour
 {
     public enum Mode

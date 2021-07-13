@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using nuitrack.Frame;
+
 public class UserTrackerVisMesh : MonoBehaviour
 {
     ulong lastFrameTimestamp = ulong.MaxValue;
@@ -174,8 +176,7 @@ public class UserTrackerVisMesh : MonoBehaviour
     }
 
     RenderTexture rgbRenderTexture = null;
-
-    FrameProviderModules.TextureCache textureCache = new FrameProviderModules.TextureCache();
+    TextureCache textureCache = new TextureCache();
 
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
