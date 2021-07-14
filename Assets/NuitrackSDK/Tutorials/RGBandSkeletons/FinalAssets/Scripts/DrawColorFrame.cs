@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+using nuitrack.Frame;
+
 public class DrawColorFrame : MonoBehaviour
 {
     [SerializeField] RawImage background;

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System;
 using nuitrack.issues;
 
+using nuitrack.Frame;
+
 public class UserTrackerVisualization : MonoBehaviour
 {
     #region Fields
@@ -46,15 +48,14 @@ public class UserTrackerVisualization : MonoBehaviour
     GameObject[] visualizationParts;
     Mesh[] visualizationMeshes;
 
-    Texture2D depthTexture, rgbTexture, segmentationTexture;
-    Color[] depthColors;
-    Color[] rgbColors;
-    Color[] segmColors;
+    RenderTexture depthTexture, rgbTexture, segmentationTexture;
 
     ExceptionsLogger exceptionsLogger;
 
     bool active = false;
     bool initialized = false;
+
+    bool showBackground = true;
 
     #endregion
 
@@ -63,12 +64,12 @@ public class UserTrackerVisualization : MonoBehaviour
         active = _active;
     }
 
-    public void SetShaderProperties(Color newZeroColor, bool showBorders)
+    public void SetShaderProperties(bool showBackground, bool showBorders)
     {
-        StartCoroutine(WaitSetShaderProperties(newZeroColor, showBorders));
+        StartCoroutine(WaitSetShaderProperties(showBackground, showBorders));
     }
 
-    IEnumerator WaitSetShaderProperties(Color newZeroColor, bool showBorders)
+    IEnumerator WaitSetShaderProperties(bool showBackground, bool showBorders)
     {
         while (!NuitrackManager.Instance.nuitrackInitialized)
         {
@@ -77,10 +78,7 @@ public class UserTrackerVisualization : MonoBehaviour
 
         if (!initialized) Initialize();
 
-        userCols[0] = newZeroColor;
-        userCurrentCols[0] = newZeroColor;
-        occludedUserCols[0] = newZeroColor;
-        visualizationMaterial.SetColor("_SegmZeroColor", newZeroColor);
+        this.showBackground = showBackground;
         visualizationMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
     }
 
@@ -135,33 +133,8 @@ public class UserTrackerVisualization : MonoBehaviour
     #region Mesh generation and mesh update methods
     void InitMeshes(int cols, int rows, float hfov)
     {
-        //depthTexture, segmentationTexture
-
-        depthColors = new Color[cols * rows];
-        rgbColors = new Color[cols * rows];
-        segmColors = new Color[cols * rows];
-
-        depthTexture = new Texture2D(cols, rows, TextureFormat.RFloat, false);
-        depthTexture.filterMode = FilterMode.Point;
-        depthTexture.wrapMode = TextureWrapMode.Clamp;
-        depthTexture.Apply();
-
-        rgbTexture = new Texture2D(cols, rows, TextureFormat.ARGB32, false);
-        rgbTexture.filterMode = FilterMode.Point;
-        rgbTexture.wrapMode = TextureWrapMode.Clamp;
-        rgbTexture.Apply();
-
-        segmentationTexture = new Texture2D(cols, rows, TextureFormat.ARGB32, false);
-        segmentationTexture.filterMode = FilterMode.Point;
-        segmentationTexture.wrapMode = TextureWrapMode.Clamp;
-        segmentationTexture.Apply();
-
         DebugDepth.depthMat.mainTexture = depthTexture;
         DebugDepth.segmentationMat.mainTexture = rgbTexture;
-
-        visualizationMaterial.SetTexture("_DepthTex", depthTexture);
-        visualizationMaterial.SetTexture("_SegmentationTex", segmentationTexture);
-        visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
 
         int numPoints = cols * rows;
 
@@ -192,8 +165,8 @@ public class UserTrackerVisualization : MonoBehaviour
 
         colors = new List<Color[]>();
 
-        pointsPerVis = 64000 / vertsPerMesh; //can't go over the limit for number of mesh vertices in one mesh
-        parts = numPoints / pointsPerVis + (((numPoints % pointsPerVis) != 0) ? 1 : 0);
+        pointsPerVis = (int)(uint.MaxValue / vertsPerMesh); //can't go over the limit for number of mesh vertices in one mesh
+        parts = (numPoints / pointsPerVis) + (((numPoints % pointsPerVis) != 0) ? 1 : 0);
 
         visualizationParts = new GameObject[parts];
         visualizationMeshes = new Mesh[parts];
@@ -252,6 +225,7 @@ public class UserTrackerVisualization : MonoBehaviour
             colors.Add(partColors);
 
             visualizationMeshes[i] = new Mesh();
+            visualizationMeshes[i].indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             visualizationMeshes[i].vertices = vertices[i];
             visualizationMeshes[i].triangles = triangles[i];
             visualizationMeshes[i].normals = normals[i];
@@ -305,14 +279,16 @@ public class UserTrackerVisualization : MonoBehaviour
         }
     }
 
+    RenderTexture rgbRenderTexture = null;
+
+    TextureCache textureCache = new TextureCache();
+
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
         for (int i = 0; i < parts; i++)
         {
             if (!visualizationParts[i].activeSelf) visualizationParts[i].SetActive(true);
         }
-
-        Color pointColor = Color.white;
 
         if (userFrame != null)
         {
@@ -333,49 +309,40 @@ public class UserTrackerVisualization : MonoBehaviour
             }
         }
 
-        for (int i = 0, pointIndex = 0, rgbOffset = 0; i < depthFrame.Rows; i += frameStep)
+        if (colorFrame == null)
+            rgbTexture = depthFrame.ToRenderTexture();
+        else
+            rgbTexture = colorFrame.ToRenderTexture();
+
+        depthTexture = depthFrame.ToRenderTexture();
+        segmentationTexture = userFrame.ToRenderTexture(userCurrentCols, textureCache);
+
+        if (!showBackground)
         {
-            for (int j = 0; j < depthFrame.Cols; j += frameStep, ++pointIndex, rgbOffset += 3)
-            {
-                depthColors[pointIndex].r = depthFrame[i, j] / 16384f;
-
-                uint userId = 0u;
-                if (userFrame != null)
-                {
-                    userId = userFrame[i * userFrame.Rows / depthFrame.Rows,
-                    j * userFrame.Cols / depthFrame.Cols];
-                }
-
-                #region RGB coloring
-                //int rgbOffset = 3 * (i * depthFrame.Cols + j);
-                Color rgbCol = defaultColor;
-                if (colorFrame != null)
-                    rgbCol = new Color32(colorFrame[i, j].Red, colorFrame[i, j].Green, colorFrame[i, j].Blue, 255);
-                //new Color32(depthFrame.rgb[rgbOffset + 2], depthFrame.rgb[rgbOffset + 1], depthFrame.rgb[rgbOffset + 0], 255);
-                pointColor = rgbCol;// * userCurrentCols[userId];
-                if (userId == 0) pointColor *= userCols[0];
-                Color segmColor = userCurrentCols[userId];
-                //Debug.Log(j.ToString() + ", " + i.ToString() + " : " + rgbCol);
-                #endregion
-                //        pointColor = userCurrentCols[userId]; //user segmentation coloring
-
-                rgbColors[pointIndex] = pointColor;
-                segmColors[pointIndex] = segmColor;
-            }
+            FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
+            visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
-        depthTexture.SetPixels(depthColors);
-        rgbTexture.SetPixels(rgbColors);
-        segmentationTexture.SetPixels(segmColors);
+        else
+            visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
 
-        depthTexture.Apply();
-        rgbTexture.Apply();
-        segmentationTexture.Apply();
+        visualizationMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
+        visualizationMaterial.SetTexture("_DepthTex", depthTexture);
+        visualizationMaterial.SetTexture("_SegmentationTex", segmentationTexture);
     }
 
     void OnDestroy()
     {
         if (depthTexture != null) Destroy(depthTexture);
         if (rgbTexture != null) Destroy(rgbTexture);
+
+        if (rgbRenderTexture != null)
+            Destroy(rgbRenderTexture);
+
+        if (textureCache.renderTexture != null)
+            Destroy(textureCache.renderTexture);
+
+        if (textureCache.texture2D != null)
+            Destroy(textureCache.texture2D);
 
         DebugDepth.depthMat.mainTexture = null;
         DebugDepth.segmentationMat.mainTexture = null;
