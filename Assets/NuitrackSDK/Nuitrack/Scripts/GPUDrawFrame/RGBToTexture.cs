@@ -14,50 +14,59 @@ public class RGBToTexture : MonoBehaviour
     [SerializeField] RawImage rawImage;
     [SerializeField] ComputeShader BGR2RGBShader;
 
+    ComputeShader instance;
+
     Texture2D dstRgbTexture2D;
     RenderTexture renderTexture;
 
     uint x, y, z;
     int kernelIndex;
 
-    void Start()
+    void OnEnable()
     {
+        NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
+
         if (SystemInfo.supportsComputeShaders)
         {
-            NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
-
-            kernelIndex = BGR2RGBShader.FindKernel("RGB2BGR");
-            BGR2RGBShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+            instance = Instantiate(BGR2RGBShader);
+            kernelIndex = instance.FindKernel("RGB2BGR");
+            instance.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
         }
         else
-            Debug.LogError("Compute Shader is not support.");
+            Debug.LogWarning("Compute Shader is not support. Performance may be affected. Check requirements https://docs.unity3d.com/Manual/class-ComputeShader.html");
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
-        if (SystemInfo.supportsComputeShaders)
-            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
+        NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
+        Destroy(renderTexture);
+        Destroy(instance);
     }
 
     void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
     {
+        if (!SystemInfo.supportsComputeShaders)
+        {
+            rawImage.texture = frame.ToTexture2D();
+            return;
+        }
+
         if (renderTexture == null || renderTexture.width != frame.Cols || renderTexture.height != frame.Rows)
         {
             dstRgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-            BGR2RGBShader.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
+            instance.SetTexture(kernelIndex, "Texture", dstRgbTexture2D);
 
             renderTexture = new RenderTexture(dstRgbTexture2D.width, dstRgbTexture2D.height, 0, RenderTextureFormat.ARGB32);
             renderTexture.enableRandomWrite = true;
             renderTexture.Create();
 
-            BGR2RGBShader.SetTexture(kernelIndex, "Result", renderTexture);
+            instance.SetTexture(kernelIndex, "Result", renderTexture);
 
             rawImage.texture = renderTexture;
         }
 
         dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
         dstRgbTexture2D.Apply();
-
-        BGR2RGBShader.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
+        instance.Dispatch(kernelIndex, dstRgbTexture2D.width / (int)x, dstRgbTexture2D.height / (int)y, (int)z);
     }
 }

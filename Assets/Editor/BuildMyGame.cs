@@ -4,8 +4,6 @@ using UnityEditor;
 
 public class BuildMyGame
 {
-
-    //[MenuItem("MyTools/Android Build With Postprocess")]
     public static void BuildAab()
     {
         SetProject();
@@ -14,6 +12,15 @@ public class BuildMyGame
 
         // Build player.
         BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.Android, BuildOptions.None);
+    }
+
+    //[MenuItem("MyTools/Linux Build")]
+    public static void BuildLinux()
+    {
+        EditorUserBuildSettings.development = true;
+        EditorUserBuildSettings.allowDebugging = true;
+        // Build player.
+        BuildPipeline.BuildPlayer(GetScenes(), Environment.GetCommandLineArgs().Last(), BuildTarget.StandaloneLinux64, BuildOptions.None);
     }
 
     public static void BuildApk()

@@ -98,20 +98,20 @@ public class UserTrackerVisMesh : MonoBehaviour
 
         numMeshes = (cols * rows) / maxVertices + (((cols * rows) % maxVertices == 0) ? 0 : 1);
 
-        Debug.Log("Num meshes: " + numMeshes.ToString());
+        //Debug.Log("Num meshes: " + numMeshes.ToString());
 
         visualizationParts = new GameObject[numMeshes];
         meshes = new Mesh[numMeshes];
 
         for (int i = 0; i < numMeshes; i++)
         {
-            Debug.Log("Mesh #" + i.ToString());
+            //Debug.Log("Mesh #" + i.ToString());
             int xLow = (i * cols) / numMeshes;
             int xHigh = (((i + 1) * cols) / numMeshes) + (((i + 1) == numMeshes) ? 0 : 1);
             int numVerts = rows * (xHigh - xLow);
             int numTris = 2 * (rows - 1) * (xHigh - xLow - 1);
 
-            Debug.Log("xLow = " + xLow.ToString() + "; xHigh = " + xHigh.ToString() + "; verts = " + numVerts.ToString() + "; tris = " + numTris.ToString());
+            //Debug.Log("xLow = " + xLow.ToString() + "; xHigh = " + xHigh.ToString() + "; verts = " + numVerts.ToString() + "; tris = " + numTris.ToString());
 
             int[] partTriangles = new int[3 * numTris];
             Vector3[] partVertices = new Vector3[numVerts];
