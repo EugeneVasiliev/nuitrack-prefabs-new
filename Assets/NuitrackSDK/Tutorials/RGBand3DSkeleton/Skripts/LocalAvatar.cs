@@ -26,7 +26,7 @@ public class LocalAvatar : MonoBehaviour
         return space != null ? space.TransformPoint(spacePoint) : spacePoint;
     }
 
-    public void StartSkeleton()
+    void Start()
     {
         foreach (ModelJoint modelJoint in modelJoints)
         {
