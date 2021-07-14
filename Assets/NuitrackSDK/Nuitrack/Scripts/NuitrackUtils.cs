@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using JointType = nuitrack.JointType;
 
@@ -39,128 +37,6 @@ public static class NuitrackUtils
     }
 
     #endregion
-
-
-    #region ToTexture2D
-
-    private static byte[] colorDataArray = null;
-
-    /// <summary>
-    /// Get UnityEngine.Texture2D from nuitrack.ColorFrame (TextureFormat.RGB24)
-    /// </summary>
-    /// <param name="frame">Original nuitrack.ColorFrame</param>
-    /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.ColorFrame) is deprecated, please use script RGBToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.ColorFrame frame)
-    {
-        int datasize = frame.DataSize;
-        if (colorDataArray == null || colorDataArray.Length != datasize)
-        {
-            colorDataArray = new byte[datasize];
-        }
-        Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
-
-        for (int i = 0; i < datasize; i += 3)
-        {
-            byte temp = colorDataArray[i];
-            colorDataArray[i] = colorDataArray[i + 2];
-            colorDataArray[i + 2] = temp;
-        }
-
-        Texture2D rgbTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-        rgbTexture.LoadRawTextureData(colorDataArray);
-        rgbTexture.Apply();
-
-        Resources.UnloadUnusedAssets();
-
-        return rgbTexture;
-    }
-
-    static Color32 transparentColor = Color.clear;
-    static Color32[] defaultColors = new Color32[]
-    {
-        Color.red,
-        Color.green,
-        Color.blue,
-        Color.magenta,
-        Color.yellow,
-        Color.cyan,
-        Color.grey
-    };
-
-    /// <summary>
-    /// Get filled UnityEngine.Texture2D, where each user is colored in a different color. Background is transparent
-    /// </summary>
-    /// <param name="frame">Original nuitrack.UserFrame</param>
-    /// <param name="customListColors">Optional colors for users</param>
-    /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.UserFrame) is deprecated, please use script SegmentToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.UserFrame frame, Color32[] customListColors = null)
-    {
-        Color32[] currentColorList = defaultColors;
-
-        if (customListColors != null)
-            currentColorList = customListColors;
-
-        byte[] outSegment = new byte[frame.Cols * frame.Rows * 4];
-
-        for (int i = 0; i < (frame.Cols * frame.Rows); i++)
-        {
-            Color32 currentColor = (frame[i] == 0) ? transparentColor : currentColorList[frame[i]]/*(Color32)Color.red*/ /*currentColorList[frame[i]]*/;
-
-            int ptr = i * 4;
-            outSegment[ptr] = currentColor.a;
-            outSegment[ptr + 1] = currentColor.r;
-            outSegment[ptr + 2] = currentColor.g;
-            outSegment[ptr + 3] = currentColor.b;
-        }
-
-        Texture2D segmentTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
-
-        segmentTexture.LoadRawTextureData(outSegment);
-        segmentTexture.Apply();
-
-        Resources.UnloadUnusedAssets();
-
-        return segmentTexture;
-    }
-
-    /// <summary>
-    /// To black-and-white representation of the image from the sensor depth
-    /// </summary>
-    /// <param name="frame">Original nuitrack.DepthFrame</param>
-    /// <param name="contrast">Contrast of the final image (0 - low contrast, 1 - high). Recommended range [0.8-0.95]</param>
-    /// <returns>Unity Texture2D</returns>
-    [Obsolete("Texture2D(nuitrack.DepthFrame) is deprecated, please use script DepthToTexture instead.")]
-    public static Texture2D ToTexture2D(this nuitrack.DepthFrame frame, float contrast = 0.9f)
-    {
-        byte[] outDepth = new byte[(frame.DataSize / 2) * 3];
-        int de = 1 + 255 - (int)(contrast * 255);
-
-        for (int i = 0; i < frame.DataSize / 2; i++)
-        {
-            byte depth = (byte)(frame[i] / de);
-
-            Color32 currentColor = new Color32(depth, depth, depth, 255);
-
-            int ptr = i * 3;
-
-            outDepth[ptr] = currentColor.r;
-            outDepth[ptr + 1] = currentColor.g;
-            outDepth[ptr + 2] = currentColor.b;
-        }
-
-        Texture2D depthTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
-        depthTexture.LoadRawTextureData(outDepth);
-        depthTexture.Apply();
-
-        Resources.UnloadUnusedAssets();
-
-        return depthTexture;
-    }
-
-    #endregion
-
 
     #region SkeletonUltils
 
