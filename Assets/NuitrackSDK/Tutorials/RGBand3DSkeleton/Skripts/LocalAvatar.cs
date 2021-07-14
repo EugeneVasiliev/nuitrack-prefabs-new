@@ -26,7 +26,7 @@ public class LocalAvatar : MonoBehaviour
         return space != null ? space.TransformPoint(spacePoint) : spacePoint;
     }
 
-    void Start()
+    public void StartSkeleton()
     {
         foreach (ModelJoint modelJoint in modelJoints)
         {
@@ -34,7 +34,7 @@ public class LocalAvatar : MonoBehaviour
             modelJoint.parentJointType = modelJoint.parentJointType.TryGetMirrored();
         }
 
-        Dictionary<nuitrack.JointType, ModelJoint>  jointsRigged = modelJoints.ToDictionary(k => k.jointType);
+        Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = modelJoints.ToDictionary(k => k.jointType);
 
         foreach (ModelJoint modelJoint in modelJoints)
         {
