@@ -1,23 +1,19 @@
 ﻿using UnityEngine;
-
 using UnityEngine.UI;
 
-public class RGBand3DSkeleton : MonoBehaviour
+public class FrameAspectRatioFitter : MonoBehaviour
 {
     [SerializeField] new Camera camera;
     [SerializeField] AspectRatioFitter aspectRatioFitter;
 
-    bool complate = false;
-
-    void Awake()
+    void OnEnable()
     {
         NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
     }
 
-    private void OnDestroy()
+    void OnDisable()
     {
-        if(!complate)
-            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
+        NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
     }
 
     private void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
@@ -33,7 +29,5 @@ public class RGBand3DSkeleton : MonoBehaviour
         // Nuitrack does not yet have a representation of vFOV, so we use the hFOV to vFOV conversion.
         float vFOV = mode.HFOV * ((float)frame.Rows / frame.Cols);
         camera.fieldOfView = vFOV * Mathf.Rad2Deg;
-
-        complate = true;
     }
 }
