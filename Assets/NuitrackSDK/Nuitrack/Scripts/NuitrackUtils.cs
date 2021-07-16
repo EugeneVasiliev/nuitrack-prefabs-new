@@ -114,4 +114,40 @@ public static class NuitrackUtils
     }
 
     #endregion
+
+    static Dictionary<JointType, List<JointType>> childs = new Dictionary<JointType, List<JointType>>()
+    {
+        { JointType.Waist, new List<JointType>() { JointType.Torso, JointType.LeftHip, JointType.RightHip } },
+
+        { JointType.LeftHip, new List<JointType>() { JointType.LeftKnee } },
+        { JointType.LeftKnee, new List<JointType>() { JointType.LeftAnkle } },
+        { JointType.LeftAnkle, new List<JointType>() { JointType.LeftFoot } },
+
+        { JointType.RightHip, new List<JointType>() { JointType.RightKnee } },
+        { JointType.RightKnee, new List<JointType>() { JointType.RightAnkle } },
+        { JointType.RightAnkle, new List<JointType>() { JointType.RightFoot } },
+
+        { JointType.Torso, new List<JointType>() { JointType.LeftCollar, JointType.RightCollar, JointType.Neck } },
+        { JointType.Neck, new List<JointType>() { JointType.Head } },
+        
+        { JointType.LeftCollar, new List<JointType>() { JointType.LeftShoulder } },
+        { JointType.LeftShoulder, new List<JointType>() { JointType.LeftElbow } },
+        { JointType.LeftElbow, new List<JointType>() { JointType.LeftWrist } },
+        { JointType.LeftWrist, new List<JointType>() { JointType.LeftHand } },
+        { JointType.LeftHand, new List<JointType>() { JointType.LeftFingertip } },
+
+        { JointType.RightCollar, new List<JointType>() { JointType.RightShoulder } },
+        { JointType.RightShoulder, new List<JointType>() { JointType.RightElbow } },
+        { JointType.RightElbow, new List<JointType>() { JointType.RightWrist } },
+        { JointType.RightWrist, new List<JointType>() { JointType.RightHand } },
+        { JointType.RightHand, new List<JointType>() { JointType.RightFingertip } },
+    };
+
+    public static List<JointType> GetChilds(this JointType joint)
+    {
+        if (childs.ContainsKey(joint))
+            return childs[joint];
+        else
+            return null;
+    }
 }
