@@ -18,7 +18,8 @@ public class LocalAvatar : MonoBehaviour
     [SerializeField] List<ModelJoint> modelJoints;
 
     [Header("Options")]
-    [SerializeField] bool alignModelToSkeleton = false;
+    [SerializeField] bool alignJointPosition = false;
+    [SerializeField] bool alignBoneScale = true;
 
     Quaternion SpaceRotation
     {
@@ -82,7 +83,7 @@ public class LocalAvatar : MonoBehaviour
             //Bone position
             Vector3 bonePosition = SpaceToWorldPoint(joint.ToVector3() * 0.001f);
             
-            if(alignModelToSkeleton)
+            if(alignJointPosition)
                 modelJoint.bone.position = bonePosition;
 
             //Bone rotation
@@ -90,7 +91,7 @@ public class LocalAvatar : MonoBehaviour
             modelJoint.bone.rotation = SpaceRotation * jointOrient;
 
             //Bone scale
-            if (modelJoint.parentBone != null)
+            if (alignBoneScale && modelJoint.parentBone != null)
             {
                 nuitrack.Joint parentJoint = skeleton.GetJoint(modelJoint.parentJointType);
                 Vector3 parentJointPosition = SpaceToWorldPoint(parentJoint.ToVector3() * 0.001f);
