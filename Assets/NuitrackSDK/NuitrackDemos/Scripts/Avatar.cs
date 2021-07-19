@@ -66,7 +66,10 @@ public class Avatar : MonoBehaviour
     void ProcessSkeleton(nuitrack.Skeleton skeleton)
     {
         if (mappingMode == MappingMode.Indirect)
-            rootModel.localPosition = -0.001f * skeleton.GetJoint(rootJoint).ToVector3() / transform.localScale.x;
+        {
+            Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3();
+            rootModel.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
+        }
 
         foreach (var riggedJoint in jointsRigged)
         {
@@ -83,7 +86,7 @@ public class Avatar : MonoBehaviour
                 if (mappingMode == MappingMode.Direct)
                 {
                     //Bone position
-                    Vector3 newPos = Quaternion.Euler(0, 180, 0) * (transform.rotation * ((0.001f * joint.ToVector3())));
+                    Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position;
                     modelJoint.bone.position = newPos;
 
                     //Bone scale
