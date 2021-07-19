@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+using System.Linq;
 using System.Collections.Generic;
 
 using JointType = nuitrack.JointType;
@@ -115,39 +116,63 @@ public static class NuitrackUtils
 
     #endregion
 
-    static Dictionary<JointType, List<JointType>> childs = new Dictionary<JointType, List<JointType>>()
+    static readonly List<JointType> sortedJoints = new List<JointType>()
     {
-        { JointType.Waist, new List<JointType>() { JointType.Torso, JointType.LeftHip, JointType.RightHip } },
+        // ------------------------------------------ 0
+        JointType.None,
 
-        { JointType.LeftHip, new List<JointType>() { JointType.LeftKnee } },
-        { JointType.LeftKnee, new List<JointType>() { JointType.LeftAnkle } },
-        { JointType.LeftAnkle, new List<JointType>() { JointType.LeftFoot } },
+        // ------------------------------------------ 1
+        JointType.Waist,
 
-        { JointType.RightHip, new List<JointType>() { JointType.RightKnee } },
-        { JointType.RightKnee, new List<JointType>() { JointType.RightAnkle } },
-        { JointType.RightAnkle, new List<JointType>() { JointType.RightFoot } },
+        // ------------------------------------------ 2
+        JointType.Torso,
+        JointType.LeftHip,
+        JointType.RightHip,
 
-        { JointType.Torso, new List<JointType>() { JointType.LeftCollar, JointType.RightCollar, JointType.Neck } },
-        { JointType.Neck, new List<JointType>() { JointType.Head } },
-        
-        { JointType.LeftCollar, new List<JointType>() { JointType.LeftShoulder } },
-        { JointType.LeftShoulder, new List<JointType>() { JointType.LeftElbow } },
-        { JointType.LeftElbow, new List<JointType>() { JointType.LeftWrist } },
-        { JointType.LeftWrist, new List<JointType>() { JointType.LeftHand } },
-        { JointType.LeftHand, new List<JointType>() { JointType.LeftFingertip } },
+        // ------------------------------------------ 3
+        JointType.Neck,
+        JointType.LeftCollar,
+        JointType.RightCollar,
+        JointType.LeftKnee,
+        JointType.RightKnee,
 
-        { JointType.RightCollar, new List<JointType>() { JointType.RightShoulder } },
-        { JointType.RightShoulder, new List<JointType>() { JointType.RightElbow } },
-        { JointType.RightElbow, new List<JointType>() { JointType.RightWrist } },
-        { JointType.RightWrist, new List<JointType>() { JointType.RightHand } },
-        { JointType.RightHand, new List<JointType>() { JointType.RightFingertip } },
+        // ------------------------------------------ 4
+        JointType.Head,
+        JointType.LeftShoulder,
+        JointType.RightShoulder,
+        JointType.LeftAnkle,
+        JointType.RightAnkle,
+
+        // ------------------------------------------ 5
+        JointType.LeftElbow,
+        JointType.RightElbow,
+        JointType.LeftFoot,
+        JointType.RightFoot,
+
+        // ------------------------------------------ 6
+        JointType.LeftWrist,
+        JointType.RightWrist,
+
+        // ------------------------------------------ 7
+        JointType.LeftHand,
+        JointType.RightHand,
+
+        // ------------------------------------------ 8
+
+        JointType.LeftFingertip,
+        JointType.RightFingertip
     };
 
-    public static List<JointType> GetChilds(this JointType joint)
+    public static List<JointType> SortClamp(this List<JointType> sourceJoints)
     {
-        if (childs.ContainsKey(joint))
-            return childs[joint];
-        else
-            return null;
+        List<JointType> outList = new List<JointType>();
+
+        foreach (JointType sortJoint in sortedJoints)
+        {
+            if (sourceJoints.Contains(sortJoint))
+                outList.Add(sortJoint);
+        }
+
+        return outList;
     }
 }
