@@ -104,4 +104,27 @@ public class LocalAvatar : MonoBehaviour
             }
         }
     }
+
+
+    
+}
+
+public static class JointHelper
+{
+    public static List<nuitrack.JointType> Sort(this List<nuitrack.JointType> sourceJoints)
+    {
+        return null;
+    }
+
+    //public int Compare(nuitrack.JointType firstVal, nuitrack.JointType secondVal)
+    //{
+    //    nuitrack.JointType currentVal = firstVal;
+
+    //    if(firstVal.pare)
+
+    //    while(currentVal != nuitrack.JointType.None)
+    //    {
+            
+    //    }
+    //}
 }
