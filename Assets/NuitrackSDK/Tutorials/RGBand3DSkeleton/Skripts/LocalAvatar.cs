@@ -36,6 +36,8 @@ public class LocalAvatar : MonoBehaviour
 
     void Start()
     {
+        modelJoints = SortClamp(modelJoints);
+
         foreach (ModelJoint modelJoint in modelJoints)
         {
             modelJoint.jointType = modelJoint.jointType.TryGetMirrored();
@@ -55,6 +57,19 @@ public class LocalAvatar : MonoBehaviour
             if (modelJoint.parentJointType != nuitrack.JointType.None)
                 modelJoint.parentBone = jointsRigged[modelJoint.parentJointType].bone;
         }
+    }
+
+    List<ModelJoint> SortClamp(List<ModelJoint> sourceModelJoints)
+    {
+        List<ModelJoint> outList = new List<ModelJoint>();
+
+        Dictionary<nuitrack.JointType, ModelJoint> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
+        List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
+
+        foreach(nuitrack.JointType jointType in jointTypes)
+            outList.Add(dict[jointType]);
+
+        return outList;
     }
 
     void Update()
@@ -104,27 +119,4 @@ public class LocalAvatar : MonoBehaviour
             }
         }
     }
-
-
-    
-}
-
-public static class JointHelper
-{
-    public static List<nuitrack.JointType> Sort(this List<nuitrack.JointType> sourceJoints)
-    {
-        return null;
-    }
-
-    //public int Compare(nuitrack.JointType firstVal, nuitrack.JointType secondVal)
-    //{
-    //    nuitrack.JointType currentVal = firstVal;
-
-    //    if(firstVal.pare)
-
-    //    while(currentVal != nuitrack.JointType.None)
-    //    {
-            
-    //    }
-    //}
 }
