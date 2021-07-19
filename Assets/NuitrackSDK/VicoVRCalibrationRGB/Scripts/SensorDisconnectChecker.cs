@@ -1,66 +1,66 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class SensorDisconnectChecker : MonoBehaviour
+namespace nuitrack.VicoVRCalibration
 {
-    public delegate void ConnectionStatusChange();
-    static public event ConnectionStatusChange SensorConnectionTimeOut;
-    static public event ConnectionStatusChange SensorReconnected;
-
-    bool connection = true;
-
-    void OnEnable()
+    public class SensorDisconnectChecker : MonoBehaviour
     {
-        NuitrackManager.onSkeletonTrackerUpdate += ClearTimer;
-        nuitrack.Nuitrack.onIssueUpdateEvent += NoConnectionIssue;
-        BackTextureCreator.newTextureEvent += UpdateTexture;
-    }
+        public delegate void ConnectionStatusChange();
+        static public event ConnectionStatusChange SensorConnectionTimeOut;
+        static public event ConnectionStatusChange SensorReconnected;
 
-    void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
-    }
+        bool connection = true;
 
-    void ClearTimer(nuitrack.SkeletonData sd)
-    {
-        if (!connection)
+        void OnEnable()
         {
-            connection = true;
-            if (SensorReconnected != null)
-                SensorReconnected();
+            NuitrackManager.onSkeletonTrackerUpdate += ClearTimer;
+            nuitrack.Nuitrack.onIssueUpdateEvent += NoConnectionIssue;
+            BackTextureCreator.newTextureEvent += UpdateTexture;
         }
-    }
 
-    bool connectionProblem = false;
-    void NoConnectionIssue(nuitrack.issues.IssuesData issData)
-    {
-        if (issData.GetIssue<nuitrack.issues.SensorIssue>() != null)
+        void OnDestroy()
         {
-            if (SensorConnectionTimeOut != null)
-                SensorConnectionTimeOut();
-            connectionProblem = true;
+            NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
         }
-        else
+
+        void ClearTimer(nuitrack.SkeletonData sd)
+        {
+            if (!connection)
+            {
+                connection = true;
+                if (SensorReconnected != null)
+                    SensorReconnected();
+            }
+        }
+
+        bool connectionProblem = false;
+        void NoConnectionIssue(nuitrack.issues.IssuesData issData)
+        {
+            if (issData.GetIssue<nuitrack.issues.SensorIssue>() != null)
+            {
+                if (SensorConnectionTimeOut != null)
+                    SensorConnectionTimeOut();
+                connectionProblem = true;
+            }
+            else
+            {
+                if (connectionProblem && SensorReconnected != null)
+                    SensorReconnected();
+                connectionProblem = false;
+            }
+        }
+
+        void OnDisable()
+        {
+            NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
+            Nuitrack.onIssueUpdateEvent -= NoConnectionIssue;
+            BackTextureCreator.newTextureEvent -= UpdateTexture;
+        }
+
+        private void UpdateTexture(Texture txtr, Texture userTxtr)
         {
             if (connectionProblem && SensorReconnected != null)
                 SensorReconnected();
             connectionProblem = false;
         }
-    }
-
-    void OnDisable()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
-        nuitrack.Nuitrack.onIssueUpdateEvent -= NoConnectionIssue;
-        BackTextureCreator.newTextureEvent -= UpdateTexture;
-    }
-
-    private void UpdateTexture(Texture txtr, Texture userTxtr)
-    {
-        if (connectionProblem && SensorReconnected != null)
-            SensorReconnected();
-        connectionProblem = false;
     }
 }
