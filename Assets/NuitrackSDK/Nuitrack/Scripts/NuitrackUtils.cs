@@ -118,7 +118,7 @@ public static class NuitrackUtils
 
     static readonly List<JointType> sortedJoints = new List<JointType>()
     {
-        // ------------------------------------------ 0
+        // ------------------------------------------ 0 - the order (level) of the joint relative to none
         JointType.None,
 
         // ------------------------------------------ 1
@@ -158,7 +158,6 @@ public static class NuitrackUtils
         JointType.RightHand,
 
         // ------------------------------------------ 8
-
         JointType.LeftFingertip,
         JointType.RightFingertip
     };

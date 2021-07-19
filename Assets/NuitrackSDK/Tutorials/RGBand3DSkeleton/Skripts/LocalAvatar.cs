@@ -5,33 +5,41 @@ using System.Collections.Generic;
 
 public class LocalAvatar : MonoBehaviour
 {
-    [Header("Main")]
-    [SerializeField] Transform space;
-
-    ulong lastTimeStamp = 0;
-
-    [Header ("Skeleton")]
+    [Header ("Root")]
     [SerializeField] Transform root;
     [SerializeField] nuitrack.JointType rootJointType = nuitrack.JointType.Waist;
 
     [Header("Rigged model")]
     [SerializeField] List<ModelJoint> modelJoints;
 
+
+    [Header("Space")]
+    [Tooltip("(optional) Transform corresponding to the sensor coordinate system. If not specified, " +
+       "the transformation is performed in the world coordinate system, where the sensor position = (0, 0, 0)")]
+    [SerializeField] Transform sensorSpace;
+
     [Header("Options")]
+    [Tooltip ("Aligns the positions of the model's joints with the joints of the user's skeleton.\n" +
+        "It can cause model distortions and artifacts.")]
     [SerializeField] bool alignJointPosition = false;
+    
+    [Tooltip ("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
+        "ensuring that the model's size best matches the user's size.")]
     [SerializeField] bool alignBoneScale = true;
+
+    ulong lastTimeStamp = 0;
 
     Quaternion SpaceRotation
     {
         get
         {
-            return space != null ? space.rotation : Quaternion.identity;
+            return sensorSpace != null ? sensorSpace.rotation : Quaternion.identity;
         }
     }
 
     Vector3 SpaceToWorldPoint(Vector3 spacePoint)
     {
-        return space != null ? space.TransformPoint(spacePoint) : spacePoint;
+        return sensorSpace != null ? sensorSpace.TransformPoint(spacePoint) : spacePoint;
     }
 
     void Start()
@@ -53,7 +61,6 @@ public class LocalAvatar : MonoBehaviour
 
             modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
 
-            //Adding base distances between the child bone and the parent bone 
             if (modelJoint.parentJointType != nuitrack.JointType.None)
                 modelJoint.parentBone = jointsRigged[modelJoint.parentJointType].bone;
         }
