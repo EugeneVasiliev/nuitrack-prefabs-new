@@ -163,10 +163,12 @@ public static class NuitrackUtils
     };
 
     /// <summary>
-    /// 
+    /// Sorts the joints according to the hierarchy from the lowest joints (lower back) to the highest (wrists and ankles).
+    /// Repetitions will be skipped.
+    /// For the sorting order <see cref="sortedJoints"/> 
     /// </summary>
-    /// <param name="sourceJoints"></param>
-    /// <returns></returns>
+    /// <param name="sourceJoints">List of joints.</param>
+    /// <returns>A sorted list of joints.</returns>
     public static List<JointType> SortClamp(this List<JointType> sourceJoints)
     {
         List<JointType> outList = new List<JointType>();
