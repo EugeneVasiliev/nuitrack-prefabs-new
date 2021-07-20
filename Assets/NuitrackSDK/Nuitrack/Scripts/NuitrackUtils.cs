@@ -162,6 +162,11 @@ public static class NuitrackUtils
         JointType.RightFingertip
     };
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sourceJoints"></param>
+    /// <returns></returns>
     public static List<JointType> SortClamp(this List<JointType> sourceJoints)
     {
         List<JointType> outList = new List<JointType>();
