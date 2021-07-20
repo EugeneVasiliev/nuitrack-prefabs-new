@@ -26,6 +26,8 @@ public class LocalAvatar : MonoBehaviour
         "ensuring that the model's size best matches the user's size.")]
     [SerializeField] bool alignBoneScale = true;
 
+    [SerializeField, Range(0, 1)] float jointConfidence = 0.1f;
+
     ulong lastTimeStamp = 0;
 
     Quaternion SpaceRotation
@@ -101,15 +103,18 @@ public class LocalAvatar : MonoBehaviour
         {
             nuitrack.Joint joint = skeleton.GetJoint(modelJoint.jointType);
 
-            //Bone position
-            Vector3 bonePosition = SpaceToWorldPoint(joint.ToVector3() * 0.001f);
-            
-            if(alignJointPosition)
-                modelJoint.bone.position = bonePosition;
+            if (joint.Confidence < jointConfidence)
+                continue;
 
             //Bone rotation
             Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.ToQuaternion() * modelJoint.baseRotOffset;
             modelJoint.bone.rotation = SpaceRotation * jointOrient;
+
+            //Bone position
+            Vector3 jointPosition = SpaceToWorldPoint(joint.ToVector3() * 0.001f);
+
+            if (alignJointPosition)
+                modelJoint.bone.position = jointPosition;
 
             //Bone scale
             if (alignBoneScale && modelJoint.parentBone != null)
@@ -117,7 +122,7 @@ public class LocalAvatar : MonoBehaviour
                 nuitrack.Joint parentJoint = skeleton.GetJoint(modelJoint.parentJointType);
                 Vector3 parentJointPosition = SpaceToWorldPoint(parentJoint.ToVector3() * 0.001f);
 
-                float skeletonJointDistance = Vector3.Distance(parentJointPosition, bonePosition);
+                float skeletonJointDistance = Vector3.Distance(parentJointPosition, jointPosition);
                 float modelJointDistance = Vector3.Distance(modelJoint.bone.position, modelJoint.parentBone.position);
                 float scaleK = skeletonJointDistance / modelJointDistance;
 
