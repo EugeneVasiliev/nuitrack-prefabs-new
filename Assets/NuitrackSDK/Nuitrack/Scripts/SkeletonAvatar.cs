@@ -9,7 +9,6 @@ public class SkeletonAvatar : MonoBehaviour
     [SerializeField] Transform headTransform; //if not null, skeletonAvatar will move it
     [SerializeField] Transform headDirectionTransform; //part of head preab that rotates 
     [SerializeField] bool rotate180 = true;
-    //[SerializeField]bool headInNeck = true;
     [SerializeField] Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f); //TODO: add offset from neck
     [SerializeField] Vector3 startPoint;
     TPoseCalibration tPC;

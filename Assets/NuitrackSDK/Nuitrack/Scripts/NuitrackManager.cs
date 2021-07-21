@@ -46,6 +46,8 @@ public class NuitrackManager : MonoBehaviour
     public bool useNuitrackAi = false;
     [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).\n Tutotial: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md")]
     public bool useFaceTracking = false;
+    [Tooltip("Mirror sensor data")]
+    public bool mirror = false;
 
     public static bool sensorConnected = false;
 
@@ -348,6 +350,11 @@ public class NuitrackManager : MonoBehaviour
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
                     nuitrack.Nuitrack.SetConfigValue("Faces.ToUse", "true");
+                }
+
+                if (mirror)
+                {
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
                 }
             }
 

@@ -1,44 +1,45 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-enum NeedVicoVR
+namespace nuitrack.PlatformChanger
 {
-    NotNecessary,
-    Yes,
-    No,
-}
-
-public class EnviromentSwitcher : MonoBehaviour
-{
-    [SerializeField] Platform targetPlatform;
-    [SerializeField] GameObject[] showGO = null, hideGO = null;
-    //[SerializeField]NeedVicoVR needVicoVR;
-
-    private void Awake()
+    enum NeedVicoVR
     {
-        GameVersion.GetData();
-        Switch();
+        NotNecessary,
+        Yes,
+        No,
     }
 
-    void Switch()
+    public class EnviromentSwitcher : MonoBehaviour
     {
-        if (GameVersion.currentPlatform == targetPlatform)
+        [SerializeField] Platform targetPlatform;
+        [SerializeField] GameObject[] showGO = null, hideGO = null;
+        //[SerializeField]NeedVicoVR needVicoVR;
+
+        private void Awake()
         {
-            //if ((needVicoVR == NeedVicoVR.Yes) && !GameVersion.usedVicoVR)
-            //    return;
+            GameVersion.GetData();
+            Switch();
+        }
 
-            //if ((needVicoVR == NeedVicoVR.No) && GameVersion.usedVicoVR)
-            //    return;
-
-            for (int i = 0; i < showGO.Length; i++)
+        void Switch()
+        {
+            if (GameVersion.currentPlatform == targetPlatform)
             {
-                showGO[i].SetActive(true);
-            }
+                //if ((needVicoVR == NeedVicoVR.Yes) && !GameVersion.usedVicoVR)
+                //    return;
 
-            for (int i = 0; i < hideGO.Length; i++)
-            {
-                hideGO[i].SetActive(false);
+                //if ((needVicoVR == NeedVicoVR.No) && GameVersion.usedVicoVR)
+                //    return;
+
+                for (int i = 0; i < showGO.Length; i++)
+                {
+                    showGO[i].SetActive(true);
+                }
+
+                for (int i = 0; i < hideGO.Length; i++)
+                {
+                    hideGO[i].SetActive(false);
+                }
             }
         }
     }

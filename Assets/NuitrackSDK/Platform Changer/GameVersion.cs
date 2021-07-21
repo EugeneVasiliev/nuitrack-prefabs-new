@@ -1,19 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class GameVersion
+namespace nuitrack.PlatformChanger
 {
-    public static Platform? currentPlatform = null;
-    //public static bool usedVicoVR = false;
-
-    public static void GetData()
+    public class GameVersion
     {
-        if (currentPlatform == null)
+        public static Platform? currentPlatform = null;
+        //public static bool usedVicoVR = false;
+
+        public static void GetData()
         {
-            PlatformSetsData setsData = Resources.Load("PlatformChangerData") as PlatformSetsData;
-            currentPlatform = setsData.currentPlatform;
-            Debug.Log("Current Platform " + currentPlatform);
+            if (currentPlatform == null)
+            {
+                PlatformSetsData setsData = Resources.Load("PlatformChangerData") as PlatformSetsData;
+                currentPlatform = setsData.currentPlatform;
+                Debug.Log("Current Platform " + currentPlatform);
+            }
         }
     }
 }
