@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 
-namespace nuitrack.Frame
+using nuitrack;
+
+namespace NuitrackSDK.Frame
 {
     [RequireComponent(typeof(RGBToTexture))]
     [RequireComponent(typeof(DepthToTexture))]
