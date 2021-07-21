@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-using nuitrack.Frame;
+using NuitrackSDK.Frame;
 
 namespace NuitrackSDK.NuitrackDemos
 {
