@@ -57,7 +57,6 @@ public class LocalAvatar : MonoBehaviour
 
         foreach (KeyValuePair<nuitrack.JointType, ModelJoint> joint in jointsRigged)
         {
-            nuitrack.JointType jointType = joint.Key;
             ModelJoint modelJoint = joint.Value;
 
             modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
@@ -99,7 +98,7 @@ public class LocalAvatar : MonoBehaviour
         nuitrack.Joint rootJ = skeleton.GetJoint(rootJointType);
         root.position = SpaceToWorldPoint(rootJ.ToVector3() * 0.001f);
 
-        foreach (ModelJoint modelJoint in modelJoints) // add sort
+        foreach (ModelJoint modelJoint in modelJoints)
         {
             nuitrack.Joint joint = skeleton.GetJoint(modelJoint.jointType);
 
