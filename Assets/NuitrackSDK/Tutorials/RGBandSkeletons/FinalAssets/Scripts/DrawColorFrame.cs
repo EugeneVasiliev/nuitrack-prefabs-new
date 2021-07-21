@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-using nuitrack.Frame;
+using NuitrackSDK.Frame;
 
 public class DrawColorFrame : MonoBehaviour
 {
