@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace nuitrack.Pointer
+namespace NuitrackSDK.Pointer
 {
     public class PointerRotation : MonoBehaviour
     {
@@ -8,11 +8,6 @@ namespace nuitrack.Pointer
         public Transform target;
 
         public float speed = 0.1F;
-
-        void Start()
-        {
-
-        }
 
         // Update is called once per frame
         void LateUpdate()

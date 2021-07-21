@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace nuitrack.Pointer
+namespace NuitrackSDK.Pointer
 {
     public static class VVRInput
     {
