@@ -13,6 +13,7 @@ public class ModulesUI : MonoBehaviour
     [SerializeField] bool bordersOn = true;
 
     [SerializeField] GameObject settingsContainer;
+    [SerializeField] GameObject nuitrackAiButton;
 
     [SerializeField]
     Toggle
@@ -34,6 +35,8 @@ public class ModulesUI : MonoBehaviour
 
     void Start()
     {
+        nuitrackAiButton.SetActive(Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.LinuxPlayer || Application.isEditor);
+
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
         settingsContainer.SetActive(false);
         nuitrackModules = FindObjectOfType<NuitrackModules>();
@@ -52,8 +55,7 @@ public class ModulesUI : MonoBehaviour
         SwitchBackground(tBackground.isOn);
     }
 
-    Color[] backgroundColors = new Color[] { new Color(1f, 1f, 1f, 1f), new Color(1f, 1f, 1f, 0f) };
-    int currentBGColor = 0;
+    bool showBackground = true;
 
     public void SwitchDepthVisualisation(bool meshEnabled)
     {
@@ -68,23 +70,23 @@ public class ModulesUI : MonoBehaviour
 
     public void SwitchBackground(bool bgEnabled)
     {
-        currentBGColor = bgEnabled ? 0 : 1;
+        showBackground = bgEnabled;
         //currentBGColor = (currentBGColor + 1) % backgroundColors.Length;
         UserTrackerVisualization utv = FindObjectOfType<UserTrackerVisualization>();
-        if (utv != null) utv.SetShaderProperties(backgroundColors[currentBGColor], bordersOn);
+        if (utv != null) utv.SetShaderProperties(showBackground, bordersOn);
 
         UserTrackerVisMesh utvm = FindObjectOfType<UserTrackerVisMesh>();
-        if (utvm != null) utvm.SetShaderProperties((currentBGColor == 0), bordersOn);
+        if (utvm != null) utvm.SetShaderProperties(showBackground, bordersOn);
     }
 
     public void SwitchBorders()
     {
         bordersOn = !bordersOn;
         UserTrackerVisualization utv = FindObjectOfType<UserTrackerVisualization>();
-        if (utv != null) utv.SetShaderProperties(backgroundColors[currentBGColor], bordersOn);
+        if (utv != null) utv.SetShaderProperties(showBackground, bordersOn);
 
         UserTrackerVisMesh utvm = FindObjectOfType<UserTrackerVisMesh>();
-        if (utvm != null) utvm.SetShaderProperties((currentBGColor == 0), bordersOn);
+        if (utvm != null) utvm.SetShaderProperties(showBackground, bordersOn);
 
     }
 

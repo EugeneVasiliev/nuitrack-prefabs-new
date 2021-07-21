@@ -6,7 +6,6 @@ public class GesturesVisualization : MonoBehaviour
 {
     ExceptionsLogger exceptionsLogger;
     NuitrackModules nuitrackModules;
-    GestureData gesturesData = null;
 
     private void OnEnable()
     {

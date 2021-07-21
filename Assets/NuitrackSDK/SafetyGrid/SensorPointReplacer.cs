@@ -1,147 +1,149 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class SensorPointReplacer : MonoBehaviour
+namespace nuitrack.SafetyGrid
 {
-    [SerializeField] Transform CameraPosition;
-
-    [SerializeField] GameObject leftGrid;
-    [SerializeField] GameObject rightGrid;
-    [SerializeField] GameObject forwardGrid;
-
-    [SerializeField] Material gridMaterial;
-    [SerializeField] float XYTrigger = 0.2f;
-    [SerializeField] float ZTrigger = 1700;
-
-    Color gridColor;
-    public void ChangePlace(Vector3 pos)
+    public class SensorPointReplacer : MonoBehaviour
     {
-        transform.position = new Vector3(pos.x, transform.position.y, pos.z);
+        [SerializeField] Transform CameraPosition;
 
-    }
-    void Start()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
+        [SerializeField] GameObject leftGrid;
+        [SerializeField] GameObject rightGrid;
+        [SerializeField] GameObject forwardGrid;
 
-        gridColor = gridMaterial.color;
-        gridColor.a = 0;
-        gridMaterial.color = gridColor;
-    }
-    void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
-    }
+        [SerializeField] Material gridMaterial;
+        [SerializeField] float XYTrigger = 0.2f;
+        [SerializeField] float ZTrigger = 1700;
 
-    bool leftVis = false;
-    bool rightVis = false;
-    bool forwardVis = false;
-
-    void CheckSkeletonPositions(nuitrack.SkeletonData skeletonData)
-    {
-        nuitrack.Skeleton skelet = CurrentUserTracker.CurrentSkeleton;
-        if (skelet == null)
-            return;
-        List<nuitrack.Joint> joints = new List<nuitrack.Joint>(10);
-        joints.Add(skelet.GetJoint(nuitrack.JointType.Head));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.Torso));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.LeftElbow));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.LeftWrist));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.RightElbow));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.RightWrist));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.LeftKnee));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.RightKnee));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.LeftAnkle));
-        joints.Add(skelet.GetJoint(nuitrack.JointType.RightAnkle));
-
-        float min = 1;
-        float max = 0;
-        float minZ = 4000;
-        foreach (nuitrack.Joint i in joints)
+        Color gridColor;
+        public void ChangePlace(UnityEngine.Vector3 pos)
         {
-            float xplus = 0;
-            float zplus = 0;
-            if (i.Type == nuitrack.JointType.Head || i.Type == nuitrack.JointType.Torso)
+            transform.position = new UnityEngine.Vector3(pos.x, transform.position.y, pos.z);
+
+        }
+        void Start()
+        {
+            NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
+
+            gridColor = gridMaterial.color;
+            gridColor.a = 0;
+            gridMaterial.color = gridColor;
+        }
+        void OnDestroy()
+        {
+            NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
+        }
+
+        bool leftVis = false;
+        bool rightVis = false;
+        bool forwardVis = false;
+
+        void CheckSkeletonPositions(nuitrack.SkeletonData skeletonData)
+        {
+            nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
+            if (skeleton == null)
+                return;
+            List<nuitrack.Joint> joints = new List<nuitrack.Joint>(10);
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.Head));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.Torso));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftElbow));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftWrist));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.RightElbow));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.RightWrist));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftKnee));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.RightKnee));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftAnkle));
+            joints.Add(skeleton.GetJoint(nuitrack.JointType.RightAnkle));
+
+            float min = 1;
+            float max = 0;
+            float minZ = 4000;
+            foreach (nuitrack.Joint i in joints)
             {
-                xplus = 0.15f;
-                zplus = 250f;
+                float xplus = 0;
+                float zplus = 0;
+                if (i.Type == nuitrack.JointType.Head || i.Type == nuitrack.JointType.Torso)
+                {
+                    xplus = 0.15f;
+                    zplus = 250f;
+                }
+
+                if (i.Proj.X < min)
+                {
+                    min = i.Proj.X - xplus;
+                }
+                if (i.Proj.X > max)
+                {
+                    max = i.Proj.X + xplus;
+                }
+                if (i.Proj.Z < minZ)
+                    minZ = i.Proj.Z - zplus;
+
             }
 
-            if (i.Proj.X < min)
+            float distance = Mathf.Min(min, 1.0f - max);
+            float alpha = 0;
+            if (distance < XYTrigger)
+                alpha = 1 - distance / XYTrigger;
+            if (minZ < 1500)
+                alpha = 1;
+            else if (1 - (minZ - 1500) / (ZTrigger - 1500) > alpha)
+                alpha = 1 - (minZ - 1500) / (ZTrigger - 1500);
+            gridColor.a = alpha;
+            gridMaterial.color = gridColor;
+        }
+
+        float angleFactor = 1.0f / 1.83f;
+        void LeftGridChange()
+        {
+            if (leftVis)
             {
-                min = i.Proj.X - xplus;
+
             }
-            if (i.Proj.X > max)
+            else
             {
-                max = i.Proj.X + xplus;
+                leftGrid.SetActive(true);
+                leftVis = true;
+                leftGrid.transform.localPosition = new UnityEngine.Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
             }
-            if (i.Proj.Z < minZ)
-                minZ = i.Proj.Z - zplus;
-
         }
 
-        float distance = Mathf.Min(min, 1.0f - max);
-        float alpha = 0;
-        if (distance < XYTrigger)
-            alpha = 1 - distance / XYTrigger;
-        if (minZ < 1500)
-            alpha = 1;
-        else if (1 - (minZ - 1500) / (ZTrigger - 1500) > alpha)
-            alpha = 1 - (minZ - 1500) / (ZTrigger - 1500);
-        gridColor.a = alpha;
-        gridMaterial.color = gridColor;
-    }
-
-    float angleFactor = 1.0f / 1.83f;
-    void LeftGridChange()
-    {
-        if (leftVis)
+        void RightGridChange()
         {
+            if (rightVis)
+            {
 
+            }
+            else
+            {
+                rightGrid.SetActive(true);
+                rightVis = true;
+                rightGrid.transform.localPosition = new UnityEngine.Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
+            }
         }
-        else
+        void ForwardGridChange()
         {
-            leftGrid.SetActive(true);
-            leftVis = true;
-            leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-        }
-    }
+            if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
+                return;
 
-    void RightGridChange()
-    {
-        if (rightVis)
+            if (forwardVis)
+            {
+
+            }
+            else
+            {
+                forwardGrid.SetActive(true);
+                forwardVis = true;
+                forwardGrid.transform.localPosition = new UnityEngine.Vector3(CameraPosition.position.x, 0, 1.7f);
+            }
+        }
+
+        [ContextMenu("ActivateGrids")]
+        void ActivateGrids()
         {
-
+            LeftGridChange();
+            RightGridChange();
+            ForwardGridChange();
         }
-        else
-        {
-            rightGrid.SetActive(true);
-            rightVis = true;
-            rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-        }
-    }
-    void ForwardGridChange()
-    {
-        if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
-            return;
-
-        if (forwardVis)
-        {
-
-        }
-        else
-        {
-            forwardGrid.SetActive(true);
-            forwardVis = true;
-            forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
-        }
-    }
-
-    [ContextMenu("ActivateGrids")]
-    void ActivateGrids()
-    {
-        LeftGridChange();
-        RightGridChange();
-        ForwardGridChange();
     }
 }

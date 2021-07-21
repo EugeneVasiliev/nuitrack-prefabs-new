@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+
+using nuitrack.Frame;
 
 public class UserTrackerVisMesh : MonoBehaviour
 {
@@ -13,18 +14,16 @@ public class UserTrackerVisMesh : MonoBehaviour
     //  List<Vector2[]> uv3s;
     //  List<Vector2[]> uv4s;
 
-    [SerializeField] Color defaultColor;
     Mesh[] meshes;
     GameObject[] visualizationParts;
     [SerializeField] Material meshMaterial;
     [SerializeField] Color[] userCols;
 
-    Texture2D depthTexture, rgbTexture, segmentationTexture;
-    Color[] depthColors;
-    Color[] rgbColors;
-    Color[] segmColors;
+    RenderTexture depthTexture, rgbTexture, segmentationTexture;
 
     bool active = false;
+
+    bool showBackground = true;
 
     public void SetActive(bool _active)
     {
@@ -33,7 +32,7 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     public void SetShaderProperties(bool showBackground, bool showBorders)
     {
-        meshMaterial.SetInt("_ShowBackground", showBackground ? 1 : 0);
+        this.showBackground = showBackground;
         meshMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
     }
 
@@ -63,29 +62,6 @@ public class UserTrackerVisMesh : MonoBehaviour
 
     void InitMeshes(int cols, int rows, float hfov)
     {
-        depthColors = new Color[cols * rows];
-        rgbColors = new Color[cols * rows];
-        segmColors = new Color[cols * rows];
-
-        depthTexture = new Texture2D(cols, rows, TextureFormat.RFloat, false);
-        depthTexture.filterMode = FilterMode.Point;
-        depthTexture.wrapMode = TextureWrapMode.Clamp;
-        depthTexture.Apply();
-
-        rgbTexture = new Texture2D(cols, rows, TextureFormat.ARGB32, false);
-        rgbTexture.filterMode = FilterMode.Point;
-        rgbTexture.wrapMode = TextureWrapMode.Clamp;
-        rgbTexture.Apply();
-
-        segmentationTexture = new Texture2D(cols, rows, TextureFormat.ARGB32, false);
-        segmentationTexture.filterMode = FilterMode.Point;
-        segmentationTexture.wrapMode = TextureWrapMode.Clamp;
-        segmentationTexture.Apply();
-
-        meshMaterial.SetTexture("_DepthTex", depthTexture);
-        meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
-        meshMaterial.SetTexture("_RGBTex", rgbTexture);
-
         float fX, fY;
         fX = 0.5f / Mathf.Tan(0.5f * hfov);
         fY = fX * cols / rows;
@@ -94,24 +70,24 @@ public class UserTrackerVisMesh : MonoBehaviour
         meshMaterial.SetFloat("fY", fY);
 
         int numMeshes;
-        const int maxVertices = 60000;
+        const uint maxVertices = uint.MaxValue;
 
-        numMeshes = (cols * rows) / maxVertices + (((cols * rows) % maxVertices == 0) ? 0 : 1);
+        numMeshes = (int)((cols * rows) / maxVertices + (((cols * rows) % maxVertices == 0) ? 0 : 1));
 
-        Debug.Log("Num meshes: " + numMeshes.ToString());
+        //Debug.Log("Num meshes: " + numMeshes.ToString());
 
         visualizationParts = new GameObject[numMeshes];
         meshes = new Mesh[numMeshes];
 
         for (int i = 0; i < numMeshes; i++)
         {
-            Debug.Log("Mesh #" + i.ToString());
+            //Debug.Log("Mesh #" + i.ToString());
             int xLow = (i * cols) / numMeshes;
             int xHigh = (((i + 1) * cols) / numMeshes) + (((i + 1) == numMeshes) ? 0 : 1);
             int numVerts = rows * (xHigh - xLow);
             int numTris = 2 * (rows - 1) * (xHigh - xLow - 1);
 
-            Debug.Log("xLow = " + xLow.ToString() + "; xHigh = " + xHigh.ToString() + "; verts = " + numVerts.ToString() + "; tris = " + numTris.ToString());
+            //Debug.Log("xLow = " + xLow.ToString() + "; xHigh = " + xHigh.ToString() + "; verts = " + numVerts.ToString() + "; tris = " + numTris.ToString());
 
             int[] partTriangles = new int[3 * numTris];
             Vector3[] partVertices = new Vector3[numVerts];
@@ -144,6 +120,7 @@ public class UserTrackerVisMesh : MonoBehaviour
             }
 
             meshes[i] = new Mesh();
+            meshes[i].indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             meshes[i].vertices = partVertices;
             meshes[i].uv = partUvs;
             meshes[i].triangles = partTriangles;
@@ -198,6 +175,9 @@ public class UserTrackerVisMesh : MonoBehaviour
         }
     }
 
+    RenderTexture rgbRenderTexture = null;
+    TextureCache textureCache = new TextureCache();
+
     void ProcessFrame(nuitrack.DepthFrame depthFrame, nuitrack.ColorFrame colorFrame, nuitrack.UserFrame userFrame)
     {
         for (int i = 0; i < visualizationParts.Length; i++)
@@ -205,42 +185,38 @@ public class UserTrackerVisMesh : MonoBehaviour
             if (!visualizationParts[i].activeSelf) visualizationParts[i].SetActive(true);
         }
 
-        System.DateTime t1 = System.DateTime.Now;
-        for (int i = 0, pointIndex = 0, rgbOffset = 0; i < depthFrame.Rows; i++)
+        if (colorFrame == null)
+            rgbTexture = depthFrame.ToRenderTexture();
+        else
+            rgbTexture = colorFrame.ToRenderTexture();
+
+        if (!showBackground)
         {
-            for (int j = 0; j < depthFrame.Cols; j++, ++pointIndex, rgbOffset += 3)
-            {
-                int userId = 0;
-                if (userFrame != null) userId = userFrame[i, j];
-                Color rgbCol = defaultColor;
-                if (colorFrame != null)
-                    rgbCol = new Color32(colorFrame[i, j].Red, colorFrame[i, j].Green, colorFrame[i, j].Blue, 255);
-                //new Color32(depthFrame.rgb[rgbOffset + 2], depthFrame.rgb[rgbOffset + 1], depthFrame.rgb[rgbOffset + 0], 255);
-                Color segmColor = userCols[userId];
-
-                depthColors[pointIndex].r = depthFrame[i, j] / 16384f;
-                rgbColors[pointIndex] = rgbCol;
-                segmColors[pointIndex] = segmColor;
-            }
+            FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
+            meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
         }
-        System.DateTime t2 = System.DateTime.Now;
+        else
+            meshMaterial.SetTexture("_RGBTex", rgbTexture);
 
-        depthTexture.SetPixels(depthColors);
-        rgbTexture.SetPixels(rgbColors);
-        segmentationTexture.SetPixels(segmColors);
+        depthTexture = depthFrame.ToRenderTexture();
+        segmentationTexture = userFrame.ToRenderTexture(userCols, textureCache);
 
-        System.DateTime t3 = System.DateTime.Now;
+        meshMaterial.SetTexture("_DepthTex", depthTexture);
+        meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
+        
 
-        depthTexture.Apply();
-        rgbTexture.Apply();
-        segmentationTexture.Apply();
+        meshMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
+    }
 
-        System.DateTime t4 = System.DateTime.Now;
+    void OnDestroy()
+    {
+        if (rgbRenderTexture != null)
+            Destroy(rgbRenderTexture);
 
-        //Debug.Log(
-        //  "Loop time : " + (t2 - t1).TotalMilliseconds.ToString() + 
-        //  "; Set pixels: " + (t3 - t2).TotalMilliseconds.ToString() +
-        //  "; Texture.Apply: " + (t4 - t3).TotalMilliseconds.ToString()
-        //);
+        if (textureCache.renderTexture != null)
+            Destroy(textureCache.renderTexture);
+
+        if (textureCache.texture2D != null)
+            Destroy(textureCache.texture2D);
     }
 }

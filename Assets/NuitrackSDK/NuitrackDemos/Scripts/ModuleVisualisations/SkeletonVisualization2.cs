@@ -140,7 +140,7 @@ public class SkeletonVisualization2 : MonoBehaviour
             for (int i = 0; i < jointsInfo.Length; i++)
             {
                 nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
-                if (j.Confidence > 0.5f)
+                if (j.Confidence > 0.01f)
                 {
                     if (!joints[skeleton.ID][jointsInfo[i]].activeSelf) joints[skeleton.ID][jointsInfo[i]].SetActive(true);
 
