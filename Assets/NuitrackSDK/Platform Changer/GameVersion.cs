@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace nuitrack.PlatformChanger
+namespace NuitrackSDK.PlatformChanger
 {
     public class GameVersion
     {
