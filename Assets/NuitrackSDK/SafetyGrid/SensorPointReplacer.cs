@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace nuitrack.SafetyGrid
+namespace NuitrackSDK.SafetyGrid
 {
     public class SensorPointReplacer : MonoBehaviour
     {
@@ -16,9 +16,9 @@ namespace nuitrack.SafetyGrid
         [SerializeField] float ZTrigger = 1700;
 
         Color gridColor;
-        public void ChangePlace(UnityEngine.Vector3 pos)
+        public void ChangePlace(Vector3 pos)
         {
-            transform.position = new UnityEngine.Vector3(pos.x, transform.position.y, pos.z);
+            transform.position = new Vector3(pos.x, transform.position.y, pos.z);
 
         }
         void Start()
@@ -104,7 +104,7 @@ namespace nuitrack.SafetyGrid
             {
                 leftGrid.SetActive(true);
                 leftVis = true;
-                leftGrid.transform.localPosition = new UnityEngine.Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
+                leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
             }
         }
 
@@ -118,7 +118,7 @@ namespace nuitrack.SafetyGrid
             {
                 rightGrid.SetActive(true);
                 rightVis = true;
-                rightGrid.transform.localPosition = new UnityEngine.Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
+                rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
             }
         }
         void ForwardGridChange()
@@ -134,7 +134,7 @@ namespace nuitrack.SafetyGrid
             {
                 forwardGrid.SetActive(true);
                 forwardVis = true;
-                forwardGrid.transform.localPosition = new UnityEngine.Vector3(CameraPosition.position.x, 0, 1.7f);
+                forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
             }
         }
 
