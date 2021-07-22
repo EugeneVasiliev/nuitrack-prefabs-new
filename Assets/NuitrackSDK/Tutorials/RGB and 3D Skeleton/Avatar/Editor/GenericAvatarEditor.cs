@@ -11,6 +11,15 @@ namespace NuitrackAvatarEditor
     [CustomEditor(typeof(GenericAvatar), true)]
     public class GenericAvatarEditor : AvatarEditor
     {
+        Color mainColor = new Color(0.2f, 0.6f, 1f, 1f);// Color.blue;
+
+        Dictionary<AvatarMaskBodyPart, bool> foldOpenned;
+
+        void OnEnable()
+        {
+            foldOpenned = Styles.BodyPartsOrder.ToDictionary(k => k, v => true);
+        }
+
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
@@ -18,59 +27,152 @@ namespace NuitrackAvatarEditor
 
             Rect rect = DudeRect;
 
-            DrawDude(rect);
+            DrawDude(rect, mainColor);
 
-            List<GenericAvatar.JointItem> jointItems = myScript.JointItems;
-            Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointItemsDict = jointItems.ToDictionary(k => k.jointType);
+            ref List<GenericAvatar.JointItem> jointItems = ref myScript.JointItems;
+            Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict = jointItems.ToDictionary(k => k.jointType);
 
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-            foreach (KeyValuePair<nuitrack.JointType, Vector2> bone in Styles.BonesPosition)
+            foreach (AvatarMaskBodyPart bodyPart in Styles.BodyPartsOrder)
             {
-                nuitrack.JointType jointType = bone.Key;
+                foldOpenned[bodyPart] = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned[bodyPart], bodyPart.ToString());
+                bool drawItems = foldOpenned[bodyPart];
 
-                Rect r = BoneIconRect(rect, jointType);
-                GUI.DrawTexture(r, Styles.dotFrame.image);
+                if (drawItems)
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-                Transform boneGameObject = null;
-
-                if (jointItemsDict.ContainsKey(jointType))
-                    boneGameObject = jointItemsDict[jointType].boneTransform;
-
-                Transform newObj = (Transform) EditorGUILayout.ObjectField(jointType.ToString(), boneGameObject, typeof(Transform), true);
-
-                if (newObj != null)
+                foreach (Styles.JointItem jointItem in Styles.JointItems[bodyPart])
                 {
-                    Color oldColor = GUI.color;
-                    GUI.color = Color.green;
-                    GUI.DrawTexture(r, Styles.dotFill.image);
-                    GUI.color = oldColor;
-                }
+                    nuitrack.JointType jointType = jointItem.jointType;
+                    Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].boneTransform : null;
 
-                if (newObj == boneGameObject)
-                    continue;
+                    Rect jointPointRect = BoneIconRect(rect, jointItem);
 
-                if (boneGameObject == null && newObj != null)
-                {
-                    myScript.JointTypes.Add(jointType);
+                    Transform newJoint = HandleDragDrop(jointPointRect);
+                    if (newJoint != null)
+                        AddJoint(myScript, jointType, newJoint, ref jointsDict, ref jointItems);
 
-                    GenericAvatar.JointItem jointItem = new GenericAvatar.JointItem()
+                    if (jointTransform != null)
+                        GUI.DrawTexture(jointPointRect, Styles.dotFill.image);
+
+                    Event evt = Event.current;
+
+                    if (evt.type == EventType.MouseDown && jointPointRect.Contains(evt.mousePosition))
                     {
-                        jointType = jointType,
-                        boneTransform = newObj
-                    };
-                    jointItems.Add(jointItem);
+                        if (jointTransform != null)
+                            EditorGUIUtility.PingObject(jointTransform);
+
+                        evt.Use();
+                    }
+
+                    if (drawItems)
+                    {
+                        jointTransform = (Transform)EditorGUILayout.ObjectField(jointType.ToString(), jointTransform, typeof(Transform), true);
+                        AddJoint(myScript, jointType, jointTransform, ref jointsDict, ref jointItems, true);
+                    }
                 }
-                else if (newObj == null && boneGameObject != null)
-                {
-                    myScript.JointTypes.Remove(jointType);
-                    jointItems.Remove(jointItemsDict[jointType]);
-                }
+
+                if (drawItems)
+                    EditorGUILayout.EndVertical();
+
+                EditorGUILayout.EndFoldoutHeaderGroup();
+            }
+        }
+
+        void AddJoint(GenericAvatar myScript, nuitrack.JointType jointType, Transform objectTransform, 
+            ref Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict,  
+            ref List<GenericAvatar.JointItem> jointItems, 
+            bool canRemove = false)
+        {
+            if (objectTransform != null)
+            {
+                //Undo.RegisterCompleteObjectUndo(myScript, "Avatar mapping modified");
+
+                if (jointsDict.ContainsKey(jointType))
+                    jointsDict[jointType].boneTransform = objectTransform;
                 else
-                    jointItemsDict[jointType].boneTransform = newObj;
+                    jointItems.Add(
+                        new GenericAvatar.JointItem()
+                        {
+                            boneTransform = objectTransform,
+                            jointType = jointType,
+                        });
+            }
+            else if (jointsDict.ContainsKey(jointType) && canRemove)
+            {
+                //Undo.RegisterCompleteObjectUndo(myScript, "Remove avatar joint object");
+                jointItems.Remove(jointsDict[jointType]);
+            }
+        }
+
+        Rect BoneIconRect(Rect baseRect, Styles.JointItem jointItem)
+        {
+            Vector2 pos = jointItem.mapPosition;
+            pos.y *= -1; // because higher values should be up
+            pos.Scale(new Vector2(baseRect.width * 0.5f, baseRect.height * 0.5f));
+            pos = baseRect.center + pos;
+            int kIconSize = Styles.kIconSize;
+            Rect boneRect = new Rect(pos.x - kIconSize * 0.5f, pos.y - kIconSize * 0.5f, kIconSize, kIconSize);
+
+            Color oldColor = GUI.color;
+            GUI.color = new Color(0.7f, 0.7f, 0.7f, 1);
+
+            GUIContent dotGUI = jointItem.optional ? Styles.dotFrameDotted : Styles.dotFrame;
+            GUI.DrawTexture(boneRect, dotGUI.image);
+            GUI.color = oldColor;
+
+            return boneRect;
+        }
+
+        Transform HandleDragDrop(Rect dropRect)
+        {
+            EventType eventType = Event.current.type;
+
+            Transform dropTransform = null;
+
+            switch (eventType)
+            {
+                case EventType.DragExited:
+                    if (GUI.enabled)
+                        HandleUtility.Repaint();
+                    break;
+                case EventType.DragUpdated:
+                case EventType.DragPerform:
+                    if (dropRect.Contains(Event.current.mousePosition) && GUI.enabled)
+                    {
+                        Object[] references = DragAndDrop.objectReferences;
+                        Object validatedObject = references.Length == 1 ? references[0] : null;
+
+                        if (validatedObject != null)
+                        {
+                            if (!(validatedObject is Transform || validatedObject is GameObject) || EditorUtility.IsPersistent(validatedObject))
+                                validatedObject = null;
+                        }
+
+                        if (validatedObject != null)
+                        {
+                            DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
+                            if (eventType == EventType.DragPerform)
+                            {
+                                if (validatedObject is GameObject)
+                                    dropTransform = (validatedObject as GameObject).transform;
+                                else
+                                    dropTransform = validatedObject as Transform;
+
+                                GUI.changed = true;
+                                DragAndDrop.AcceptDrag();
+                                DragAndDrop.activeControlID = 0;
+                            }
+                            else
+                            {
+                                //DragAndDrop.activeControlID = id;
+                            }
+                            Event.current.Use();
+                        }
+                    }
+                    break;
             }
 
-            EditorGUILayout.EndVertical();
+            return dropTransform;
         }
     }
 }

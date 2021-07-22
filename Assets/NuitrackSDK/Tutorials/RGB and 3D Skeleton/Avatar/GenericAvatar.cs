@@ -21,11 +21,11 @@ namespace NuitrackAvatar
 
         //Dictionary<nuitrack.JointType, JointItem> jointItemsDict;
 
-        public List<JointItem> JointItems
+        public ref List<JointItem> JointItems
         {
             get
             {
-                return jointItems;
+                return ref jointItems;
             }
         }
 
