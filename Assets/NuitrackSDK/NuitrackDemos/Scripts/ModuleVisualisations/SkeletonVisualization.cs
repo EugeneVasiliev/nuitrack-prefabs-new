@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System;
 
-public class SkeletonVisualization2 : MonoBehaviour
+public class SkeletonVisualization : MonoBehaviour
 {
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
 
