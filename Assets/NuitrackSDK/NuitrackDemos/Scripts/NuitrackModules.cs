@@ -72,11 +72,11 @@ public class NuitrackModules : MonoBehaviour
 
     bool currentDepth, currentColor, currentUser, currentSkeleton, currentHands, currentGestures;
 
-    public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn, bool force = false)
+    public void ChangeModules(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
     {
         try
         {
-            InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn, force);
+            InitTrackers(depthOn, colorOn, userOn, skeletonOn, handsOn, gesturesOn);
             //issuesProcessor = (GameObject)Instantiate(issuesProcessorPrefab);
         }
         catch (Exception ex)
@@ -85,60 +85,26 @@ public class NuitrackModules : MonoBehaviour
         }
     }
 
-    private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn, bool force)
+    private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
     {
-        if(!NuitrackManager.Instance.nuitrackInitialized)
+        if (!NuitrackManager.Instance.nuitrackInitialized)
             exceptionsLogger.AddEntry(NuitrackManager.Instance.initException.ToString());
 
-        if (prevDepth != depthOn || force)
+        if (skelVisId == 0)
         {
-            prevDepth = depthOn;
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
+            if (root)
+                root.SetActive(true);
+            skelVis.SetActive(true);
         }
-
-        if (prevColor != colorOn || force)
-        {
-            prevColor = colorOn;
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
-        }
-
-        if (prevUser != userOn || force)
-        {
-            prevUser = userOn;
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
-        }
-
-        if (skeletonOn != prevSkel || force)
-        {
-            prevSkel = skeletonOn;
-            if (skelVisId == 0)
-            {
-                if (root)
-                    root.SetActive(true);
-                skelVis.SetActive(true);
-            }
-            if (skelVisId == 1)
-                indirectAvatar.SetActive(skeletonOn);
-            if (skelVisId == 2)
-                directAvatar.SetActive(skeletonOn);
-            if (skelVisId == 3)
-                indirectAvatarMan.SetActive(skeletonOn);
-            if (skelVisId == 4)
-                directAvatarMan.SetActive(skeletonOn);
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
-        }
-
-        if (prevHand != handsOn || force)
-        {
-            prevHand = handsOn;
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
-        }
-
-        if (prevGesture != gesturesOn || force)
-        {
-            prevGesture = gesturesOn;
-            NuitrackManager.Instance.ChangeModulsState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
-        }
+        if (skelVisId == 1)
+            indirectAvatar.SetActive(skeletonOn);
+        if (skelVisId == 2)
+            directAvatar.SetActive(skeletonOn);
+        if (skelVisId == 3)
+            indirectAvatarMan.SetActive(skeletonOn);
+        if (skelVisId == 4)
+            directAvatarMan.SetActive(skeletonOn);
+        NuitrackManager.Instance.ChangeModulesState(skeletonOn, handsOn, depthOn, colorOn, gesturesOn, userOn);
     }
 
     public void InitModules()
@@ -199,6 +165,6 @@ public class NuitrackModules : MonoBehaviour
     public void SwitchNuitrackAi()
     {
         NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
-        ChangeModules(prevDepth, prevColor, prevUser, prevSkel, prevHand, prevGesture, true);
+        ChangeModules(prevDepth, prevColor, prevUser, prevSkel, prevHand, prevGesture);
     }
 }
