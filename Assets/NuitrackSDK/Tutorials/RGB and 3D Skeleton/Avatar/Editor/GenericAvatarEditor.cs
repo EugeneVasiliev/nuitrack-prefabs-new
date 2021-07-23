@@ -27,7 +27,7 @@ namespace NuitrackAvatarEditor
 
             Rect rect = DudeRect;
 
-            DrawDude(rect, mainColor);
+            DrawDude(rect, mainColor, null);
 
             ref List<GenericAvatar.JointItem> jointItems = ref myScript.JointItems;
             Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict = jointItems.ToDictionary(k => k.jointType);
@@ -46,13 +46,16 @@ namespace NuitrackAvatarEditor
                     Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].boneTransform : null;
 
                     Rect jointPointRect = BoneIconRect(rect, jointItem);
+                    if (jointTransform != null)
+                        GUI.DrawTexture(jointPointRect, Styles.dotFill.image);
+
 
                     Transform newJoint = HandleDragDrop(jointPointRect);
                     if (newJoint != null)
+                    {
                         AddJoint(myScript, jointType, newJoint, ref jointsDict, ref jointItems);
-
-                    if (jointTransform != null)
-                        GUI.DrawTexture(jointPointRect, Styles.dotFill.image);
+                        EditorGUIUtility.PingObject(newJoint);
+                    }
 
                     Event evt = Event.current;
 
@@ -67,7 +70,7 @@ namespace NuitrackAvatarEditor
                     if (drawItems)
                     {
                         jointTransform = (Transform)EditorGUILayout.ObjectField(jointType.ToString(), jointTransform, typeof(Transform), true);
-                        AddJoint(myScript, jointType, jointTransform, ref jointsDict, ref jointItems, true);
+                        AddJoint(myScript, jointType, jointTransform, ref jointsDict, ref jointItems);
                     }
                 }
 
@@ -80,8 +83,7 @@ namespace NuitrackAvatarEditor
 
         void AddJoint(GenericAvatar myScript, nuitrack.JointType jointType, Transform objectTransform, 
             ref Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict,  
-            ref List<GenericAvatar.JointItem> jointItems, 
-            bool canRemove = false)
+            ref List<GenericAvatar.JointItem> jointItems)
         {
             if (objectTransform != null)
             {
@@ -97,7 +99,7 @@ namespace NuitrackAvatarEditor
                             jointType = jointType,
                         });
             }
-            else if (jointsDict.ContainsKey(jointType) && canRemove)
+            else if (jointsDict.ContainsKey(jointType))
             {
                 //Undo.RegisterCompleteObjectUndo(myScript, "Remove avatar joint object");
                 jointItems.Remove(jointsDict[jointType]);

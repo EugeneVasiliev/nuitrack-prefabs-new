@@ -147,20 +147,29 @@ namespace NuitrackAvatarEditor
 
             public static GUIContent UnityDude = EditorGUIUtility.IconContent("AvatarInspector/BodySIlhouette");
 
-            public static GUIContent[] BodyPart =
+            public static Dictionary<AvatarMaskBodyPart, List<GUIContent>> BodyParts = new Dictionary<AvatarMaskBodyPart, List<GUIContent>>()
             {
-                EditorGUIUtility.IconContent("AvatarInspector/Torso"),
+                { AvatarMaskBodyPart.Body, new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Torso") } },
+                { AvatarMaskBodyPart.Head, new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Head") } },
 
-                EditorGUIUtility.IconContent("AvatarInspector/Head"),
+                { AvatarMaskBodyPart.LeftLeg, new List<GUIContent>() {  EditorGUIUtility.IconContent("AvatarInspector/LeftLeg") }  },
+                { AvatarMaskBodyPart.RightLeg, new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/RightLeg") }  },
 
-                EditorGUIUtility.IconContent("AvatarInspector/LeftLeg"),
-                EditorGUIUtility.IconContent("AvatarInspector/RightLeg"),
+                { AvatarMaskBodyPart.LeftArm, 
+                    new List<GUIContent>() 
+                    { 
+                        EditorGUIUtility.IconContent("AvatarInspector/LeftArm"),
+                        EditorGUIUtility.IconContent("AvatarInspector/LeftFingers")
+                    } 
+                },
 
-                EditorGUIUtility.IconContent("AvatarInspector/LeftArm"),
-                EditorGUIUtility.IconContent("AvatarInspector/RightArm"),
-
-                EditorGUIUtility.IconContent("AvatarInspector/LeftFingers"),
-                EditorGUIUtility.IconContent("AvatarInspector/RightFingers"),
+                { AvatarMaskBodyPart.RightArm, 
+                    new List<GUIContent>() 
+                    { 
+                        EditorGUIUtility.IconContent("AvatarInspector/RightArm"),
+                        EditorGUIUtility.IconContent("AvatarInspector/RightFingers")
+                    } 
+                },
             };
         }
 
@@ -175,17 +184,20 @@ namespace NuitrackAvatarEditor
             }
         }
 
-        protected void DrawDude(Rect rect, Color mainColor)
+        protected void DrawDude(Rect rect, Color mainColor, List<AvatarMaskBodyPart> filled)
         {
             Color oldColor = GUI.color;
 
             GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
             GUI.DrawTexture(rect, Styles.UnityDude.image);
 
-            for (int i = 0; i < Styles.BodyPart.Length; i++)
+            foreach(KeyValuePair<AvatarMaskBodyPart, List<GUIContent>> bodyPart in Styles.BodyParts)
             {
-                GUI.color = mainColor;
-                GUI.DrawTexture(rect, Styles.BodyPart[i].image);
+                foreach(GUIContent guiContent in bodyPart.Value)
+                {
+                    GUI.color = mainColor;
+                    GUI.DrawTexture(rect, guiContent.image);
+                }
             }
 
             GUI.color = oldColor;

@@ -16,7 +16,7 @@ namespace NuitrackAvatarEditor
             NuitrackAvatar.HumanoidAvatar myScript = (NuitrackAvatar.HumanoidAvatar)target;
 
             Rect rect = DudeRect;
-            DrawDude(rect, mainColor);
+            //DrawDude(rect, mainColor);
 
             //SerializedProperty acSP = serializedObject.FindProperty("jointTypes");
 
