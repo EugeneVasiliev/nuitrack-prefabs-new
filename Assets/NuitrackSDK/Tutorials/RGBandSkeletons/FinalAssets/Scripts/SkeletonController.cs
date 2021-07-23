@@ -1,7 +1,6 @@
 ﻿using nuitrack;
 using UnityEngine;
 using System.Collections.Generic;
-using System;
 
 public class SkeletonController : MonoBehaviour
 {
@@ -15,7 +14,7 @@ public class SkeletonController : MonoBehaviour
     {
         for (int i = 0; i < skeletonCount; i++)
         {
-            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform, true);
+            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform);
             SimpleSkeletonAvatar simpleSkeleton = newAvatar.GetComponent<SimpleSkeletonAvatar>();
             simpleSkeleton.autoProcessing = false;
             avatars.Add(simpleSkeleton);
