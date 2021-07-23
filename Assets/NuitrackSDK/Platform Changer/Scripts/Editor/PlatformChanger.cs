@@ -16,7 +16,7 @@ public class PlatformChanger : EditorWindow
     bool valueChanged = false;
 
     // Add menu item named "My Window" to the Window menu
-    [MenuItem("Window/Platform Changer")]
+    [MenuItem("Nuitrack/Platform Changer")]
     public static void ShowWindow()
     {
         //Show existing window instance. If one doesn't exist, make one.
