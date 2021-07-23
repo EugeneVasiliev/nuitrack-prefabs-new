@@ -5,7 +5,7 @@ public class SimpleSkeletonAvatar : MonoBehaviour
 {
     public bool autoProcessing = true;
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
-    [SerializeField] RectTransform parentRect;
+    RectTransform parentRect;
 
     nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
     {
@@ -59,6 +59,7 @@ public class SimpleSkeletonAvatar : MonoBehaviour
     void Start()
     {
         CreateSkeletonParts();
+        parentRect = GetComponent<RectTransform>();
     }
 
     void CreateSkeletonParts()
