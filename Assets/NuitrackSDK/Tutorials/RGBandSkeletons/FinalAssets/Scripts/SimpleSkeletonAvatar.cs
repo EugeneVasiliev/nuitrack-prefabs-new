@@ -112,8 +112,8 @@ public class SimpleSkeletonAvatar : MonoBehaviour
                 joints[jointsInfo[i]].gameObject.SetActive(true);
 
                 Vector2 newPosition = new Vector2(
-                    parentRect.rect.width * (j.Proj.X - 0.5f),
-                    parentRect.rect.height * (0.5f - j.Proj.Y));
+                    parentRect.rect.width * (Mathf.Clamp01(j.Proj.X) - 0.5f),
+                    parentRect.rect.height * (0.5f - Mathf.Clamp01(j.Proj.Y)));
 
                 joints[jointsInfo[i]].anchoredPosition = newPosition;
             }
