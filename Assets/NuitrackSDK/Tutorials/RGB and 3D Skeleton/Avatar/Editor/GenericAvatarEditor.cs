@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
+using System.Linq;
+using System.Collections.Generic;
 
 using NuitrackAvatar;
 
@@ -12,6 +12,7 @@ namespace NuitrackAvatarEditor
     public class GenericAvatarEditor : AvatarEditor
     {
         Color mainColor = new Color(0.2f, 0.6f, 1f, 1f);// Color.blue;
+        Color disableColor = new Color(0.5f, 0.5f, 0.6f, 1f);
 
         Dictionary<AvatarMaskBodyPart, bool> foldOpenned;
 
@@ -27,10 +28,11 @@ namespace NuitrackAvatarEditor
 
             Rect rect = DudeRect;
 
-            DrawDude(rect, mainColor, null);
-
             ref List<GenericAvatar.JointItem> jointItems = ref myScript.JointItems;
             Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict = jointItems.ToDictionary(k => k.jointType);
+
+            List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict);
+            DrawDude(rect, mainColor, disableColor, bodyParts);            
 
             foreach (AvatarMaskBodyPart bodyPart in Styles.BodyPartsOrder)
             {
@@ -87,7 +89,7 @@ namespace NuitrackAvatarEditor
         {
             if (objectTransform != null)
             {
-                //Undo.RegisterCompleteObjectUndo(myScript, "Avatar mapping modified");
+                Undo.RecordObject(myScript, "Avatar mapping modified");
 
                 if (jointsDict.ContainsKey(jointType))
                     jointsDict[jointType].boneTransform = objectTransform;
@@ -101,9 +103,24 @@ namespace NuitrackAvatarEditor
             }
             else if (jointsDict.ContainsKey(jointType))
             {
-                //Undo.RegisterCompleteObjectUndo(myScript, "Remove avatar joint object");
+                Undo.RecordObject(myScript, "Remove avatar joint object");
                 jointItems.Remove(jointsDict[jointType]);
             }
+        }
+
+        List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict)
+        {
+            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyPartsOrder);
+
+            foreach (KeyValuePair<AvatarMaskBodyPart, List<Styles.JointItem>> bodyPart in Styles.JointItems)
+                foreach (Styles.JointItem jointItem in bodyPart.Value)
+                    if (!jointItem.optional && !jointsDict.ContainsKey(jointItem.jointType))
+                    {
+                        bodyParts.Remove(bodyPart.Key);
+                        break;
+                    }
+
+            return bodyParts;
         }
 
         Rect BoneIconRect(Rect baseRect, Styles.JointItem jointItem)
@@ -176,5 +193,10 @@ namespace NuitrackAvatarEditor
 
             return dropTransform;
         }
+
+        //void DrawSkeleton()
+        //{
+
+        //}
     }
 }

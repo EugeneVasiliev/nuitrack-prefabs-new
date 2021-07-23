@@ -184,7 +184,7 @@ namespace NuitrackAvatarEditor
             }
         }
 
-        protected void DrawDude(Rect rect, Color mainColor, List<AvatarMaskBodyPart> filled)
+        protected void DrawDude(Rect rect, Color mainColor, Color disableColor, List<AvatarMaskBodyPart> filled)
         {
             Color oldColor = GUI.color;
 
@@ -193,11 +193,10 @@ namespace NuitrackAvatarEditor
 
             foreach(KeyValuePair<AvatarMaskBodyPart, List<GUIContent>> bodyPart in Styles.BodyParts)
             {
-                foreach(GUIContent guiContent in bodyPart.Value)
-                {
-                    GUI.color = mainColor;
+                GUI.color = filled.Contains(bodyPart.Key) ? mainColor : disableColor;
+
+                foreach (GUIContent guiContent in bodyPart.Value)
                     GUI.DrawTexture(rect, guiContent.image);
-                }
             }
 
             GUI.color = oldColor;

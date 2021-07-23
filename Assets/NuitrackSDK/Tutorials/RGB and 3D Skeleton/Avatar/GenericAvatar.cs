@@ -1,6 +1,7 @@
-﻿//using System.Linq;
+﻿using UnityEngine;
+
+using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
 
 
 namespace NuitrackAvatar
@@ -11,15 +12,12 @@ namespace NuitrackAvatar
         public class JointItem
         {
             public nuitrack.JointType jointType;
-
             public Transform boneTransform;
 
             public Quaternion RotationOffset { get; set; }
         }
 
         [SerializeField, HideInInspector] List<JointItem> jointItems;
-
-        //Dictionary<nuitrack.JointType, JointItem> jointItemsDict;
 
         public ref List<JointItem> JointItems
         {
@@ -29,12 +27,53 @@ namespace NuitrackAvatar
             }
         }
 
+        Quaternion SpaceRotation
+        {
+            get
+            {
+                return space != null ? space.rotation : Quaternion.identity;
+            }
+        }
+
+        Vector3 SpaceToWorldPoint(Vector3 spacePoint)
+        {
+            return space != null ? space.TransformPoint(spacePoint) : spacePoint;
+        }
+
+        List<JointItem> SortClamp(List<JointItem> sourceModelJoints)
+        {
+            List<JointItem> outList = new List<JointItem>();
+
+            Dictionary<nuitrack.JointType, JointItem> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
+            List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
+
+            foreach (nuitrack.JointType jointType in jointTypes)
+                outList.Add(dict[jointType]);
+
+            return outList;
+        }
+
         void Awake()
         {
-            foreach (JointItem ji in jointItems)
-                ji.RotationOffset = Quaternion.Inverse(space.rotation) * ji.boneTransform.rotation;
+            jointItems = SortClamp(jointItems);
 
-            //jointItemsDict = jointItems.ToDictionary(k => k.jointType);
+            //foreach (JointItem jointItem in jointItems)
+            //{
+            //    jointItem.jointType = jointItem.jointType.TryGetMirrored();
+            //    jointItem.parentJointType = jointItem.parentJointType.TryGetMirrored();
+            //}
+
+            //Dictionary<nuitrack.JointType, JointItem> jointsRigged = jointItems.ToDictionary(k => k.jointType);
+
+            //foreach (KeyValuePair<nuitrack.JointType, JointItem> joint in jointsRigged)
+            //{
+            //    JointItem jointItem = joint.Value;
+
+            //    jointItem.RotationOffset = Quaternion.Inverse(SpaceRotation) * jointItem.boneTransform.rotation;
+
+            //    if (jointItem.parentJointType != nuitrack.JointType.None)
+            //        jointItem.parentBone = jointsRigged[jointItem.parentJointType].bone;
+            //}
         }
 
         protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
