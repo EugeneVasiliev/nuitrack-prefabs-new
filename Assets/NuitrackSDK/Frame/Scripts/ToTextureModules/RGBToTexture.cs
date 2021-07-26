@@ -10,7 +10,9 @@
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-namespace nuitrack.Frame
+using nuitrack;
+
+namespace NuitrackSDK.Frame
 {
     public class RGBToTexture : FrameToTexture<ColorFrame, Color3>
     {

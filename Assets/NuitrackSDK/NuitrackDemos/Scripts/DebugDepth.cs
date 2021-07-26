@@ -1,15 +1,17 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class DebugDepth : MonoBehaviour
+namespace NuitrackSDK.NuitrackDemos
 {
-    [SerializeField] Material _depthMat = null, _segmentationMat = null;
-
-    public static Material depthMat, segmentationMat;
-
-    void Awake()
+    public class DebugDepth : MonoBehaviour
     {
-        depthMat = _depthMat;
-        segmentationMat = _segmentationMat;
+        [SerializeField] Material _depthMat = null, _segmentationMat = null;
+
+        public static Material depthMat, segmentationMat;
+
+        void Awake()
+        {
+            depthMat = _depthMat;
+            segmentationMat = _segmentationMat;
+        }
     }
 }

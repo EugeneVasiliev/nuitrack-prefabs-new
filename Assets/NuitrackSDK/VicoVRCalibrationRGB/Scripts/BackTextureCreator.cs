@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-using nuitrack.Frame;
+using NuitrackSDK.Frame;
 
-namespace nuitrack.VicoVRCalibration
+namespace NuitrackSDK.VicoVRCalibration
 {
     public class BackTextureCreator : MonoBehaviour
     {

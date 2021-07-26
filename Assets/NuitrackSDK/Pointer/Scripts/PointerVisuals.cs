@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace nuitrack.Pointer
+namespace NuitrackSDK.Pointer
 {
     public class PointerVisuals : MonoBehaviour
     {
@@ -41,15 +41,15 @@ namespace nuitrack.Pointer
             buttons.TryGetValue(buttonID, out button);
 
             if (eventID == 2)
-                button.localScale = UnityEngine.Vector3.one;
+                button.localScale = Vector3.one;
             else
-                button.localScale = UnityEngine.Vector3.zero;
+                button.localScale = Vector3.zero;
         }
 
         private void Update()
         {
             Vector2 stickPos = VVRInput.GetStickPos();
-            stick.localEulerAngles = new UnityEngine.Vector3(stickPos.x * maxAngleStick, 0, baseZStick + stickPos.y * maxAngleStick);
+            stick.localEulerAngles = new Vector3(stickPos.x * maxAngleStick, 0, baseZStick + stickPos.y * maxAngleStick);
         }
     }
 }

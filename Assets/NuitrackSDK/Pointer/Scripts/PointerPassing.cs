@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace nuitrack.Pointer
+namespace NuitrackSDK.Pointer
 {
     public class PointerPassing : MonoBehaviour
     {
@@ -41,15 +41,15 @@ namespace nuitrack.Pointer
         {
             if (attachToSkelJoint)
             {
-                Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
+                nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
                 if (hand % 2 == 0)
                 {
-                    UnityEngine.Vector3 rightHandPos = UnityEngine.Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.RightHand).ToVector3());
+                    Vector3 rightHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.RightHand).ToVector3());
                     pointerObject.position = rightHandPos;
                 }
                 else
                 {
-                    UnityEngine.Vector3 leftHandPos = UnityEngine.Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.LeftHand).ToVector3());
+                    Vector3 leftHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.LeftHand).ToVector3());
                     pointerObject.position = leftHandPos;
                 }
             }
@@ -109,7 +109,7 @@ namespace nuitrack.Pointer
 
         void ResetPosition()
         {
-            pointerObject.localPosition = UnityEngine.Vector3.zero;
+            pointerObject.localPosition = Vector3.zero;
             pointerObject.localRotation = Quaternion.identity;
         }
 

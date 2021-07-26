@@ -1,4 +1,4 @@
-﻿Shader "Nuitrack/Depth3D_Unlit"
+﻿Shader "NuitrackSDK/Tutorials/ARNuitrack/ARNuitrack_Unlit"
 {
     Properties
     {

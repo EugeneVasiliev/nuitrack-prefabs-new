@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using UnityEngine;
-using nuitrack.Pointer;
+using NuitrackSDK.Pointer;
 
-namespace nuitrack.VicoVRCalibration
+namespace NuitrackSDK.VicoVRCalibration
 {
     public class RGBCalibrationVisualizer : MonoBehaviour
     {
@@ -150,7 +150,7 @@ namespace nuitrack.VicoVRCalibration
             {
                 stackPoint.SetParent(headAnchor);
                 stackPoint.transform.localRotation = Quaternion.identity;
-                stackPoint.transform.localPosition = UnityEngine.Vector3.zero;
+                stackPoint.transform.localPosition = Vector3.zero;
             }
             BackGround.SetActive(true);
             ConnectionLostItems.SetActive(false);
