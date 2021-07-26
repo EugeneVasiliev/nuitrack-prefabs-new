@@ -1,4 +1,4 @@
-﻿Shader "Custom/DepthSegmentationCustom"
+﻿Shader "NuitrackSDK/NuitrackDemos/DepthSegmentationCustom"
 {
 	Properties
 	{
