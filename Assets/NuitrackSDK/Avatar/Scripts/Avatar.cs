@@ -17,6 +17,11 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] nuitrack.JointType rootJoint = nuitrack.JointType.Waist;
         [SerializeField] Transform rootModel;
 
+        [Header("VR settings")]
+        [SerializeField] GameObject vrHead;
+        [SerializeField] Transform headTransform;
+        Transform head;
+
         /// <summary> Model bones </summary> Dictionary with joints
         Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
 
@@ -40,6 +45,9 @@ namespace NuitrackSDK.NuitrackDemos
                 if (modelJoints[i].parentJointType != nuitrack.JointType.None)
                     AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].parentJointType.TryGetMirrored());
             }
+
+            if (vrHead)
+                head = Instantiate(vrHead).transform;
         }
 
         /// <summary>
@@ -60,6 +68,12 @@ namespace NuitrackSDK.NuitrackDemos
         {
             //If a skeleton is detected, process the model
             if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+        }
+
+        void LateUpdate()
+        {
+            if (head)
+                head.position = headTransform.position;
         }
 
         /// <summary>
