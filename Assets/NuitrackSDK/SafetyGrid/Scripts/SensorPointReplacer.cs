@@ -19,8 +19,8 @@ namespace NuitrackSDK.SafetyGrid
         public void ChangePlace(Vector3 pos)
         {
             transform.position = new Vector3(pos.x, transform.position.y, pos.z);
-
         }
+
         void Start()
         {
             NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
@@ -29,6 +29,7 @@ namespace NuitrackSDK.SafetyGrid
             gridColor.a = 0;
             gridMaterial.color = gridColor;
         }
+
         void OnDestroy()
         {
             NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
@@ -78,7 +79,6 @@ namespace NuitrackSDK.SafetyGrid
                 }
                 if (i.Proj.Z < minZ)
                     minZ = i.Proj.Z - zplus;
-
             }
 
             float distance = Mathf.Min(min, 1.0f - max);
@@ -93,57 +93,46 @@ namespace NuitrackSDK.SafetyGrid
             gridMaterial.color = gridColor;
         }
 
-        float angleFactor = 1.0f / 1.83f;
-        void LeftGridChange()
-        {
-            if (leftVis)
-            {
+        //float angleFactor = 1.0f / 1.83f;
+        //void LeftGridChange()
+        //{
+        //    if (!leftVis)
+        //    {
+        //        leftGrid.SetActive(true);
+        //        leftVis = true;
+        //        leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
+        //    }
+        //}
 
-            }
-            else
-            {
-                leftGrid.SetActive(true);
-                leftVis = true;
-                leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-            }
-        }
+        //void RightGridChange()
+        //{
+        //    if (!rightVis)
+        //    {
+        //        rightGrid.SetActive(true);
+        //        rightVis = true;
+        //        rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
+        //    }
+        //}
 
-        void RightGridChange()
-        {
-            if (rightVis)
-            {
+        //void ForwardGridChange()
+        //{
+        //    if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
+        //        return;
 
-            }
-            else
-            {
-                rightGrid.SetActive(true);
-                rightVis = true;
-                rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-            }
-        }
-        void ForwardGridChange()
-        {
-            if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
-                return;
+        //    if (!forwardVis)
+        //    {
+        //        forwardGrid.SetActive(true);
+        //        forwardVis = true;
+        //        forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
+        //    }
+        //}
 
-            if (forwardVis)
-            {
-
-            }
-            else
-            {
-                forwardGrid.SetActive(true);
-                forwardVis = true;
-                forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
-            }
-        }
-
-        [ContextMenu("ActivateGrids")]
-        void ActivateGrids()
-        {
-            LeftGridChange();
-            RightGridChange();
-            ForwardGridChange();
-        }
+        //[ContextMenu("ActivateGrids")]
+        //void ActivateGrids()
+        //{
+        //    LeftGridChange();
+        //    RightGridChange();
+        //    ForwardGridChange();
+        //}
     }
 }

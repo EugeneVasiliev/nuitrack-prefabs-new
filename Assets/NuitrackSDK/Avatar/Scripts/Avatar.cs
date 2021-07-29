@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace NuitrackSDK.NuitrackDemos
@@ -22,8 +23,20 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] Transform headTransform;
         Transform head;
 
+        [Header("Calibration")]
+        [SerializeField] bool recenterOnSuccess;
+        TPoseCalibration tPoseCalibration;
+        Vector3 basePivotOffset;
+        Vector3 startPoint; //"Waist" model bone position on start
+
         /// <summary> Model bones </summary> Dictionary with joints
         Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
+
+        void OnEnable()
+        {
+            tPoseCalibration = FindObjectOfType<TPoseCalibration>();
+            tPoseCalibration.onSuccess += OnSuccessCalib;
+        }
 
         void Start()
         {
@@ -48,6 +61,9 @@ namespace NuitrackSDK.NuitrackDemos
 
             if (vrHead)
                 head = Instantiate(vrHead).transform;
+
+            if(jointsRigged.ContainsKey(rootJoint))
+                startPoint = jointsRigged[rootJoint].bone.localPosition;
         }
 
         /// <summary>
@@ -68,12 +84,8 @@ namespace NuitrackSDK.NuitrackDemos
         {
             //If a skeleton is detected, process the model
             if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
-        }
 
-        void LateUpdate()
-        {
-            if (head)
-                head.position = headTransform.position;
+            if (head) head.position = headTransform.position;
         }
 
         /// <summary>
@@ -85,6 +97,7 @@ namespace NuitrackSDK.NuitrackDemos
             {
                 Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3();
                 rootModel.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
+                rootModel.localPosition += basePivotOffset;
             }
 
             foreach (var riggedJoint in jointsRigged)
@@ -102,7 +115,7 @@ namespace NuitrackSDK.NuitrackDemos
                     if (mappingMode == MappingMode.Direct)
                     {
                         //Bone position
-                        Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position;
+                        Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position + basePivotOffset;
                         modelJoint.bone.position = newPos;
 
                         //Bone scale
@@ -120,6 +133,32 @@ namespace NuitrackSDK.NuitrackDemos
                     }
                 }
             }
+        }
+
+        private void OnSuccessCalib(Quaternion rotation)
+        {
+            StartCoroutine(CalculateOffset());
+        }
+
+        public IEnumerator CalculateOffset()
+        {
+            if (!recenterOnSuccess) yield break;
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
+
+            if (jointsRigged.ContainsKey(rootJoint))
+            {
+                Vector3 basePos = jointsRigged[rootJoint].bone.localPosition;
+                Vector3 newPivotOffset = startPoint - basePos + basePivotOffset;
+                newPivotOffset.x = 0;
+
+                basePivotOffset = newPivotOffset;
+            }
+        }
+
+        void OnDisable()
+        {
+            tPoseCalibration.onSuccess -= OnSuccessCalib;
         }
     }
 }
