@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.NuitrackDemos
 {
@@ -15,7 +16,7 @@ namespace NuitrackSDK.NuitrackDemos
         [Header("Rigged model")]
         [SerializeField] ModelJoint[] modelJoints;
         [SerializeField] MappingMode mappingMode;
-        [SerializeField] nuitrack.JointType rootJoint = nuitrack.JointType.Waist;
+        [SerializeField] JointType rootJoint = JointType.Waist;
         [SerializeField] Transform rootModel;
 
         [Header("VR settings")]
@@ -30,7 +31,7 @@ namespace NuitrackSDK.NuitrackDemos
         Vector3 startPoint; //"Waist" model bone position on start
 
         /// <summary> Model bones </summary> Dictionary with joints
-        Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
+        Dictionary<JointType, ModelJoint> jointsRigged = new Dictionary<JointType, ModelJoint>();
 
         void OnEnable()
         {
@@ -55,8 +56,8 @@ namespace NuitrackSDK.NuitrackDemos
                 jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
 
                 //Adding base distances between the child bone and the parent bone 
-                if (modelJoints[i].parentJointType != nuitrack.JointType.None)
-                    AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].parentJointType.TryGetMirrored());
+                if (modelJoints[i].jointType.GetParent() != JointType.None)
+                    AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].jointType.GetParent().TryGetMirrored());
             }
 
             if (vrHead)
@@ -69,7 +70,7 @@ namespace NuitrackSDK.NuitrackDemos
         /// <summary>
         /// Adding distance between the target and parent model bones
         /// </summary>
-        void AddBoneScale(nuitrack.JointType targetJoint, nuitrack.JointType parentJoint)
+        void AddBoneScale(JointType targetJoint, JointType parentJoint)
         {
             //take the position of the model bone
             Vector3 targetBonePos = jointsRigged[targetJoint].bone.position;
@@ -119,7 +120,7 @@ namespace NuitrackSDK.NuitrackDemos
                         modelJoint.bone.position = newPos;
 
                         //Bone scale
-                        if (modelJoint.parentBone != null)
+                        if (modelJoint.parentBone != null && modelJoint.jointType.GetParent() != rootJoint)
                         {
                             //Take the Transform of a parent bone
                             Transform parentBone = modelJoint.parentBone;

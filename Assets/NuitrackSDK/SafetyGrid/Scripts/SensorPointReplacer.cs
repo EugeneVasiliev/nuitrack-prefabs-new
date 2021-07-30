@@ -92,47 +92,5 @@ namespace NuitrackSDK.SafetyGrid
             gridColor.a = alpha;
             gridMaterial.color = gridColor;
         }
-
-        //float angleFactor = 1.0f / 1.83f;
-        //void LeftGridChange()
-        //{
-        //    if (!leftVis)
-        //    {
-        //        leftGrid.SetActive(true);
-        //        leftVis = true;
-        //        leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-        //    }
-        //}
-
-        //void RightGridChange()
-        //{
-        //    if (!rightVis)
-        //    {
-        //        rightGrid.SetActive(true);
-        //        rightVis = true;
-        //        rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-        //    }
-        //}
-
-        //void ForwardGridChange()
-        //{
-        //    if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
-        //        return;
-
-        //    if (!forwardVis)
-        //    {
-        //        forwardGrid.SetActive(true);
-        //        forwardVis = true;
-        //        forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
-        //    }
-        //}
-
-        //[ContextMenu("ActivateGrids")]
-        //void ActivateGrids()
-        //{
-        //    LeftGridChange();
-        //    RightGridChange();
-        //    ForwardGridChange();
-        //}
     }
 }

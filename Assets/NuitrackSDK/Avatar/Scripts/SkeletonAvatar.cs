@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+using JointType = nuitrack.JointType;
 
 public class SkeletonAvatar : MonoBehaviour
 {
@@ -9,62 +9,40 @@ public class SkeletonAvatar : MonoBehaviour
     [SerializeField] Transform headTransform; //if not null, skeletonAvatar will move it
     [SerializeField] Transform headDirectionTransform; //part of head preab that rotates 
     [SerializeField] bool rotate180 = true;
-    [SerializeField] Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f); //TODO: add offset from neck
+    [SerializeField] Vector3 neckHMDOffset = new Vector3(0f, 0.15f, 0.08f);
     [SerializeField] Vector3 startPoint;
     TPoseCalibration tPC;
     Vector3 basePivotOffset;
     Vector3 basePivot;
     public static Vector3 leftHandPos, rightHandPos;
 
-    nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
+    JointType[] jointsInfo = new JointType[]
     {
-        nuitrack.JointType.Head,
-        nuitrack.JointType.Neck,
-        nuitrack.JointType.LeftCollar,
-        nuitrack.JointType.Torso,
-        nuitrack.JointType.Waist,
-        nuitrack.JointType.LeftShoulder,
-        nuitrack.JointType.RightShoulder,
-        nuitrack.JointType.LeftElbow,
-        nuitrack.JointType.RightElbow,
-        nuitrack.JointType.LeftWrist,
-        nuitrack.JointType.RightWrist,
-        nuitrack.JointType.LeftHand,
-        nuitrack.JointType.RightHand,
-        nuitrack.JointType.LeftHip,
-        nuitrack.JointType.RightHip,
-        nuitrack.JointType.LeftKnee,
-        nuitrack.JointType.RightKnee,
-        nuitrack.JointType.LeftAnkle,
-        nuitrack.JointType.RightAnkle
-    };
-
-    nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
-    { //right and left collars are at same point at the moment, so we use only 1 collar here,
-        //quite easy to add rightCollar if it ever changes
-        {nuitrack.JointType.Neck,           nuitrack.JointType.Head},
-        {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Neck},
-        {nuitrack.JointType.LeftCollar,     nuitrack.JointType.LeftShoulder},
-        {nuitrack.JointType.LeftCollar,     nuitrack.JointType.RightShoulder},
-        {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Torso},
-        {nuitrack.JointType.Waist,          nuitrack.JointType.Torso},
-        {nuitrack.JointType.Waist,          nuitrack.JointType.LeftHip},
-        {nuitrack.JointType.Waist,          nuitrack.JointType.RightHip},
-        {nuitrack.JointType.LeftShoulder,   nuitrack.JointType.LeftElbow},
-        {nuitrack.JointType.LeftElbow,      nuitrack.JointType.LeftWrist},
-        {nuitrack.JointType.LeftWrist,      nuitrack.JointType.LeftHand},
-        {nuitrack.JointType.RightShoulder,  nuitrack.JointType.RightElbow},
-        {nuitrack.JointType.RightElbow,     nuitrack.JointType.RightWrist},
-        {nuitrack.JointType.RightWrist,     nuitrack.JointType.RightHand},
-        {nuitrack.JointType.LeftHip,        nuitrack.JointType.LeftKnee},
-        {nuitrack.JointType.LeftKnee,       nuitrack.JointType.LeftAnkle},
-        {nuitrack.JointType.RightHip,       nuitrack.JointType.RightKnee},
-        {nuitrack.JointType.RightKnee,      nuitrack.JointType.RightAnkle}
+        JointType.Head,
+        JointType.Neck,
+        JointType.LeftCollar,
+        JointType.RightCollar,
+        JointType.Torso,
+        JointType.Waist,
+        JointType.LeftShoulder,
+        JointType.RightShoulder,
+        JointType.LeftElbow,
+        JointType.RightElbow,
+        JointType.LeftWrist,
+        JointType.RightWrist,
+        JointType.LeftHand,
+        JointType.RightHand,
+        JointType.LeftHip,
+        JointType.RightHip,
+        JointType.LeftKnee,
+        JointType.RightKnee,
+        JointType.LeftAnkle,
+        JointType.RightAnkle
     };
 
     GameObject skeletonRoot;
     GameObject[] connections;
-    Dictionary<nuitrack.JointType, GameObject> joints;
+    Dictionary<JointType, GameObject> joints;
     Quaternion q180 = Quaternion.Euler(0f, 180f, 0f);
     Quaternion q0 = Quaternion.identity;
 
@@ -78,7 +56,7 @@ public class SkeletonAvatar : MonoBehaviour
         skeletonRoot = new GameObject();
         skeletonRoot.name = "SkeletonRoot";
 
-        joints = new Dictionary<nuitrack.JointType, GameObject>();
+        joints = new Dictionary<JointType, GameObject>();
 
         for (int i = 0; i < jointsInfo.Length; i++)
         {
@@ -91,7 +69,8 @@ public class SkeletonAvatar : MonoBehaviour
             }
         }
 
-        connections = new GameObject[connectionsInfo.GetLength(0)];
+        //connections = new GameObject[connectionsInfo.GetLength(0)];
+        connections = new GameObject[jointsInfo.Length];
 
         for (int i = 0; i < connections.Length; i++)
         {
@@ -124,12 +103,12 @@ public class SkeletonAvatar : MonoBehaviour
         if (headTransform != null)
         {
 #if UNITY_IOS
-			headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Neck).ToVector3())) + basePivotOffset;
+			headTransform.position = headDirectionTransform.rotation * neckHMDOffset + (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(JointType.Neck).ToVector3())) + basePivotOffset;
 #else
-            headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Head).ToVector3())) + basePivotOffset;
+            headTransform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(JointType.Head).ToVector3())) + basePivotOffset;
 #endif
 
-            basePivot = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3())) + basePivotOffset;
+            basePivot = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(JointType.Waist).ToVector3())) + basePivotOffset;
         }
 
         if (!skeletonRoot.activeSelf) skeletonRoot.SetActive(true);
@@ -144,8 +123,8 @@ public class SkeletonAvatar : MonoBehaviour
                 joints[jointsInfo[i]].transform.position = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * j.ToVector3())) + basePivotOffset;
                 joints[jointsInfo[i]].transform.rotation = (rotate180 ? q180 : q0) * CalibrationInfo.SensorOrientation * j.ToQuaternionMirrored();
 
-                leftHandPos = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.LeftHand).ToVector3())) + basePivotOffset;
-                rightHandPos = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.RightHand).ToVector3())) + basePivotOffset;
+                leftHandPos = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(JointType.LeftHand).ToVector3())) + basePivotOffset;
+                rightHandPos = (rotate180 ? q180 : q0) * (Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(JointType.RightHand).ToVector3())) + basePivotOffset;
             }
             else
             {
@@ -153,21 +132,26 @@ public class SkeletonAvatar : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < connectionsInfo.GetLength(0); i++)
+        for (int i = 0; i < jointsInfo.Length; i++)
         {
-            if (joints[connectionsInfo[i, 0]].activeSelf && joints[connectionsInfo[i, 1]].activeSelf)
+            JointType jointType = jointsInfo[i];
+            JointType parentType = jointsInfo[i].GetParent();
+            if(parentType != JointType.None)
             {
-                if (!connections[i].activeSelf) connections[i].SetActive(true);
+                if (joints[jointType].activeSelf && joints[parentType].activeSelf)
+                {
+                    if (!connections[i].activeSelf) connections[i].SetActive(true);
 
-                Vector3 diff = joints[connectionsInfo[i, 1]].transform.position - joints[connectionsInfo[i, 0]].transform.position;
+                    Vector3 diff = joints[parentType].transform.position - joints[jointType].transform.position;
 
-                connections[i].transform.position = joints[connectionsInfo[i, 0]].transform.position;
-                connections[i].transform.rotation = Quaternion.LookRotation(diff);
-                connections[i].transform.localScale = new Vector3(1f, 1f, diff.magnitude);
-            }
-            else
-            {
-                if (connections[i].activeSelf) connections[i].SetActive(false);
+                    connections[i].transform.position = joints[jointType].transform.position;
+                    connections[i].transform.rotation = Quaternion.LookRotation(diff);
+                    connections[i].transform.localScale = new Vector3(1f, 1f, diff.magnitude);
+                }
+                else
+                {
+                    if (connections[i].activeSelf) connections[i].SetActive(false);
+                }
             }
         }
     }
