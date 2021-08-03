@@ -13,8 +13,7 @@ public class CameraRecenter : MonoBehaviour
     private void Start()
     {
         yAxisCorrectionTransform.localRotation = correctionQ;
-        if(Application.platform == RuntimePlatform.Android || Application.platform == RuntimePlatform.IPhonePlayer)
-            Debug.Log("Note: For IOS and Android you can use latest Google Cardboard: https://developers.google.com/cardboard/develop/unity/quickstart");
+        Debug.Log("Note: For IOS and Android you can use Google Cardboard: https://developers.google.com/cardboard/develop/unity/quickstart");
     }
 
     void Recenter(Quaternion rotation)

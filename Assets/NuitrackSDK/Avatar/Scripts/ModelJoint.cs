@@ -9,7 +9,7 @@ class ModelJoint
     [HideInInspector] public Quaternion baseRotOffset;
 
     //For "Direct translation"
-    [HideInInspector] public nuitrack.JointType parentJointType = nuitrack.JointType.None;
+    public nuitrack.JointType parentJointType = nuitrack.JointType.None;
     /// <summary> Base model bones rotation offsets</summary>
     [HideInInspector] public Transform parentBone;
     // <summary> Base distance to parent bone </summary>
