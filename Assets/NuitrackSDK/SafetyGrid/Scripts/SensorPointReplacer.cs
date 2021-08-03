@@ -5,8 +5,6 @@ namespace NuitrackSDK.SafetyGrid
 {
     public class SensorPointReplacer : MonoBehaviour
     {
-        [SerializeField] Transform CameraPosition;
-
         [SerializeField] GameObject leftGrid;
         [SerializeField] GameObject rightGrid;
         [SerializeField] GameObject forwardGrid;
@@ -14,6 +12,8 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] Material gridMaterial;
         [SerializeField] float XYTrigger = 0.2f;
         [SerializeField] float ZTrigger = 1700;
+        [SerializeField] MeshRenderer[] meshRenderers;
+        Material gridMat;
 
         Color gridColor;
         public void ChangePlace(Vector3 pos)
@@ -24,10 +24,17 @@ namespace NuitrackSDK.SafetyGrid
         void Start()
         {
             NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
+            gridMat = new Material(gridMaterial.shader);
+            gridMat.CopyPropertiesFromMaterial(gridMaterial);
 
-            gridColor = gridMaterial.color;
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                meshRenderers[i].material = gridMat;
+            }
+
+            gridColor = gridMat.color;
             gridColor.a = 0;
-            gridMaterial.color = gridColor;
+            gridMat.color = gridColor;
         }
 
         void OnDestroy()
@@ -90,7 +97,7 @@ namespace NuitrackSDK.SafetyGrid
             else if (1 - (minZ - 1500) / (ZTrigger - 1500) > alpha)
                 alpha = 1 - (minZ - 1500) / (ZTrigger - 1500);
             gridColor.a = alpha;
-            gridMaterial.color = gridColor;
+            gridMat.color = gridColor;
         }
     }
 }
