@@ -39,7 +39,7 @@ namespace NuitrackSDK.NuitrackDemos
         ModelJoint[] modelJoints = new ModelJoint[18];
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
-        [SerializeField] Transform rootModel;
+        //[SerializeField] Transform rootModel;
 
         [Header("VR settings")]
         [SerializeField] GameObject vrHead;
@@ -101,7 +101,7 @@ namespace NuitrackSDK.NuitrackDemos
             //then the model bones and their jointType are added to the jointsRigged dictionary
             for (int i = 0; i < modelJoints.Length; i++)
             {
-                if (transform == rootModel || transform == modelJoints[i].bone)
+                if (transform == modelJoints[i].bone)
                     Debug.LogError("Base transform can't be bone!");
 
                 if (modelJoints[i].bone)
@@ -152,8 +152,8 @@ namespace NuitrackSDK.NuitrackDemos
             if (mappingMode == MappingMode.Indirect)
             {
                 Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3();
-                rootModel.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
-                rootModel.localPosition += basePivotOffset;
+                jointsRigged[rootJoint].bone.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
+                jointsRigged[rootJoint].bone.localPosition += basePivotOffset;
             }
 
             foreach (var riggedJoint in jointsRigged)
