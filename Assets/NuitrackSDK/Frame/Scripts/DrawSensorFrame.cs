@@ -15,12 +15,14 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] GameObject depthImage;
         [SerializeField] GameObject userImage;
         [SerializeField] GameObject segmentOverlay;
+        [SerializeField] GameObject skeletonsOverlay;
         [SerializeField] FrameType defaultFrameType = FrameType.Color;
 
         [SerializeField] RectTransform panel;
         [SerializeField] int windowPercent = 20;
         [SerializeField] bool fullscreenDefault = true;
         [SerializeField] bool showSegmentOverlay = false;
+        [SerializeField] bool showSkeletonsOverlay = false;
 
         bool isFullscreen;
 
@@ -37,6 +39,7 @@ namespace NuitrackSDK.NuitrackDemos
             isFullscreen = fullscreenDefault;
             SwitchFullscreen();
             segmentOverlay.SetActive(showSegmentOverlay);
+            skeletonsOverlay.SetActive(showSkeletonsOverlay);
         }
 
         void SelectFrame(FrameType frameType)
@@ -49,6 +52,11 @@ namespace NuitrackSDK.NuitrackDemos
         public void SwitchSegmentOverlay()
         {
             segmentOverlay.SetActive(!segmentOverlay.activeSelf);
+        }
+
+        public void SwitchSkeletonsOverlay()
+        {
+            skeletonsOverlay.SetActive(!skeletonsOverlay.activeSelf);
         }
 
         public void SwitchFullscreen()
