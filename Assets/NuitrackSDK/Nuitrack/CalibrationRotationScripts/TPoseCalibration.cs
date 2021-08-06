@@ -255,7 +255,7 @@ public class TPoseCalibration : MonoBehaviour
 
                     sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
 
-                    Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
+                    //Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
 
                     return Quaternion.Euler(angleX, angleY, 0f);
                 }

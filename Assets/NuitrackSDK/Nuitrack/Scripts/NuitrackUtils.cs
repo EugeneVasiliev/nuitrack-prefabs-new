@@ -113,5 +113,34 @@ public static class NuitrackUtils
         return mirroredJoint;
     }
 
+    public static JointType GetParent(this JointType joint)
+    {
+        return parents[joint];
+    }
+
+    static Dictionary<JointType, JointType> parents = new Dictionary<JointType, JointType>()
+    {
+        {JointType.Waist,          JointType.None},
+        {JointType.Torso,          JointType.Waist},
+        {JointType.Neck,           JointType.LeftCollar},
+        {JointType.Head,           JointType.Neck},
+        {JointType.LeftCollar,     JointType.Torso},
+        {JointType.RightCollar,    JointType.Torso},
+        {JointType.LeftShoulder,   JointType.LeftCollar},
+        {JointType.RightShoulder,  JointType.RightCollar},
+        {JointType.LeftElbow,      JointType.LeftShoulder},
+        {JointType.RightElbow,     JointType.RightShoulder},
+        {JointType.LeftWrist,      JointType.LeftElbow},
+        {JointType.RightWrist,     JointType.RightElbow},
+        {JointType.LeftHand,       JointType.LeftWrist},
+        {JointType.RightHand,      JointType.RightWrist},
+        {JointType.LeftHip,        JointType.Waist},
+        {JointType.RightHip,       JointType.Waist},
+        {JointType.LeftKnee,       JointType.LeftHip},
+        {JointType.RightKnee,      JointType.RightHip},
+        {JointType.LeftAnkle,      JointType.LeftKnee},
+        {JointType.RightAnkle,     JointType.RightKnee},
+    };
+
     #endregion
 }

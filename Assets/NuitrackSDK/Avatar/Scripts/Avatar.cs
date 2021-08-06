@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.NuitrackDemos
 {
@@ -12,16 +14,85 @@ namespace NuitrackSDK.NuitrackDemos
     public class Avatar : MonoBehaviour
     {
         [Header("Rigged model")]
-        [SerializeField] ModelJoint[] modelJoints;
+        [SerializeField] Transform waist;
+        [SerializeField] Transform torso;
+        [SerializeField] Transform collar;
+        [SerializeField] Transform neck;
+        [SerializeField] Transform head;
+
+        [SerializeField] Transform leftShoulder;
+        [SerializeField] Transform leftElbow;
+        [SerializeField] Transform leftWrist;
+
+        [SerializeField] Transform rightShoulder;
+        [SerializeField] Transform rightElbow;
+        [SerializeField] Transform rightWrist;
+
+        [SerializeField] Transform leftHip;
+        [SerializeField] Transform leftKnee;
+        [SerializeField] Transform leftAnkle;
+
+        [SerializeField] Transform rightHip;
+        [SerializeField] Transform rightKnee;
+        [SerializeField] Transform rightAnkle;
+
+        ModelJoint[] modelJoints = new ModelJoint[18];
         [SerializeField] MappingMode mappingMode;
-        [SerializeField] nuitrack.JointType rootJoint = nuitrack.JointType.Waist;
-        [SerializeField] Transform rootModel;
+        [SerializeField] JointType rootJoint = JointType.Waist;
+        //[SerializeField] Transform rootModel;
+
+        [Header("VR settings")]
+        [SerializeField] GameObject vrHead;
+        [SerializeField] Transform headTransform;
+        Transform spawnedHead;
+
+        [Header("Calibration")]
+        [SerializeField] bool recenterOnSuccess;
+        TPoseCalibration tPoseCalibration;
+        Vector3 basePivotOffset;
+        Vector3 startPoint; //Root joint model bone position on start
 
         /// <summary> Model bones </summary> Dictionary with joints
-        Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = new Dictionary<nuitrack.JointType, ModelJoint>();
+        Dictionary<JointType, ModelJoint> jointsRigged = new Dictionary<JointType, ModelJoint>();
+
+        void OnEnable()
+        {
+            tPoseCalibration = FindObjectOfType<TPoseCalibration>();
+            tPoseCalibration.onSuccess += OnSuccessCalib;
+        }
+
+        void SetJoint(int index, Transform tr, JointType jointType)
+        {
+            modelJoints[index] = new ModelJoint();
+            modelJoints[index].bone = tr;
+            modelJoints[index].jointType = jointType;
+        }
 
         void Start()
         {
+            SetJoint(0, waist, JointType.Waist);
+            SetJoint(1, torso, JointType.Torso);
+            SetJoint(2, collar, JointType.LeftCollar);
+            SetJoint(3, collar, JointType.RightCollar);
+            SetJoint(4, neck, JointType.Neck);
+            SetJoint(5, head, JointType.Head);
+
+            SetJoint(6, leftShoulder, JointType.LeftShoulder);
+            SetJoint(7, leftElbow, JointType.LeftElbow);
+            SetJoint(8, leftWrist, JointType.LeftWrist);
+
+            SetJoint(9, rightShoulder, JointType.RightShoulder);
+            SetJoint(10, rightElbow, JointType.RightElbow);
+            SetJoint(11, rightWrist, JointType.RightWrist);
+
+            SetJoint(12, leftHip, JointType.LeftHip);
+            SetJoint(13, leftKnee, JointType.LeftKnee);
+            SetJoint(14, leftAnkle, JointType.LeftAnkle);
+
+            SetJoint(15, rightHip, JointType.RightHip);
+            SetJoint(16, rightKnee, JointType.RightKnee);
+            SetJoint(17, rightAnkle, JointType.RightAnkle);
+
             //Adding model bones and JointType keys
             //Adding rotation offsets of model bones and JointType keys
 
@@ -30,22 +101,31 @@ namespace NuitrackSDK.NuitrackDemos
             //then the model bones and their jointType are added to the jointsRigged dictionary
             for (int i = 0; i < modelJoints.Length; i++)
             {
-                if (transform == rootModel || transform == modelJoints[i].bone)
+                if (transform == modelJoints[i].bone)
                     Debug.LogError("Base transform can't be bone!");
 
-                modelJoints[i].baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoints[i].bone.rotation;
-                jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
+                if (modelJoints[i].bone)
+                {
+                    modelJoints[i].baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoints[i].bone.rotation;
+                    jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
 
-                //Adding base distances between the child bone and the parent bone 
-                if (modelJoints[i].parentJointType != nuitrack.JointType.None)
-                    AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].parentJointType.TryGetMirrored());
+                    //Adding base distances between the child bone and the parent bone 
+                    if (modelJoints[i].jointType.GetParent() != JointType.None)
+                        AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].jointType.GetParent().TryGetMirrored());
+                }
             }
+
+            if (vrHead)
+                spawnedHead = Instantiate(vrHead).transform;
+
+            if(jointsRigged.ContainsKey(rootJoint))
+                startPoint = jointsRigged[rootJoint].bone.localPosition;
         }
 
         /// <summary>
         /// Adding distance between the target and parent model bones
         /// </summary>
-        void AddBoneScale(nuitrack.JointType targetJoint, nuitrack.JointType parentJoint)
+        void AddBoneScale(JointType targetJoint, JointType parentJoint)
         {
             //take the position of the model bone
             Vector3 targetBonePos = jointsRigged[targetJoint].bone.position;
@@ -60,6 +140,8 @@ namespace NuitrackSDK.NuitrackDemos
         {
             //If a skeleton is detected, process the model
             if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+
+            if (spawnedHead) spawnedHead.position = headTransform.position;
         }
 
         /// <summary>
@@ -70,7 +152,8 @@ namespace NuitrackSDK.NuitrackDemos
             if (mappingMode == MappingMode.Indirect)
             {
                 Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3();
-                rootModel.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
+                jointsRigged[rootJoint].bone.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
+                jointsRigged[rootJoint].bone.localPosition += basePivotOffset;
             }
 
             foreach (var riggedJoint in jointsRigged)
@@ -88,11 +171,11 @@ namespace NuitrackSDK.NuitrackDemos
                     if (mappingMode == MappingMode.Direct)
                     {
                         //Bone position
-                        Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position;
+                        Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position + basePivotOffset;
                         modelJoint.bone.position = newPos;
 
                         //Bone scale
-                        if (modelJoint.parentBone != null)
+                        if (modelJoint.parentBone != null && modelJoint.jointType.GetParent() != rootJoint)
                         {
                             //Take the Transform of a parent bone
                             Transform parentBone = modelJoint.parentBone;
@@ -106,6 +189,32 @@ namespace NuitrackSDK.NuitrackDemos
                     }
                 }
             }
+        }
+
+        private void OnSuccessCalib(Quaternion rotation)
+        {
+            StartCoroutine(CalculateOffset());
+        }
+
+        public IEnumerator CalculateOffset()
+        {
+            if (!recenterOnSuccess) yield break;
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
+
+            if (jointsRigged.ContainsKey(rootJoint))
+            {
+                Vector3 basePos = jointsRigged[rootJoint].bone.localPosition;
+                Vector3 newPivotOffset = startPoint - basePos + basePivotOffset;
+                newPivotOffset.x = 0;
+
+                basePivotOffset = newPivotOffset;
+            }
+        }
+
+        void OnDisable()
+        {
+            tPoseCalibration.onSuccess -= OnSuccessCalib;
         }
     }
 }
