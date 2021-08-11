@@ -3,61 +3,25 @@ using UnityEngine;
 
 public class UIAvatar : MonoBehaviour
 {
+    [Header("Skeleton")]
     public bool autoProcessing = true;
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
     RectTransform parentRect;
 
-    nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
-    {
-        nuitrack.JointType.Head,
-        nuitrack.JointType.Neck,
-        nuitrack.JointType.LeftCollar,
-        nuitrack.JointType.Torso,
-        nuitrack.JointType.Waist,
-        nuitrack.JointType.LeftShoulder,
-        nuitrack.JointType.RightShoulder,
-        nuitrack.JointType.LeftElbow,
-        nuitrack.JointType.RightElbow,
-        nuitrack.JointType.LeftWrist,
-        nuitrack.JointType.RightWrist,
-        nuitrack.JointType.LeftHand,
-        nuitrack.JointType.RightHand,
-        nuitrack.JointType.LeftHip,
-        nuitrack.JointType.RightHip,
-        nuitrack.JointType.LeftKnee,
-        nuitrack.JointType.RightKnee,
-        nuitrack.JointType.LeftAnkle,
-        nuitrack.JointType.RightAnkle
-    };
+    [Header("Facetracking")]
+    public bool facetracking;
 
-    //nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
-    //{ //Right and left collars are currently located at the same point, that's why we use only 1 collar,
-    //    //it's easy to add rightCollar, if it ever changes
-    //    {nuitrack.JointType.Neck,           nuitrack.JointType.Head},
-    //    {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Neck},
-    //    {nuitrack.JointType.LeftCollar,     nuitrack.JointType.LeftShoulder},
-    //    {nuitrack.JointType.LeftCollar,     nuitrack.JointType.RightShoulder},
-    //    {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Torso},
-    //    {nuitrack.JointType.Waist,          nuitrack.JointType.Torso},
-    //    {nuitrack.JointType.Waist,          nuitrack.JointType.LeftHip},
-    //    {nuitrack.JointType.Waist,          nuitrack.JointType.RightHip},
-    //    {nuitrack.JointType.LeftShoulder,   nuitrack.JointType.LeftElbow},
-    //    {nuitrack.JointType.LeftElbow,      nuitrack.JointType.LeftWrist},
-    //    {nuitrack.JointType.LeftWrist,      nuitrack.JointType.LeftHand},
-    //    {nuitrack.JointType.RightShoulder,  nuitrack.JointType.RightElbow},
-    //    {nuitrack.JointType.RightElbow,     nuitrack.JointType.RightWrist},
-    //    {nuitrack.JointType.RightWrist,     nuitrack.JointType.RightHand},
-    //    {nuitrack.JointType.LeftHip,        nuitrack.JointType.LeftKnee},
-    //    {nuitrack.JointType.LeftKnee,       nuitrack.JointType.LeftAnkle},
-    //    {nuitrack.JointType.RightHip,       nuitrack.JointType.RightKnee},
-    //    {nuitrack.JointType.RightKnee,      nuitrack.JointType.RightAnkle}
-    //};
+    JsonInfo faceInfo;
+    Instances[] faces;
+
+    nuitrack.JointType[] jointsInfo;
 
     List<RectTransform> connections;
     Dictionary<nuitrack.JointType, RectTransform> joints;
 
     void Start()
     {
+        jointsInfo = CurrentUserTracker.CurrentSkeleton.GetJoints();
         CreateSkeletonParts();
         parentRect = GetComponent<RectTransform>();
     }
@@ -87,18 +51,6 @@ public class UIAvatar : MonoBehaviour
                 connections.Add(connectionRectTransform);
             }
         }
-
-        //for (int i = 0; i < connectionsInfo.GetLength(0); i++)
-        //{
-        //    if (connectionPrefab != null)
-        //    {
-        //        GameObject connection = Instantiate(connectionPrefab, transform);
-        //        connection.SetActive(false);
-
-        //        RectTransform connectionRectTransform = connection.GetComponent<RectTransform>();
-        //        connections.Add(connectionRectTransform);
-        //    }
-        //}
     }
 
     void Update()
@@ -130,27 +82,25 @@ public class UIAvatar : MonoBehaviour
                 joints[jointsInfo[i]].gameObject.SetActive(false);
             }
 
-            RectTransform startJoint = joints[jointsInfo[i]];
-            RectTransform endJoint = joints[jointsInfo[i].parent];
-
-            if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
+            if(jointsInfo[i].GetParent() != nuitrack.JointType.None)
             {
-                connections[i].gameObject.SetActive(true);
+                RectTransform startJoint = joints[jointsInfo[i]];
+                RectTransform endJoint = joints[jointsInfo[i].GetParent()];
 
-                connections[i].anchoredPosition = startJoint.anchoredPosition;
-                connections[i].transform.right = endJoint.position - startJoint.position;
-                float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
-                connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
-            }
-            else
-            {
-                connections[i].gameObject.SetActive(false);
+                if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
+                {
+                    connections[i].gameObject.SetActive(true);
+
+                    connections[i].anchoredPosition = startJoint.anchoredPosition;
+                    connections[i].transform.right = endJoint.position - startJoint.position;
+                    float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
+                    connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
+                }
+                else
+                {
+                    connections[i].gameObject.SetActive(false);
+                }
             }
         }
-
-        //for (int i = 0; i < connectionsInfo.GetLength(0); i++)
-        //{
-
-        //}
     }
 }
