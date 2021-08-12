@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuitrackAvatar
+namespace NuitrackSDK.Avatar
 {
     [RequireComponent (typeof(Animator))]
     public class HumanoidAvatar : Avatar

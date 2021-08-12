@@ -4,9 +4,8 @@ using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
 
-using NuitrackAvatar;
 
-namespace NuitrackAvatarEditor
+namespace NuitrackSDK.Avatar.Editor
 {
     [CustomEditor(typeof(GenericAvatar), true)]
     public class GenericAvatarEditor : AvatarEditor

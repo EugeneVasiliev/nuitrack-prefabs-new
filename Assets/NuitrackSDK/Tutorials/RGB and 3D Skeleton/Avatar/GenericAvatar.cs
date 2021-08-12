@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 
-namespace NuitrackAvatar
+namespace NuitrackSDK.Avatar
 {
     public class GenericAvatar : Avatar
     {

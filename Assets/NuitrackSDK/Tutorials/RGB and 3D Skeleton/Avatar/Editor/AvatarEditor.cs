@@ -3,10 +3,10 @@ using UnityEditor;
 using System.Collections.Generic;
 
 
-namespace NuitrackAvatarEditor
+namespace NuitrackSDK.Avatar.Editor
 {
-    [CustomEditor(typeof(NuitrackAvatar.Avatar), true)]
-    public class AvatarEditor : Editor
+    [CustomEditor(typeof(Avatar), true)]
+    public class AvatarEditor : UnityEditor.Editor
     {
         protected static class Styles
         {

@@ -4,16 +4,16 @@ using UnityEngine;
 using UnityEditor;
 
 
-namespace NuitrackAvatarEditor
+namespace NuitrackSDK.Avatar.Editor
 {
-    [CustomEditor(typeof(NuitrackAvatar.HumanoidAvatar), true)]
+    [CustomEditor(typeof(HumanoidAvatar), true)]
     public class HumanoidAvatarEditor : AvatarEditor
     {
         Color mainColor = Color.green;
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
-            NuitrackAvatar.HumanoidAvatar myScript = (NuitrackAvatar.HumanoidAvatar)target;
+            HumanoidAvatar myScript = (HumanoidAvatar)target;
 
             Rect rect = DudeRect;
             //DrawDude(rect, mainColor);

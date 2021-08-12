@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace NuitrackAvatar
+namespace NuitrackSDK.Avatar
 {
     public abstract class Avatar : MonoBehaviour
     {
