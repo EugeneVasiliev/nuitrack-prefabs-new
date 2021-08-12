@@ -35,19 +35,19 @@ namespace NuitrackSDK.Avatar.Editor
             public static GUIContent dotFill = EditorGUIUtility.IconContent("AvatarInspector/DotFill");
             public static GUIContent dotFrame = EditorGUIUtility.IconContent("AvatarInspector/DotFrame");
             public static GUIContent dotFrameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
-            //public static GUIContent dotSelection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
+            public static GUIContent dotSelection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
 
-            public static List<AvatarMaskBodyPart> BodyPartsOrder = new List<AvatarMaskBodyPart>()
-            {
-                AvatarMaskBodyPart.Body,
-                AvatarMaskBodyPart.Head,
+            //public static List<AvatarMaskBodyPart> BodyPartsOrder = new List<AvatarMaskBodyPart>()
+            //{
+            //    AvatarMaskBodyPart.Body,
+            //    AvatarMaskBodyPart.Head,
 
-                AvatarMaskBodyPart.LeftArm,
-                AvatarMaskBodyPart.RightArm,
+            //    AvatarMaskBodyPart.LeftArm,
+            //    AvatarMaskBodyPart.RightArm,
 
-                AvatarMaskBodyPart.LeftLeg,
-                AvatarMaskBodyPart.RightLeg
-            };
+            //    AvatarMaskBodyPart.LeftLeg,
+            //    AvatarMaskBodyPart.RightLeg
+            //};
 
             public static Dictionary<AvatarMaskBodyPart, List<JointItem>> JointItems = new Dictionary<AvatarMaskBodyPart, List<JointItem>>()
             {
@@ -66,7 +66,7 @@ namespace NuitrackSDK.Avatar.Editor
                     AvatarMaskBodyPart.Head, new List<JointItem>()
                     {
                         new JointItem(nuitrack.JointType.Neck, new Vector2(0.00f, 0.66f), true),
-                        new JointItem(nuitrack.JointType.Head, new Vector2(0.00f, 0.76f))
+                        new JointItem(nuitrack.JointType.Head, new Vector2(0.00f, 0.76f), true)
                     }
                 },
 
@@ -193,7 +193,7 @@ namespace NuitrackSDK.Avatar.Editor
 
             foreach(KeyValuePair<AvatarMaskBodyPart, List<GUIContent>> bodyPart in Styles.BodyParts)
             {
-                GUI.color = filled.Contains(bodyPart.Key) ? mainColor : disableColor;
+                GUI.color = filled != null && filled.Contains(bodyPart.Key) ? mainColor : disableColor;
 
                 foreach (GUIContent guiContent in bodyPart.Value)
                     GUI.DrawTexture(rect, guiContent.image);

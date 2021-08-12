@@ -17,7 +17,7 @@ namespace NuitrackSDK.Avatar.Editor
 
         void OnEnable()
         {
-            foldOpenned = Styles.BodyPartsOrder.ToDictionary(k => k, v => true);
+            foldOpenned = Styles.JointItems.Keys.ToDictionary(k => k, v => true);
         }
 
         public override void OnInspectorGUI()
@@ -33,7 +33,7 @@ namespace NuitrackSDK.Avatar.Editor
             List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict);
             DrawDude(rect, mainColor, disableColor, bodyParts);            
 
-            foreach (AvatarMaskBodyPart bodyPart in Styles.BodyPartsOrder)
+            foreach (AvatarMaskBodyPart bodyPart in Styles.JointItems.Keys)
             {
                 foldOpenned[bodyPart] = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned[bodyPart], bodyPart.ToString());
                 bool drawItems = foldOpenned[bodyPart];
@@ -50,11 +50,10 @@ namespace NuitrackSDK.Avatar.Editor
                     if (jointTransform != null)
                         GUI.DrawTexture(jointPointRect, Styles.dotFill.image);
 
-
                     Transform newJoint = HandleDragDrop(jointPointRect);
                     if (newJoint != null)
                     {
-                        AddJoint(myScript, jointType, newJoint, ref jointsDict, ref jointItems);
+                        AddJoint(jointType, newJoint, ref jointsDict);
                         EditorGUIUtility.PingObject(newJoint);
                     }
 
@@ -71,7 +70,7 @@ namespace NuitrackSDK.Avatar.Editor
                     if (drawItems)
                     {
                         jointTransform = (Transform)EditorGUILayout.ObjectField(jointType.ToString(), jointTransform, typeof(Transform), true);
-                        AddJoint(myScript, jointType, jointTransform, ref jointsDict, ref jointItems);
+                        AddJoint(jointType, jointTransform, ref jointsDict);
                     }
                 }
 
@@ -82,10 +81,12 @@ namespace NuitrackSDK.Avatar.Editor
             }
         }
 
-        void AddJoint(GenericAvatar myScript, nuitrack.JointType jointType, Transform objectTransform, 
-            ref Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict,  
-            ref List<GenericAvatar.JointItem> jointItems)
+        void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict)
         {
+            GenericAvatar myScript = (GenericAvatar)target;
+
+            ref List<GenericAvatar.JointItem> jointItems = ref myScript.JointItems;
+
             if (objectTransform != null)
             {
                 Undo.RecordObject(myScript, "Avatar mapping modified");
@@ -109,7 +110,7 @@ namespace NuitrackSDK.Avatar.Editor
 
         List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<nuitrack.JointType, GenericAvatar.JointItem> jointsDict)
         {
-            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyPartsOrder);
+            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.JointItems.Keys);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, List<Styles.JointItem>> bodyPart in Styles.JointItems)
                 foreach (Styles.JointItem jointItem in bodyPart.Value)
