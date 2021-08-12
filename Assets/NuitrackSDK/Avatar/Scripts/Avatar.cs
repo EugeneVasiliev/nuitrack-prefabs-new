@@ -13,30 +13,36 @@ namespace NuitrackSDK.NuitrackDemos
 
     public class Avatar : MonoBehaviour
     {
-        [Header("Rigged model")]
+        [Header("Body")]
         [SerializeField] Transform waist;
         [SerializeField] Transform torso;
         [SerializeField] Transform collar;
         [SerializeField] Transform neck;
         [SerializeField] Transform head;
 
+        [Header("Left hand")]
         [SerializeField] Transform leftShoulder;
         [SerializeField] Transform leftElbow;
         [SerializeField] Transform leftWrist;
 
+        [Header("Right hand")]
         [SerializeField] Transform rightShoulder;
         [SerializeField] Transform rightElbow;
         [SerializeField] Transform rightWrist;
 
+        [Header("Left leg")]
         [SerializeField] Transform leftHip;
         [SerializeField] Transform leftKnee;
         [SerializeField] Transform leftAnkle;
 
+        [Header("Right leg")]
         [SerializeField] Transform rightHip;
         [SerializeField] Transform rightKnee;
         [SerializeField] Transform rightAnkle;
 
-        ModelJoint[] modelJoints = new ModelJoint[18];
+        List<ModelJoint> modelJoints = new List<ModelJoint>();
+
+        [Header ("Options")]
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
         //[SerializeField] Transform rootModel;
@@ -61,37 +67,41 @@ namespace NuitrackSDK.NuitrackDemos
             tPoseCalibration.onSuccess += OnSuccessCalib;
         }
 
-        void SetJoint(int index, Transform tr, JointType jointType)
+        void SetJoint(Transform tr, JointType jointType)
         {
-            modelJoints[index] = new ModelJoint();
-            modelJoints[index].bone = tr;
-            modelJoints[index].jointType = jointType;
+            ModelJoint modelJoint = new ModelJoint()
+            {
+                bone = tr,
+                jointType = jointType
+            };
+
+            modelJoints.Add(modelJoint);
         }
 
         void Start()
         {
-            SetJoint(0, waist, JointType.Waist);
-            SetJoint(1, torso, JointType.Torso);
-            SetJoint(2, collar, JointType.LeftCollar);
-            SetJoint(3, collar, JointType.RightCollar);
-            SetJoint(4, neck, JointType.Neck);
-            SetJoint(5, head, JointType.Head);
+            SetJoint(waist, JointType.Waist);
+            SetJoint(torso, JointType.Torso);
+            SetJoint(collar, JointType.LeftCollar);
+            SetJoint(collar, JointType.RightCollar);
+            SetJoint(neck, JointType.Neck);
+            SetJoint(head, JointType.Head);
 
-            SetJoint(6, leftShoulder, JointType.LeftShoulder);
-            SetJoint(7, leftElbow, JointType.LeftElbow);
-            SetJoint(8, leftWrist, JointType.LeftWrist);
+            SetJoint(leftShoulder, JointType.LeftShoulder);
+            SetJoint(leftElbow, JointType.LeftElbow);
+            SetJoint(leftWrist, JointType.LeftWrist);
 
-            SetJoint(9, rightShoulder, JointType.RightShoulder);
-            SetJoint(10, rightElbow, JointType.RightElbow);
-            SetJoint(11, rightWrist, JointType.RightWrist);
+            SetJoint(rightShoulder, JointType.RightShoulder);
+            SetJoint(rightElbow, JointType.RightElbow);
+            SetJoint(rightWrist, JointType.RightWrist);
 
-            SetJoint(12, leftHip, JointType.LeftHip);
-            SetJoint(13, leftKnee, JointType.LeftKnee);
-            SetJoint(14, leftAnkle, JointType.LeftAnkle);
+            SetJoint(leftHip, JointType.LeftHip);
+            SetJoint(leftKnee, JointType.LeftKnee);
+            SetJoint(leftAnkle, JointType.LeftAnkle);
 
-            SetJoint(15, rightHip, JointType.RightHip);
-            SetJoint(16, rightKnee, JointType.RightKnee);
-            SetJoint(17, rightAnkle, JointType.RightAnkle);
+            SetJoint(rightHip, JointType.RightHip);
+            SetJoint(rightKnee, JointType.RightKnee);
+            SetJoint(rightAnkle, JointType.RightAnkle);
 
             //Adding model bones and JointType keys
             //Adding rotation offsets of model bones and JointType keys
@@ -99,19 +109,19 @@ namespace NuitrackSDK.NuitrackDemos
             //Iterate joints from the modelJoints array
             //base rotation of the model bone is recorded 
             //then the model bones and their jointType are added to the jointsRigged dictionary
-            for (int i = 0; i < modelJoints.Length; i++)
+            foreach (ModelJoint modelJoint in modelJoints)
             {
-                if (transform == modelJoints[i].bone)
+                if (transform == modelJoint.bone)
                     Debug.LogError("Base transform can't be bone!");
 
-                if (modelJoints[i].bone)
+                if (modelJoint.bone)
                 {
-                    modelJoints[i].baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoints[i].bone.rotation;
-                    jointsRigged.Add(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i]);
+                    modelJoint.baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoint.bone.rotation;
+                    jointsRigged.Add(modelJoint.jointType.TryGetMirrored(), modelJoint);
 
                     //Adding base distances between the child bone and the parent bone 
-                    if (modelJoints[i].jointType.GetParent() != JointType.None)
-                        AddBoneScale(modelJoints[i].jointType.TryGetMirrored(), modelJoints[i].jointType.GetParent().TryGetMirrored());
+                    if (modelJoint.jointType.GetParent() != JointType.None)
+                        AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
                 }
             }
 
@@ -139,9 +149,11 @@ namespace NuitrackSDK.NuitrackDemos
         void Update()
         {
             //If a skeleton is detected, process the model
-            if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+            if (CurrentUserTracker.CurrentSkeleton != null) 
+                ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
 
-            if (spawnedHead) spawnedHead.position = headTransform.position;
+            if (spawnedHead)
+                spawnedHead.position = headTransform.position;
         }
 
         /// <summary>
