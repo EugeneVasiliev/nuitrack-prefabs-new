@@ -105,8 +105,6 @@ public class NuitrackManager : MonoBehaviour
 
         while (_threadRunning)
         {
-            initState = NuitrackLoader.InitNuitrackLibraries();
-
             NuitrackInit();
         }
     }
@@ -141,12 +139,6 @@ public class NuitrackManager : MonoBehaviour
     void Awake()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        if (asyncInit)
-        {
-            asyncInit = false;
-            Debug.LogWarning("Async Init is not supported for Android");
-        }
-
         StartCoroutine(AndroidStart());
 #else
         FirstStart();
@@ -160,11 +152,11 @@ public class NuitrackManager : MonoBehaviour
         Application.targetFrameRate = 60;
         Application.runInBackground = runInBackground;
         //Debug.Log ("NuitrackStart");
+        initState = NuitrackLoader.InitNuitrackLibraries();
 
         if (asyncInit)
         {
             StartCoroutine(InitEventStart());
-
             if (!_threadRunning)
             {
                 _thread = new Thread(ThreadedWork);
@@ -173,8 +165,6 @@ public class NuitrackManager : MonoBehaviour
         }
         else
         {
-            initState = NuitrackLoader.InitNuitrackLibraries();
-
             if (initEvent != null)
             {
                 initEvent.Invoke(initState);
