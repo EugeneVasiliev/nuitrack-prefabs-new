@@ -201,19 +201,5 @@ namespace NuitrackSDK.Avatar.Editor
 
             GUI.color = oldColor;
         }
-
-        //protected Rect BoneIconRect(Rect baseRect, AvatarMaskBodyPart bodyPart, nuitrack.JointType jointType)
-        //{
-        //    Vector2 pos = Styles.JointItems[bodyPart][jointType];
-
-        //    pos.y *= -1; // because higher values should be up
-        //    pos.Scale(new Vector2(baseRect.width * 0.5f, baseRect.height * 0.5f));
-        //    pos = baseRect.center + pos;
-        //    int kIconSize = Styles.kIconSize;
-        //    Rect boneRect = new Rect(pos.x - kIconSize * 0.5f, pos.y - kIconSize * 0.5f, kIconSize, kIconSize);
-
-        //    return boneRect;
-        //}
-
     }
 }

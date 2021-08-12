@@ -44,15 +44,16 @@ namespace NuitrackSDK.Avatar.Editor
                 foreach (Styles.JointItem jointItem in Styles.JointItems[bodyPart])
                 {
                     nuitrack.JointType jointType = jointItem.jointType;
-                    Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].boneTransform : null;
-
                     Rect jointPointRect = BoneIconRect(rect, jointItem);
+
+                    Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].boneTransform : null;
                     if (jointTransform != null)
                         GUI.DrawTexture(jointPointRect, Styles.dotFill.image);
 
                     Transform newJoint = HandleDragDrop(jointPointRect);
                     if (newJoint != null)
                     {
+                        jointTransform = newJoint;
                         AddJoint(jointType, newJoint, ref jointsDict);
                         EditorGUIUtility.PingObject(newJoint);
                     }
