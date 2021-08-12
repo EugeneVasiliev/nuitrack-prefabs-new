@@ -80,7 +80,7 @@ namespace NuitrackSDK.NuitrackDemos
             UpdateTapCounter();
             bool doubleTapped = (taps == 2);
 
-            if (doubleTapped) ResetCamera();//TODO: recenter camera view
+            if (doubleTapped) ResetCamera();
 
             if (showPivot) pivotRenderer.enabled = (Input.touchCount > 0) && (Input.touchCount < 3);
 

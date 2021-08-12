@@ -5,8 +5,6 @@ namespace NuitrackSDK.SafetyGrid
 {
     public class SensorPointReplacer : MonoBehaviour
     {
-        [SerializeField] Transform CameraPosition;
-
         [SerializeField] GameObject leftGrid;
         [SerializeField] GameObject rightGrid;
         [SerializeField] GameObject forwardGrid;
@@ -14,29 +12,35 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] Material gridMaterial;
         [SerializeField] float XYTrigger = 0.2f;
         [SerializeField] float ZTrigger = 1700;
+        [SerializeField] MeshRenderer[] meshRenderers;
+        Material gridMat;
 
         Color gridColor;
         public void ChangePlace(Vector3 pos)
         {
             transform.position = new Vector3(pos.x, transform.position.y, pos.z);
-
         }
+
         void Start()
         {
             NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
+            gridMat = new Material(gridMaterial.shader);
+            gridMat.CopyPropertiesFromMaterial(gridMaterial);
 
-            gridColor = gridMaterial.color;
+            for (int i = 0; i < meshRenderers.Length; i++)
+            {
+                meshRenderers[i].material = gridMat;
+            }
+
+            gridColor = gridMat.color;
             gridColor.a = 0;
-            gridMaterial.color = gridColor;
+            gridMat.color = gridColor;
         }
+
         void OnDestroy()
         {
             NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
         }
-
-        bool leftVis = false;
-        bool rightVis = false;
-        bool forwardVis = false;
 
         void CheckSkeletonPositions(nuitrack.SkeletonData skeletonData)
         {
@@ -78,7 +82,6 @@ namespace NuitrackSDK.SafetyGrid
                 }
                 if (i.Proj.Z < minZ)
                     minZ = i.Proj.Z - zplus;
-
             }
 
             float distance = Mathf.Min(min, 1.0f - max);
@@ -90,60 +93,7 @@ namespace NuitrackSDK.SafetyGrid
             else if (1 - (minZ - 1500) / (ZTrigger - 1500) > alpha)
                 alpha = 1 - (minZ - 1500) / (ZTrigger - 1500);
             gridColor.a = alpha;
-            gridMaterial.color = gridColor;
-        }
-
-        float angleFactor = 1.0f / 1.83f;
-        void LeftGridChange()
-        {
-            if (leftVis)
-            {
-
-            }
-            else
-            {
-                leftGrid.SetActive(true);
-                leftVis = true;
-                leftGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * angleFactor - 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-            }
-        }
-
-        void RightGridChange()
-        {
-            if (rightVis)
-            {
-
-            }
-            else
-            {
-                rightGrid.SetActive(true);
-                rightVis = true;
-                rightGrid.transform.localPosition = new Vector3((CameraPosition.position.z - transform.position.z) * -angleFactor + 0.2f, 0, CameraPosition.position.z - transform.position.z - 0.2f);
-            }
-        }
-        void ForwardGridChange()
-        {
-            if (CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).Real.Z > 2000f)
-                return;
-
-            if (forwardVis)
-            {
-
-            }
-            else
-            {
-                forwardGrid.SetActive(true);
-                forwardVis = true;
-                forwardGrid.transform.localPosition = new Vector3(CameraPosition.position.x, 0, 1.7f);
-            }
-        }
-
-        [ContextMenu("ActivateGrids")]
-        void ActivateGrids()
-        {
-            LeftGridChange();
-            RightGridChange();
-            ForwardGridChange();
+            gridMat.color = gridColor;
         }
     }
 }
