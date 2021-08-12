@@ -5,6 +5,7 @@ public class SimpleSkeletonAvatar : MonoBehaviour
 {
     public bool autoProcessing = true;
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
+    RectTransform parentRect;
 
     nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
     {
@@ -52,37 +53,42 @@ public class SimpleSkeletonAvatar : MonoBehaviour
         {nuitrack.JointType.RightKnee,      nuitrack.JointType.RightAnkle}
     };
 
-    GameObject[] connections;
-    Dictionary<nuitrack.JointType, GameObject> joints;
+    List<RectTransform> connections;
+    Dictionary<nuitrack.JointType, RectTransform> joints;
 
     void Start()
     {
         CreateSkeletonParts();
+        parentRect = GetComponent<RectTransform>();
     }
 
     void CreateSkeletonParts()
     {
-        joints = new Dictionary<nuitrack.JointType, GameObject>();
+        joints = new Dictionary<nuitrack.JointType, RectTransform>();
 
         for (int i = 0; i < jointsInfo.Length; i++)
         {
             if (jointPrefab != null)
             {
-                GameObject joint = Instantiate(jointPrefab, transform, true);
+                GameObject joint = Instantiate(jointPrefab, transform);
                 joint.SetActive(false);
-                joints.Add(jointsInfo[i], joint);
+
+                RectTransform jointRectTransform = joint.GetComponent<RectTransform>();
+                joints.Add(jointsInfo[i], jointRectTransform);
             }
         }
 
-        connections = new GameObject[connectionsInfo.GetLength(0)];
+        connections = new List<RectTransform>();
 
-        for (int i = 0; i < connections.Length; i++)
+        for (int i = 0; i < connectionsInfo.GetLength(0); i++)
         {
             if (connectionPrefab != null)
             {
-                GameObject connection = Instantiate(connectionPrefab, transform, true);
+                GameObject connection = Instantiate(connectionPrefab, transform);
                 connection.SetActive(false);
-                connections[i] = connection;
+
+                RectTransform connectionRectTransform = connection.GetComponent<RectTransform>();
+                connections.Add(connectionRectTransform);
             }
         }
     }
@@ -103,32 +109,37 @@ public class SimpleSkeletonAvatar : MonoBehaviour
             nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
             if (j.Confidence > 0.01f)
             {
-                joints[jointsInfo[i]].SetActive(true);
-                joints[jointsInfo[i]].transform.position = new Vector2(j.Proj.X * Screen.width, Screen.height - j.Proj.Y * Screen.height);
+                joints[jointsInfo[i]].gameObject.SetActive(true);
+
+                Vector2 newPosition = new Vector2(
+                    parentRect.rect.width * (Mathf.Clamp01(j.Proj.X) - 0.5f),
+                    parentRect.rect.height * (0.5f - Mathf.Clamp01(j.Proj.Y)));
+
+                joints[jointsInfo[i]].anchoredPosition = newPosition;
             }
             else
             {
-                joints[jointsInfo[i]].SetActive(false);
+                joints[jointsInfo[i]].gameObject.SetActive(false);
             }
         }
 
         for (int i = 0; i < connectionsInfo.GetLength(0); i++)
         {
-            GameObject startJoint = joints[connectionsInfo[i, 0]];
-            GameObject endJoint = joints[connectionsInfo[i, 1]];
+            RectTransform startJoint = joints[connectionsInfo[i, 0]];
+            RectTransform endJoint = joints[connectionsInfo[i, 1]];
 
-            if (startJoint.activeSelf && endJoint.activeSelf)
+            if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
             {
-                connections[i].SetActive(true);
+                connections[i].gameObject.SetActive(true);
 
-                connections[i].transform.position = startJoint.transform.position;
-                connections[i].transform.right = endJoint.transform.position - startJoint.transform.position;
-                float distance = Vector3.Distance(endJoint.transform.position, startJoint.transform.position);
+                connections[i].anchoredPosition = startJoint.anchoredPosition;
+                connections[i].transform.right = endJoint.position - startJoint.position;
+                float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
                 connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
             }
             else
             {
-                connections[i].SetActive(false);
+                connections[i].gameObject.SetActive(false);
             }
         }
     }

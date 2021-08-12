@@ -5,7 +5,7 @@
 // - no lightmap support
 // - no per-material color
 
-Shader "Unlit/TextureGS" {
+Shader "NuitrackSDK/VicoVRCalibrationRGB/UnlitGS" {
 Properties {
 	_MainTex ("Base (RGB)", 2D) = "white" {}
 }

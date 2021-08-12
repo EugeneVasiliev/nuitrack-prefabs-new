@@ -1,36 +1,39 @@
 ﻿using UnityEngine;
 
-public class CameraFullscreen : MonoBehaviour
+namespace NuitrackSDK.NuitrackDemos
 {
-    Camera cam;
-
-    [SerializeField] GameObject[] hideObjects;
-
-    bool fullscreen;
-    Rect defaultRect;
-
-    private void Start()
+    public class CameraFullscreen : MonoBehaviour
     {
-        cam = GetComponent<Camera>();
-        defaultRect = cam.rect;
-    }
+        Camera cam;
 
-    public void SwitchFullscreen()
-    {
-        fullscreen = !fullscreen;
+        [SerializeField] GameObject[] hideObjects;
 
-        if (fullscreen)
+        bool fullscreen;
+        Rect defaultRect;
+
+        private void Start()
         {
-            cam.rect = new Rect(0, 0, 1, 1);
-        }
-        else
-        {
-            cam.rect = defaultRect;
+            cam = GetComponent<Camera>();
+            defaultRect = cam.rect;
         }
 
-        for (int i = 0; i < hideObjects.Length; i++)
+        public void SwitchFullscreen()
         {
-            hideObjects[i].SetActive(!fullscreen);
+            fullscreen = !fullscreen;
+
+            if (fullscreen)
+            {
+                cam.rect = new Rect(0, 0, 1, 1);
+            }
+            else
+            {
+                cam.rect = defaultRect;
+            }
+
+            for (int i = 0; i < hideObjects.Length; i++)
+            {
+                hideObjects[i].SetActive(!fullscreen);
+            }
         }
     }
 }
