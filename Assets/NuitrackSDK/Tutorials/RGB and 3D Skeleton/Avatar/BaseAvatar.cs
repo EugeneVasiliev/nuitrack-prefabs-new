@@ -4,12 +4,14 @@ using System.Collections.Generic;
 
 namespace NuitrackSDK.Avatar
 {
-    public abstract class Avatar : MonoBehaviour
+    public abstract class BaseAvatar : MonoBehaviour
     {
         [SerializeField, HideInInspector]
         protected List<nuitrack.JointType> jointTypes;
 
         [Header("Options")]
+        [SerializeField] bool useCurrentUserTracker = true;
+        
         [SerializeField, Range(1, 7)]
         protected int skeletonID = 1;
 
@@ -23,11 +25,6 @@ namespace NuitrackSDK.Avatar
         [SerializeField] bool alignJointPosition = false;
 
         [SerializeField, Range(0, 1)] float jointConfidence = 0.1f;
-
-        [Header("Space")]
-        [Tooltip("(optional) Transform corresponding to the sensor coordinate system. If not specified, " +
-           "the transformation is performed in the world coordinate system, where the sensor position = (0, 0, 0)")]
-        [SerializeField] protected Transform space;
 
         protected ulong lastTimeStamp = 0;
 
@@ -45,7 +42,7 @@ namespace NuitrackSDK.Avatar
                 return;
 
             lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
-            nuitrack.Skeleton skeleton = NuitrackManager.SkeletonData.GetSkeletonByID(skeletonID);
+            nuitrack.Skeleton skeleton = useCurrentUserTracker ? CurrentUserTracker.CurrentSkeleton : NuitrackManager.SkeletonData.GetSkeletonByID(skeletonID);
 
             ProcessSkeleton(skeleton);
         }

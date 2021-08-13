@@ -6,22 +6,27 @@ using System.Collections.Generic;
 
 namespace NuitrackSDK.Avatar
 {
-    public class GenericAvatar : Avatar
+    public class GenericAvatar : BaseAvatar
     {
-        [System.Serializable]
-        public class JointItem
-        {
-            public nuitrack.JointType jointType;
-            public Transform boneTransform;
+        [Header("Space")]
+        [Tooltip("(optional) Transform corresponding to the sensor coordinate system. If not specified, " +
+            "the transformation is performed in the world coordinate system, where the sensor position = (0, 0, 0)")]
+        [SerializeField] protected Transform space;
 
-            public Quaternion RotationOffset { get; set; }
-        }
+        //[System.Serializable]
+        //public class JointItem
+        //{
+        //    public nuitrack.JointType jointType;
+        //    public Transform boneTransform;
 
-        [SerializeField, HideInInspector] List<JointItem> jointItems;
+        //    public Quaternion RotationOffset { get; set; }
+        //}
+
+        [SerializeField, HideInInspector] List<ModelJoint> jointItems;
 
         Dictionary<nuitrack.JointType, nuitrack.JointType> parentsJoint = null;
 
-        public ref List<JointItem> JointItems
+        public ref List<ModelJoint> JointItems
         {
             get
             {
@@ -42,11 +47,11 @@ namespace NuitrackSDK.Avatar
             return space != null ? space.TransformPoint(spacePoint) : spacePoint;
         }
 
-        List<JointItem> SortClamp(List<JointItem> sourceModelJoints)
+        List<ModelJoint> SortClamp(List<ModelJoint> sourceModelJoints)
         {
-            List<JointItem> outList = new List<JointItem>();
+            List<ModelJoint> outList = new List<ModelJoint>();
 
-            Dictionary<nuitrack.JointType, JointItem> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
+            Dictionary<nuitrack.JointType, ModelJoint> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
             List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
 
             foreach (nuitrack.JointType jointType in jointTypes)
@@ -73,7 +78,7 @@ namespace NuitrackSDK.Avatar
 
             List<nuitrack.JointType> skeletonJoints = new List<nuitrack.JointType>(from v in jointItems select v.jointType);
 
-            foreach (JointItem jointItem in jointItems)
+            foreach (ModelJoint jointItem in jointItems)
             {
                 jointItem.jointType = jointItem.jointType.TryGetMirrored();
 
@@ -81,13 +86,13 @@ namespace NuitrackSDK.Avatar
                 parentsJoint.Add(jointItem.jointType, parentJoint);
             }
 
-            Dictionary<nuitrack.JointType, JointItem> jointsRigged = jointItems.ToDictionary(k => k.jointType);
+            Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = jointItems.ToDictionary(k => k.jointType);
 
-            foreach (KeyValuePair<nuitrack.JointType, JointItem> joint in jointsRigged)
+            foreach (KeyValuePair<nuitrack.JointType, ModelJoint> joint in jointsRigged)
             {
-                JointItem jointItem = joint.Value;
+                ModelJoint jointItem = joint.Value;
 
-                jointItem.RotationOffset = Quaternion.Inverse(SpaceRotation) * jointItem.boneTransform.rotation;
+                jointItem.baseRotOffset = Quaternion.Inverse(SpaceRotation) * jointItem.bone.rotation;
 
                 //if (parentsJoint[joint.Key] != nuitrack.JointType.None)
                 //    jointItem.parentBone = jointsRigged[jointItem.parentJointType].bone;
@@ -99,18 +104,18 @@ namespace NuitrackSDK.Avatar
             if (skeleton == null)
                 return;
 
-            foreach (JointItem jointItem in jointItems)
+            foreach (ModelJoint jointItem in jointItems)
             {
                 nuitrack.Joint joint = skeleton.GetJoint(jointItem.jointType.TryGetMirrored());
 
 
                 //Bone position
                 Vector3 newPos = joint.ToVector3() * 0.001f;
-                jointItem.boneTransform.position = space.TransformPoint(newPos);
+                jointItem.bone.position = space.TransformPoint(newPos);
 
                 //Bone rotation
-                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.ToQuaternion() * jointItem.RotationOffset;
-                jointItem.boneTransform.rotation = space.rotation * jointOrient;
+                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.ToQuaternion() * jointItem.baseRotOffset;
+                jointItem.bone.rotation = space.rotation * jointOrient;
             }
         }
     }

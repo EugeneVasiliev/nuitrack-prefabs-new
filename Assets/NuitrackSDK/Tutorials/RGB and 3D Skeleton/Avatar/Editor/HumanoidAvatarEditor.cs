@@ -7,7 +7,7 @@ using UnityEditor;
 namespace NuitrackSDK.Avatar.Editor
 {
     [CustomEditor(typeof(HumanoidAvatar), true)]
-    public class HumanoidAvatarEditor : AvatarEditor
+    public class HumanoidAvatarEditor : BaseAvatarEditor
     {
         Color mainColor = Color.green;
         public override void OnInspectorGUI()
@@ -15,12 +15,12 @@ namespace NuitrackSDK.Avatar.Editor
             DrawDefaultInspector();
             HumanoidAvatar myScript = (HumanoidAvatar)target;
 
-            Rect rect = DudeRect;
+            //Rect rect = GetAvatarViewRect();
             //DrawDude(rect, mainColor);
 
             //SerializedProperty acSP = serializedObject.FindProperty("jointTypes");
 
-            List<nuitrack.JointType> jointTypes = myScript.JointTypes;
+            //List<nuitrack.JointType> jointTypes = myScript.JointTypes;
 
             //foreach (KeyValuePair<nuitrack.JointType, Vector2> bone in Styles.BonesPosition)
             //{

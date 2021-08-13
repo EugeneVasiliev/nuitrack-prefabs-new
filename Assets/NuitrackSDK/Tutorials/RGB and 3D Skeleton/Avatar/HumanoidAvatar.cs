@@ -6,8 +6,13 @@ using System.Collections.Generic;
 namespace NuitrackSDK.Avatar
 {
     [RequireComponent (typeof(Animator))]
-    public class HumanoidAvatar : Avatar
+    public class HumanoidAvatar : BaseAvatar
     {
+        [Header("Space")]
+        [Tooltip("(optional) Transform corresponding to the sensor coordinate system. If not specified, " +
+            "the transformation is performed in the world coordinate system, where the sensor position = (0, 0, 0)")]
+        [SerializeField] protected Transform space;
+
         Animator animator;
 
         Dictionary<nuitrack.JointType, HumanBodyBones> boneMapping;
