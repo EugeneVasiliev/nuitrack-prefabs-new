@@ -30,7 +30,7 @@ namespace NuitrackSDK.Avatar.Editor
 
             Dictionary<nuitrack.JointType, ModelJoint> jointsDict = jointItems.ToDictionary(k => k.jointType);
 
-            List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict);
+            List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict.Keys);
             DrawDude(rect, bodyParts);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
@@ -97,23 +97,6 @@ namespace NuitrackSDK.Avatar.Editor
             }
         }
 
-        bool PingObject(Rect rect, Transform targetTransform)
-        {
-            Event evt = Event.current;
-
-            if (evt.type == EventType.MouseDown && rect.Contains(evt.mousePosition))
-            {
-                if (targetTransform != null)
-                    EditorGUIUtility.PingObject(targetTransform);
-
-                evt.Use();
-
-                return true;
-            }
-
-            return false;
-        }
-
         void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, ModelJoint> jointsDict)
         {
             GenericAvatar myScript = (GenericAvatar)target;
@@ -145,21 +128,6 @@ namespace NuitrackSDK.Avatar.Editor
 
                 jointsDict.Remove(jointType);
             }
-        }
-
-        List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<nuitrack.JointType, ModelJoint> jointsDict)
-        {
-            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
-
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
-                foreach (Styles.GUIJoint jointItem in bodyPart.Value.guiJoint)
-                    if (!jointItem.optional && !jointsDict.ContainsKey(jointItem.jointType))
-                    {
-                        bodyParts.Remove(bodyPart.Key);
-                        break;
-                    }
-
-            return bodyParts;
         }
     }
 }

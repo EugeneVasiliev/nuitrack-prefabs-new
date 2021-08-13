@@ -6,9 +6,6 @@ namespace NuitrackSDK.Avatar
 {
     public abstract class BaseAvatar : MonoBehaviour
     {
-        [SerializeField, HideInInspector]
-        protected List<nuitrack.JointType> jointTypes;
-
         [Header("Options")]
         [SerializeField] bool useCurrentUserTracker = true;
         
@@ -27,14 +24,6 @@ namespace NuitrackSDK.Avatar
         [SerializeField, Range(0, 1)] float jointConfidence = 0.1f;
 
         protected ulong lastTimeStamp = 0;
-
-        public List<nuitrack.JointType> JointTypes
-        {
-            get
-            {
-                return jointTypes;
-            }
-        }
 
         void Update()
         {

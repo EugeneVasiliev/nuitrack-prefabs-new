@@ -279,5 +279,37 @@ namespace NuitrackSDK.Avatar.Editor
 
             return dropTransform;
         }
+
+        protected List<AvatarMaskBodyPart> GetActiveBodyParts(ICollection<nuitrack.JointType> jointsList)
+        {
+            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
+
+            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
+                foreach (Styles.GUIJoint jointItem in bodyPart.Value.guiJoint)
+                    if (!jointItem.optional && !jointsList.Contains(jointItem.jointType))
+                    {
+                        bodyParts.Remove(bodyPart.Key);
+                        break;
+                    }
+
+            return bodyParts;
+        }
+
+        protected bool PingObject(Rect rect, Transform targetTransform)
+        {
+            Event evt = Event.current;
+
+            if (evt.type == EventType.MouseDown && rect.Contains(evt.mousePosition))
+            {
+                if (targetTransform != null)
+                    EditorGUIUtility.PingObject(targetTransform);
+
+                evt.Use();
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }
