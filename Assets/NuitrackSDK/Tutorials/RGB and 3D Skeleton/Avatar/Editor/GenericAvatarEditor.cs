@@ -12,6 +12,8 @@ namespace NuitrackSDK.Avatar.Editor
     {
         Dictionary<AvatarMaskBodyPart, bool> foldOpenned;
 
+        nuitrack.JointType selectJoint = nuitrack.JointType.None;
+
         void OnEnable()
         {
             foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
@@ -48,14 +50,14 @@ namespace NuitrackSDK.Avatar.Editor
                     nuitrack.JointType jointType = guiJoint.jointType;
                     Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].bone : null;
                    
-                    Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, jointTransform != null);
-
+                    Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, jointTransform != null, jointType == selectJoint);
                     Transform newJoint = HandleDragDrop(jointPointRect);
                     
                     if (newJoint != null)
                     {
                         AddJoint(jointType, newJoint, ref jointsDict);
                         EditorGUIUtility.PingObject(newJoint);
+                        selectJoint = jointType;
 
                         jointTransform = newJoint;
                     }
@@ -65,7 +67,7 @@ namespace NuitrackSDK.Avatar.Editor
                         Rect controlRect = EditorGUILayout.GetControlRect();
                         Vector2 position = new Vector2(controlRect.x, controlRect.y);
 
-                        Rect jointRect = DrawJointDot(position, guiJoint, jointTransform != null);
+                        Rect jointRect = DrawJointDot(position, guiJoint, jointTransform != null, jointType == selectJoint);
                         controlRect.xMin += jointRect.width;
 
                         string displayName = jointType.ToUnityBones().ToString();
@@ -79,17 +81,13 @@ namespace NuitrackSDK.Avatar.Editor
 
                         jointTransform = EditorGUI.ObjectField(controlRect, displayName, jointTransform, typeof(Transform), true) as Transform;
                         AddJoint(jointType, jointTransform, ref jointsDict);
+
+                        if (PingObject(controlRect, jointTransform))
+                            selectJoint = jointType;
                     }
 
-                    Event evt = Event.current;
-
-                    if (evt.type == EventType.MouseDown && jointPointRect.Contains(evt.mousePosition))
-                    {
-                        if (jointTransform != null)
-                            EditorGUIUtility.PingObject(jointTransform);
-
-                        evt.Use();
-                    }
+                    if (PingObject(jointPointRect, jointTransform))
+                        selectJoint = jointType;
                 }
 
                 if (drawItems)
@@ -97,6 +95,23 @@ namespace NuitrackSDK.Avatar.Editor
 
                 EditorGUILayout.EndFoldoutHeaderGroup();
             }
+        }
+
+        bool PingObject(Rect rect, Transform targetTransform)
+        {
+            Event evt = Event.current;
+
+            if (evt.type == EventType.MouseDown && rect.Contains(evt.mousePosition))
+            {
+                if (targetTransform != null)
+                    EditorGUIUtility.PingObject(targetTransform);
+
+                evt.Use();
+
+                return true;
+            }
+
+            return false;
         }
 
         void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, ModelJoint> jointsDict)

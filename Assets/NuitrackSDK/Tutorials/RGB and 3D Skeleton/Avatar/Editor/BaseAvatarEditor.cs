@@ -195,7 +195,7 @@ namespace NuitrackSDK.Avatar.Editor
             GUI.color = oldColor;
         }
 
-        protected Rect DrawAvatarJointIcon(Rect rect, Styles.GUIJoint jointItem, bool filled = false)
+        protected Rect DrawAvatarJointIcon(Rect rect, Styles.GUIJoint jointItem, bool filled, bool selected)
         {
             Vector2 pos = jointItem.mapPosition;
             pos.y *= -1; // because higher values should be up
@@ -205,10 +205,10 @@ namespace NuitrackSDK.Avatar.Editor
             Texture dotGUI = (jointItem.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
             Vector2 jointRect = new Vector2(pos.x - dotGUI.width * 0.5f, pos.y - dotGUI.height * 0.5f);
 
-            return DrawJointDot(jointRect, jointItem, filled);
+            return DrawJointDot(jointRect, jointItem, filled, selected);
         }
 
-        protected Rect DrawJointDot(Vector2 position, Styles.GUIJoint jointItem, bool filled = false)
+        protected Rect DrawJointDot(Vector2 position, Styles.GUIJoint jointItem, bool filled, bool selected)
         {
             Texture dotGUI = (jointItem.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
 
@@ -221,6 +221,9 @@ namespace NuitrackSDK.Avatar.Editor
 
             if (filled)
                 GUI.DrawTexture(rect, Styles.Dot.fill.image);
+
+            if(selected)
+                GUI.DrawTexture(rect, Styles.Dot.selection.image);
 
             return rect;
         }
