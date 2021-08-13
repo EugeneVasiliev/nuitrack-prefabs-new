@@ -15,6 +15,8 @@ namespace NuitrackSDK.Avatar
 
         Animator animator;
 
+        [SerializeField] List<nuitrack.JointType> jointTypes;
+
         Dictionary<nuitrack.JointType, HumanBodyBones> boneMapping;
         List<ModelJoint> joints;
 
