@@ -7,25 +7,87 @@ namespace NuitrackSDK.Avatar
     public abstract class BaseAvatar : MonoBehaviour
     {
         [Header("Options")]
-        [SerializeField] bool useCurrentUserTracker = true;
+        [SerializeField, HideInInspector] 
+        protected bool useCurrentUserTracker = true;
         
-        [SerializeField, Range(1, 7)]
+        [SerializeField, HideInInspector]
         protected int skeletonID = 1;
 
-        [Tooltip("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
-            "ensuring that the model's size best matches the user's size.")]
-        [SerializeField]
-        protected bool alignmentBoneLength;
+        [SerializeField, HideInInspector] 
+        protected float jointConfidence = 0.1f;
 
-        [Tooltip("Aligns the positions of the model's joints with the joints of the user's skeleton.\n" +
-           "It can cause model distortions and artifacts.")]
-        [SerializeField] bool alignJointPosition = false;
-
-        [SerializeField, Range(0, 1)] float jointConfidence = 0.1f;
+        [SerializeField, HideInInspector] 
+        protected List<ModelJoint> modelJoints;
 
         protected ulong lastTimeStamp = 0;
 
-        void Update()
+        public bool UseCurrentUserTracker
+        {
+            get
+            {
+                return useCurrentUserTracker;
+            }
+            set
+            {
+                useCurrentUserTracker = value;
+            }
+        }
+
+        public int SkeletonID
+        {
+            get
+            {
+                return skeletonID;
+            }
+            set
+            {
+                if (value >= MinSkeletonID && value <= MaxSkeletonID)
+                {
+                    useCurrentUserTracker = false;
+                    skeletonID = value;
+                }
+                else
+                    throw new System.Exception(string.Format("The Skeleton ID must be within the bounds of [{0}, {1}]", MinSkeletonID, MaxSkeletonID));
+            }
+        }
+
+        public int MinSkeletonID
+        {
+            get
+            {
+                return 1;
+            }
+        }
+
+        public int MaxSkeletonID
+        {
+            get
+            {
+                return 6;
+            }
+        }
+
+        public float JointConfidence
+        {
+            get
+            {
+                return jointConfidence;
+            }
+            set
+            {
+                jointConfidence = value;
+            }
+        }
+
+        public ref List<ModelJoint> ModelJoints
+        {
+            get
+            {
+                return ref modelJoints;
+            }
+        }
+
+        protected virtual void Update()
         {
             if (NuitrackManager.SkeletonData == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
                 return;
@@ -33,7 +95,8 @@ namespace NuitrackSDK.Avatar
             lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
             nuitrack.Skeleton skeleton = useCurrentUserTracker ? CurrentUserTracker.CurrentSkeleton : NuitrackManager.SkeletonData.GetSkeletonByID(skeletonID);
 
-            ProcessSkeleton(skeleton);
+            if(skeleton != null)
+                ProcessSkeleton(skeleton);
         }
 
         protected abstract void ProcessSkeleton(nuitrack.Skeleton skeleton);

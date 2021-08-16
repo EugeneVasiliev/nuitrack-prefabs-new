@@ -13,26 +13,15 @@ namespace NuitrackSDK.Avatar
             "the transformation is performed in the world coordinate system, where the sensor position = (0, 0, 0)")]
         [SerializeField] protected Transform space;
 
-        //[System.Serializable]
-        //public class JointItem
-        //{
-        //    public nuitrack.JointType jointType;
-        //    public Transform boneTransform;
+        [Tooltip("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
+            "ensuring that the model's size best matches the user's size.")]
+        [SerializeField] protected bool alignmentBoneLength;
 
-        //    public Quaternion RotationOffset { get; set; }
-        //}
-
-        [SerializeField, HideInInspector] List<ModelJoint> jointItems;
+        [Tooltip("Aligns the positions of the model's joints with the joints of the user's skeleton.\n" +
+           "It can cause model distortions and artifacts.")]
+        [SerializeField] bool alignJointPosition = false;
 
         Dictionary<nuitrack.JointType, nuitrack.JointType> parentsJoint = null;
-
-        public ref List<ModelJoint> JointItems
-        {
-            get
-            {
-                return ref jointItems;
-            }
-        }
 
         Quaternion SpaceRotation
         {
@@ -72,13 +61,13 @@ namespace NuitrackSDK.Avatar
 
         void Awake()
         {
-            jointItems = SortClamp(jointItems);
+            modelJoints = SortClamp(modelJoints);
 
             parentsJoint = new Dictionary<nuitrack.JointType, nuitrack.JointType>();
 
-            List<nuitrack.JointType> skeletonJoints = new List<nuitrack.JointType>(from v in jointItems select v.jointType);
+            List<nuitrack.JointType> skeletonJoints = new List<nuitrack.JointType>(from v in modelJoints select v.jointType);
 
-            foreach (ModelJoint jointItem in jointItems)
+            foreach (ModelJoint jointItem in modelJoints)
             {
                 jointItem.jointType = jointItem.jointType.TryGetMirrored();
 
@@ -86,7 +75,7 @@ namespace NuitrackSDK.Avatar
                 parentsJoint.Add(jointItem.jointType, parentJoint);
             }
 
-            Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = jointItems.ToDictionary(k => k.jointType);
+            Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = modelJoints.ToDictionary(k => k.jointType);
 
             foreach (KeyValuePair<nuitrack.JointType, ModelJoint> joint in jointsRigged)
             {
@@ -104,10 +93,9 @@ namespace NuitrackSDK.Avatar
             if (skeleton == null)
                 return;
 
-            foreach (ModelJoint jointItem in jointItems)
+            foreach (ModelJoint jointItem in modelJoints)
             {
                 nuitrack.Joint joint = skeleton.GetJoint(jointItem.jointType.TryGetMirrored());
-
 
                 //Bone position
                 Vector3 newPos = joint.ToVector3() * 0.001f;
