@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using JointType = nuitrack.JointType;
 
-namespace NuitrackSDK.NuitrackDemos
+namespace NuitrackSDK.Avatar
 {
     enum MappingMode
     {
@@ -11,7 +11,7 @@ namespace NuitrackSDK.NuitrackDemos
         Direct,
     }
 
-    public class Avatar : MonoBehaviour
+    public class Avatar : BaseAvatar
     {
         [Header("Body")]
         [SerializeField] Transform waist;
@@ -40,12 +40,9 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] Transform rightKnee;
         [SerializeField] Transform rightAnkle;
 
-        List<ModelJoint> modelJoints = new List<ModelJoint>();
-
         [Header ("Options")]
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
-        //[SerializeField] Transform rootModel;
 
         [Header("VR settings")]
         [SerializeField] GameObject vrHead;
@@ -69,13 +66,13 @@ namespace NuitrackSDK.NuitrackDemos
 
         void SetJoint(Transform tr, JointType jointType)
         {
-            ModelJoint modelJoint = new ModelJoint()
-            {
-                bone = tr,
-                jointType = jointType
-            };
+            //ModelJoint modelJoint = new ModelJoint()
+            //{
+            //    bone = tr,
+            //    jointType = jointType
+            //};
 
-            modelJoints.Add(modelJoint);
+            //modelJoints.Add(modelJoint);
         }
 
         void Start()
@@ -146,11 +143,9 @@ namespace NuitrackSDK.NuitrackDemos
             jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
         }
 
-        void Update()
+        protected override void Update()
         {
-            //If a skeleton is detected, process the model
-            if (CurrentUserTracker.CurrentSkeleton != null) 
-                ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+            base.Update();
 
             if (spawnedHead)
                 spawnedHead.position = headTransform.position;
@@ -159,7 +154,7 @@ namespace NuitrackSDK.NuitrackDemos
         /// <summary>
         /// Getting skeleton data from thr sensor and updating transforms of the model bones
         /// </summary>
-        void ProcessSkeleton(nuitrack.Skeleton skeleton)
+        protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
         {
             if (mappingMode == MappingMode.Indirect)
             {
