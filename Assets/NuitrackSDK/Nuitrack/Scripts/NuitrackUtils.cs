@@ -120,7 +120,7 @@ public static class NuitrackUtils
     static readonly Dictionary<JointType, JointType> parentJoints = new Dictionary<JointType, JointType>()
     {
         {JointType.Head,                JointType.Neck},
-        {JointType.Neck,                JointType.LeftCollar | JointType.RightCollar},
+        {JointType.Neck,                JointType.LeftCollar},
         {JointType.LeftCollar,          JointType.Torso},
         {JointType.RightCollar,         JointType.Torso},     
         {JointType.Torso,               JointType.Waist},
