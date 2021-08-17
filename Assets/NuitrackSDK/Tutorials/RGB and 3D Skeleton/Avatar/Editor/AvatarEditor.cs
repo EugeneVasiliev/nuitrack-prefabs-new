@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
 using UnityEditor;
 
-using System.Linq;
+using System.Collections.Generic;
+
 using nuitrack;
 
 namespace NuitrackSDK.Avatar.Editor
@@ -18,17 +16,14 @@ namespace NuitrackSDK.Avatar.Editor
 
             if (avatar.ModelJoints == null || avatar.ModelJoints.Count == 0)
             {
-                Debug.Log("INIT ModelJoints");
                 avatar.ModelJoints = new List<ModelJoint>();
 
                 foreach (Styles.GUIBodyPart guiBodyPart in Styles.BodyParts.Values)
-                {
                     foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                     {
                         ModelJoint modelJoint = new ModelJoint() { jointType = guiJoint.jointType };
                         avatar.ModelJoints.Add(modelJoint);
                     }
-                }
             }
 
             base.OnEnable();
@@ -36,7 +31,6 @@ namespace NuitrackSDK.Avatar.Editor
 
         protected override void AddJoint(JointType jointType, Transform objectTransform, ref Dictionary<JointType, ModelJoint> jointsDict)
         {
-            Debug.Log("AddJoint");
             Avatar avatar = serializedObject.targetObject as Avatar;
 
             Undo.RecordObject(avatar, "Avatar mapping modified");

@@ -189,7 +189,7 @@ namespace NuitrackSDK.Avatar.Editor
             GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
             GUI.DrawTexture(rect, Styles.UnityDude.image);
 
-            foreach(KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
             {
                 GUI.color = filled != null && filled.Contains(bodyPart.Key) ? Styles.mainColor : Styles.disableColor;
 
@@ -453,9 +453,9 @@ namespace NuitrackSDK.Avatar.Editor
                         string displayName = GetUnityDisplayName(jointType, bodyPart);
 
                         Transform newJointTransform = EditorGUI.ObjectField(controlRect, displayName, jointTransform, typeof(Transform), true) as Transform;
-                        
+
                         if(newJointTransform != jointTransform)
-                            AddJoint(jointType, jointTransform, ref jointsDict);
+                            AddJoint(jointType, newJointTransform, ref jointsDict);
 
                         if (PingObject(controlRect, jointTransform))
                             selectJoint = jointType;
