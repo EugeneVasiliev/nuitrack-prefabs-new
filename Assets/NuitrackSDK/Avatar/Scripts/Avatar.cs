@@ -64,41 +64,41 @@ namespace NuitrackSDK.Avatar
             tPoseCalibration.onSuccess += OnSuccessCalib;
         }
 
-        void SetJoint(Transform tr, JointType jointType)
-        {
-            //ModelJoint modelJoint = new ModelJoint()
-            //{
-            //    bone = tr,
-            //    jointType = jointType
-            //};
+        //void SetJoint(Transform tr, JointType jointType)
+        //{
+        //    ModelJoint modelJoint = new ModelJoint()
+        //    {
+        //        bone = tr,
+        //        jointType = jointType
+        //    };
 
-            //modelJoints.Add(modelJoint);
-        }
+        //    modelJoints.Add(modelJoint);
+        //}
 
         void Start()
         {
-            SetJoint(waist, JointType.Waist);
-            SetJoint(torso, JointType.Torso);
-            SetJoint(collar, JointType.LeftCollar);
-            SetJoint(collar, JointType.RightCollar);
-            SetJoint(neck, JointType.Neck);
-            SetJoint(head, JointType.Head);
+            //SetJoint(waist, JointType.Waist);
+            //SetJoint(torso, JointType.Torso);
+            //SetJoint(collar, JointType.LeftCollar);
+            //SetJoint(collar, JointType.RightCollar);
+            //SetJoint(neck, JointType.Neck);
+            //SetJoint(head, JointType.Head);
 
-            SetJoint(leftShoulder, JointType.LeftShoulder);
-            SetJoint(leftElbow, JointType.LeftElbow);
-            SetJoint(leftWrist, JointType.LeftWrist);
+            //SetJoint(leftShoulder, JointType.LeftShoulder);
+            //SetJoint(leftElbow, JointType.LeftElbow);
+            //SetJoint(leftWrist, JointType.LeftWrist);
 
-            SetJoint(rightShoulder, JointType.RightShoulder);
-            SetJoint(rightElbow, JointType.RightElbow);
-            SetJoint(rightWrist, JointType.RightWrist);
+            //SetJoint(rightShoulder, JointType.RightShoulder);
+            //SetJoint(rightElbow, JointType.RightElbow);
+            //SetJoint(rightWrist, JointType.RightWrist);
 
-            SetJoint(leftHip, JointType.LeftHip);
-            SetJoint(leftKnee, JointType.LeftKnee);
-            SetJoint(leftAnkle, JointType.LeftAnkle);
+            //SetJoint(leftHip, JointType.LeftHip);
+            //SetJoint(leftKnee, JointType.LeftKnee);
+            //SetJoint(leftAnkle, JointType.LeftAnkle);
 
-            SetJoint(rightHip, JointType.RightHip);
-            SetJoint(rightKnee, JointType.RightKnee);
-            SetJoint(rightAnkle, JointType.RightAnkle);
+            //SetJoint(rightHip, JointType.RightHip);
+            //SetJoint(rightKnee, JointType.RightKnee);
+            //SetJoint(rightAnkle, JointType.RightAnkle);
 
             //Adding model bones and JointType keys
             //Adding rotation offsets of model bones and JointType keys
@@ -115,11 +115,14 @@ namespace NuitrackSDK.Avatar
                 {
                     modelJoint.baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoint.bone.rotation;
                     jointsRigged.Add(modelJoint.jointType.TryGetMirrored(), modelJoint);
-
-                    //Adding base distances between the child bone and the parent bone 
-                    if (modelJoint.jointType.GetParent() != JointType.None)
-                        AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
                 }
+            }
+
+            foreach (ModelJoint modelJoint in modelJoints)
+            {
+                //Adding base distances between the child bone and the parent bone 
+                if (modelJoint.bone != null && modelJoint.jointType.GetParent() != JointType.None)
+                    AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
             }
 
             if (vrHead)
@@ -167,7 +170,7 @@ namespace NuitrackSDK.Avatar
             {
                 //Get joint from the Nuitrack
                 nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                if (joint.Confidence > 0.01f)
+                if (joint.Confidence > jointConfidence)
                 {
                     //Get modelJoint
                     ModelJoint modelJoint = riggedJoint.Value;
