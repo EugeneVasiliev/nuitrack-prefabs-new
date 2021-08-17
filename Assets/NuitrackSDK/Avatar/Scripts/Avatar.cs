@@ -13,34 +13,7 @@ namespace NuitrackSDK.Avatar
 
     public class Avatar : BaseAvatar
     {
-        [Header("Body")]
-        [SerializeField] Transform waist;
-        [SerializeField] Transform torso;
-        [SerializeField] Transform collar;
-        [SerializeField] Transform neck;
-        [SerializeField] Transform head;
-
-        [Header("Left hand")]
-        [SerializeField] Transform leftShoulder;
-        [SerializeField] Transform leftElbow;
-        [SerializeField] Transform leftWrist;
-
-        [Header("Right hand")]
-        [SerializeField] Transform rightShoulder;
-        [SerializeField] Transform rightElbow;
-        [SerializeField] Transform rightWrist;
-
-        [Header("Left leg")]
-        [SerializeField] Transform leftHip;
-        [SerializeField] Transform leftKnee;
-        [SerializeField] Transform leftAnkle;
-
-        [Header("Right leg")]
-        [SerializeField] Transform rightHip;
-        [SerializeField] Transform rightKnee;
-        [SerializeField] Transform rightAnkle;
-
-        [Header ("Options")]
+        [Header ("Avatar options")]
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
 
@@ -64,42 +37,8 @@ namespace NuitrackSDK.Avatar
             tPoseCalibration.onSuccess += OnSuccessCalib;
         }
 
-        //void SetJoint(Transform tr, JointType jointType)
-        //{
-        //    ModelJoint modelJoint = new ModelJoint()
-        //    {
-        //        bone = tr,
-        //        jointType = jointType
-        //    };
-
-        //    modelJoints.Add(modelJoint);
-        //}
-
         void Start()
         {
-            //SetJoint(waist, JointType.Waist);
-            //SetJoint(torso, JointType.Torso);
-            //SetJoint(collar, JointType.LeftCollar);
-            //SetJoint(collar, JointType.RightCollar);
-            //SetJoint(neck, JointType.Neck);
-            //SetJoint(head, JointType.Head);
-
-            //SetJoint(leftShoulder, JointType.LeftShoulder);
-            //SetJoint(leftElbow, JointType.LeftElbow);
-            //SetJoint(leftWrist, JointType.LeftWrist);
-
-            //SetJoint(rightShoulder, JointType.RightShoulder);
-            //SetJoint(rightElbow, JointType.RightElbow);
-            //SetJoint(rightWrist, JointType.RightWrist);
-
-            //SetJoint(leftHip, JointType.LeftHip);
-            //SetJoint(leftKnee, JointType.LeftKnee);
-            //SetJoint(leftAnkle, JointType.LeftAnkle);
-
-            //SetJoint(rightHip, JointType.RightHip);
-            //SetJoint(rightKnee, JointType.RightKnee);
-            //SetJoint(rightAnkle, JointType.RightAnkle);
-
             //Adding model bones and JointType keys
             //Adding rotation offsets of model bones and JointType keys
 
