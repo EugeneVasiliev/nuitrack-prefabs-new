@@ -285,13 +285,13 @@ namespace NuitrackSDK.Avatar.Editor
             return dropTransform;
         }
 
-        protected List<AvatarMaskBodyPart> GetActiveBodyParts(ICollection<nuitrack.JointType> jointsList)
+        protected List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<nuitrack.JointType, ModelJoint> jointsList)
         {
             List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
                 foreach (Styles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
-                    if (!guiJoint.optional && !jointsList.Contains(guiJoint.jointType))
+                    if (!guiJoint.optional && (!jointsList.ContainsKey(guiJoint.jointType) || jointsList[guiJoint.jointType].bone == null))
                     {
                         bodyParts.Remove(bodyPart.Key);
                         break;
@@ -317,9 +317,9 @@ namespace NuitrackSDK.Avatar.Editor
             return false;
         }
 
-        protected void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, ModelJoint> jointsDict)
+        protected virtual void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, ModelJoint> jointsDict)
         {
-            BaseAvatar myScript = (BaseAvatar)target;
+            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
 
             ref List<ModelJoint> modelJoints = ref myScript.ModelJoints;
 
@@ -344,21 +344,21 @@ namespace NuitrackSDK.Avatar.Editor
             else if (jointsDict.ContainsKey(jointType))
             {
                 Undo.RecordObject(myScript, "Remove avatar joint object");
+                
                 modelJoints.Remove(jointsDict[jointType]);
-
                 jointsDict.Remove(jointType);
             }
         }
 
-    
-        void OnEnable()
+
+        protected virtual void OnEnable()
         {
             foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
         }
 
         public override void OnInspectorGUI()
         {
-            BaseAvatar myScript = (BaseAvatar)target;
+            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
 
             DrawDefaultInspector();
 
@@ -387,6 +387,18 @@ namespace NuitrackSDK.Avatar.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
+        string GetUnityDisplayName(nuitrack.JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
+        {
+            string displayName = jointType.ToUnityBones().ToString();
+
+            if (bodyPart == AvatarMaskBodyPart.LeftArm || bodyPart == AvatarMaskBodyPart.LeftLeg)
+                displayName = displayName.Replace("Left", "");
+            else if (bodyPart == AvatarMaskBodyPart.RightArm || bodyPart == AvatarMaskBodyPart.RightLeg)
+                displayName = displayName.Replace("Right", "");
+
+            return ObjectNames.NicifyVariableName(displayName);
+        }
+
         protected void DrawSkeletonMap(BaseAvatar myScript)
         {
             EditorGUILayout.Space();
@@ -398,7 +410,7 @@ namespace NuitrackSDK.Avatar.Editor
 
             Dictionary<nuitrack.JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
 
-            List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict.Keys);
+            List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict);
             DrawDude(rect, bodyParts);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
@@ -438,17 +450,12 @@ namespace NuitrackSDK.Avatar.Editor
                         Rect jointRect = DrawJointDot(position, guiJoint, jointTransform != null, jointType == selectJoint);
                         controlRect.xMin += jointRect.width;
 
-                        string displayName = jointType.ToUnityBones().ToString();
+                        string displayName = GetUnityDisplayName(jointType, bodyPart);
 
-                        if (bodyPart == AvatarMaskBodyPart.LeftArm || bodyPart == AvatarMaskBodyPart.LeftLeg)
-                            displayName = displayName.Replace("Left", "");
-                        else if (bodyPart == AvatarMaskBodyPart.RightArm || bodyPart == AvatarMaskBodyPart.RightLeg)
-                            displayName = displayName.Replace("Right", "");
-
-                        displayName = ObjectNames.NicifyVariableName(displayName);
-
-                        jointTransform = EditorGUI.ObjectField(controlRect, displayName, jointTransform, typeof(Transform), true) as Transform;
-                        AddJoint(jointType, jointTransform, ref jointsDict);
+                        Transform newJointTransform = EditorGUI.ObjectField(controlRect, displayName, jointTransform, typeof(Transform), true) as Transform;
+                        
+                        if(newJointTransform != jointTransform)
+                            AddJoint(jointType, jointTransform, ref jointsDict);
 
                         if (PingObject(controlRect, jointTransform))
                             selectJoint = jointType;
