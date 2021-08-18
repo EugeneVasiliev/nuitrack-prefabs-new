@@ -42,10 +42,6 @@ namespace NuitrackSDK.SafetyGrid
             NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
         }
 
-        bool leftVis = false;
-        bool rightVis = false;
-        bool forwardVis = false;
-
         void CheckSkeletonPositions(nuitrack.SkeletonData skeletonData)
         {
             nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
