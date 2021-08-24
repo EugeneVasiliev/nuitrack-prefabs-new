@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
+using System.IO;
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
@@ -374,10 +375,20 @@ public class NuitrackManager : MonoBehaviour
         {
             initException = ex;
 #if UNITY_EDITOR
+            string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
+            if (nuitrackHomePath == null)
+                Debug.LogError("Check Environment Variable [NUITRACK_HOME]");
+
+            string nuitrackModulePath = nuitrackHomePath + "\\middleware\\NuitrackModule.dll";
+            if (!(File.Exists(nuitrackModulePath)))
+            {
+                Debug.LogError("Check Path in Environment Variable [NUITRACK_HOME]. Nuitrack path is really: " + nuitrackHomePath + "?");
+            }
+
             if (ex.ToString().Contains("TBB"))
             {
                 string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
-                string nuitrackTbbPath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME") + "\\bin\\tbb.dll";
+                string nuitrackTbbPath = nuitrackHomePath + "\\bin\\tbb.dll";
                 Debug.LogError("!!!You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)");
             }
             else
