@@ -35,7 +35,8 @@ namespace NuitrackSDK.Tutorials.RGBand3DSkeleton
 
             // Setting the camera's vFOV equal to the depth sensor's vFOV. 
             // Nuitrack does not yet have a representation of vFOV, so we use the hFOV to vFOV conversion.
-            float vFOV = mode.HFOV * ((float)frame.Rows / frame.Cols);
+            float vFOV = 2 * Mathf.Atan(Mathf.Tan(mode.HFOV * 0.5f) * ((float)frame.Rows / frame.Cols));
+
             camera.fieldOfView = vFOV * Mathf.Rad2Deg;
         }
     }
