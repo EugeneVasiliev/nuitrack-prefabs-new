@@ -8,12 +8,6 @@ public class UIAvatar : MonoBehaviour
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
     RectTransform parentRect;
 
-    [Header("Facetracking")]
-    public bool facetracking;
-
-    JsonInfo faceInfo;
-    Instances[] faces;
-
     nuitrack.JointType[] jointsInfo;
 
     List<RectTransform> connections;
