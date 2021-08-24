@@ -147,39 +147,6 @@ public static class NuitrackUtils
         {JointType.RightFoot,      JointType.RightAnkle},
     };
 
-    public static nuitrack.JointType[] GetJoints(this nuitrack.Skeleton skel)
-    {
-        nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
-        {
-            nuitrack.JointType.Head,
-            nuitrack.JointType.Neck,
-            nuitrack.JointType.Torso,
-            nuitrack.JointType.Waist,
-            nuitrack.JointType.LeftCollar,
-            nuitrack.JointType.RightCollar,
-            nuitrack.JointType.LeftShoulder,
-            nuitrack.JointType.RightShoulder,
-            nuitrack.JointType.LeftElbow,
-            nuitrack.JointType.RightElbow,
-            nuitrack.JointType.LeftWrist,
-            nuitrack.JointType.RightWrist,
-            nuitrack.JointType.LeftHand,
-            nuitrack.JointType.RightHand,
-            nuitrack.JointType.LeftFingertip,
-            nuitrack.JointType.RightFingertip,
-            nuitrack.JointType.LeftHip,
-            nuitrack.JointType.RightHip,
-            nuitrack.JointType.LeftKnee,
-            nuitrack.JointType.RightKnee,
-            nuitrack.JointType.LeftAnkle,
-            nuitrack.JointType.RightAnkle,
-            nuitrack.JointType.LeftFoot,
-            nuitrack.JointType.RightFoot,
-        };
-
-        return jointsInfo;
-    }
-
     #endregion
 
     #region JsonUtils

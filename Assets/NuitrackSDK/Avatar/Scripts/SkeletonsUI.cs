@@ -4,8 +4,9 @@ using nuitrack;
 
 public class SkeletonsUI : MonoBehaviour
 {
-    [Range(0, 6)]
-    public int skeletonCount = 6;         //Max number of skeletons tracked by Nuitrack
+    [SerializeField] RectTransform spawnRectTransform;
+
+    [SerializeField, Range(0, 6)] int skeletonCount = 6;         //Max number of skeletons tracked by Nuitrack
     [SerializeField] UIAvatar skeletonAvatar;
 
     List<UIAvatar> avatars = new List<UIAvatar>();
@@ -14,7 +15,7 @@ public class SkeletonsUI : MonoBehaviour
     {
         for (int i = 0; i < skeletonCount; i++)
         {
-            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform);
+            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, spawnRectTransform);
             UIAvatar skeleton = newAvatar.GetComponent<UIAvatar>();
             skeleton.autoProcessing = false;
             avatars.Add(skeleton);

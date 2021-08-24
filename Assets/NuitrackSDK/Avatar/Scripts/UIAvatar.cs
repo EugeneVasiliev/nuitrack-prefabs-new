@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+using System;
+
 public class UIAvatar : MonoBehaviour
 {
     [Header("Skeleton")]
@@ -8,20 +10,11 @@ public class UIAvatar : MonoBehaviour
     [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
     RectTransform parentRect;
 
-    [Header("Facetracking")]
-    public bool facetracking;
-
-    JsonInfo faceInfo;
-    Instances[] faces;
-
-    nuitrack.JointType[] jointsInfo;
-
-    List<RectTransform> connections;
+    Dictionary<nuitrack.JointType, RectTransform> connections;
     Dictionary<nuitrack.JointType, RectTransform> joints;
 
     void Start()
     {
-        jointsInfo = CurrentUserTracker.CurrentSkeleton.GetJoints();
         CreateSkeletonParts();
         parentRect = GetComponent<RectTransform>();
     }
@@ -29,17 +22,20 @@ public class UIAvatar : MonoBehaviour
     void CreateSkeletonParts()
     {
         joints = new Dictionary<nuitrack.JointType, RectTransform>();
-        connections = new List<RectTransform>();
+        connections = new Dictionary<nuitrack.JointType, RectTransform>();
 
-        for (int i = 0; i < jointsInfo.Length; i++)
+        foreach (nuitrack.JointType jointType in Enum.GetValues(typeof(nuitrack.JointType)))
         {
+            if (jointType == nuitrack.JointType.None)
+                continue;
+
             if (jointPrefab != null)
             {
                 GameObject joint = Instantiate(jointPrefab, transform);
                 joint.SetActive(false);
 
                 RectTransform jointRectTransform = joint.GetComponent<RectTransform>();
-                joints.Add(jointsInfo[i], jointRectTransform);
+                joints.Add(jointType, jointRectTransform);
             }
 
             if (connectionPrefab != null)
@@ -48,7 +44,7 @@ public class UIAvatar : MonoBehaviour
                 connection.SetActive(false);
 
                 RectTransform connectionRectTransform = connection.GetComponent<RectTransform>();
-                connections.Add(connectionRectTransform);
+                connections.Add(jointType, connectionRectTransform);
             }
         }
     }
@@ -64,41 +60,43 @@ public class UIAvatar : MonoBehaviour
         if (skeleton == null)
             return;
 
-        for (int i = 0; i < jointsInfo.Length; i++)
+        foreach (KeyValuePair<nuitrack.JointType, RectTransform> jointsInfo in joints)
         {
-            nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
+            nuitrack.JointType jointType = jointsInfo.Key;
+            RectTransform rectTransform = jointsInfo.Value;
+
+            nuitrack.Joint j = skeleton.GetJoint(jointType);
             if (j.Confidence > 0.01f)
             {
-                joints[jointsInfo[i]].gameObject.SetActive(true);
+                rectTransform.gameObject.SetActive(true);
 
                 Vector2 newPosition = new Vector2(
                     parentRect.rect.width * (Mathf.Clamp01(j.Proj.X) - 0.5f),
                     parentRect.rect.height * (0.5f - Mathf.Clamp01(j.Proj.Y)));
 
-                joints[jointsInfo[i]].anchoredPosition = newPosition;
+                rectTransform.anchoredPosition = newPosition;
             }
             else
             {
-                joints[jointsInfo[i]].gameObject.SetActive(false);
+                rectTransform.gameObject.SetActive(false);
             }
 
-            if(jointsInfo[i].GetParent() != nuitrack.JointType.None)
+            if(jointType.GetParent() != nuitrack.JointType.None)
             {
-                RectTransform startJoint = joints[jointsInfo[i]];
-                RectTransform endJoint = joints[jointsInfo[i].GetParent()];
+                RectTransform endJoint = joints[jointType.GetParent()];
 
-                if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
+                if (rectTransform.gameObject.activeSelf && endJoint.gameObject.activeSelf)
                 {
-                    connections[i].gameObject.SetActive(true);
+                    connections[jointType].gameObject.SetActive(true);
 
-                    connections[i].anchoredPosition = startJoint.anchoredPosition;
-                    connections[i].transform.right = endJoint.position - startJoint.position;
-                    float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
-                    connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
+                    connections[jointType].anchoredPosition = rectTransform.anchoredPosition;
+                    connections[jointType].transform.right = endJoint.position - rectTransform.position;
+                    float distance = Vector3.Distance(endJoint.anchoredPosition, rectTransform.anchoredPosition);
+                    connections[jointType].transform.localScale = new Vector3(distance, 1f, 1f);
                 }
                 else
                 {
-                    connections[i].gameObject.SetActive(false);
+                    connections[jointType].gameObject.SetActive(false);
                 }
             }
         }
