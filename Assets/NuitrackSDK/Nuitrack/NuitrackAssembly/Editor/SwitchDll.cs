@@ -101,6 +101,12 @@ public class SwitchDll : IPreprocessBuildWithReport
         }
     }
 
+    [MenuItem("Nuitrack/Open Troubleshooting Page")]
+    public static void GoToTroubleshootingPage()
+    {
+        Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md#windows");
+    }
+
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
         if (value)
