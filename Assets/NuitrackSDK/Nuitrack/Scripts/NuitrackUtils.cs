@@ -2,6 +2,7 @@
 
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using JointType = nuitrack.JointType;
 
@@ -135,15 +136,17 @@ public static class NuitrackUtils
         {JointType.RightWrist,     JointType.RightElbow},
         {JointType.LeftHand,       JointType.LeftWrist},
         {JointType.RightHand,      JointType.RightWrist},
+        {JointType.LeftFingertip,  JointType.LeftHand},
+        {JointType.RightFingertip, JointType.RightHand},
         {JointType.LeftHip,        JointType.Waist},
         {JointType.RightHip,       JointType.Waist},
         {JointType.LeftKnee,       JointType.LeftHip},
         {JointType.RightKnee,      JointType.RightHip},
         {JointType.LeftAnkle,      JointType.LeftKnee},
         {JointType.RightAnkle,     JointType.RightKnee},
+        {JointType.LeftFoot,       JointType.LeftAnkle},
+        {JointType.RightFoot,      JointType.RightAnkle},
     };
-
-    #endregion
 
     static readonly List<JointType> sortedJoints = new List<JointType>()
     {
@@ -210,4 +213,41 @@ public static class NuitrackUtils
 
         return outList;
     }
+
+    #endregion
+
+    #region JsonUtils
+
+    static Regex regex = null;
+
+    // A pattern for detecting any numbers, including exponential notation
+    static string pattern = "\"-?[\\d]*\\.?[\\d]+(e[-+][\\d]+)?\"";
+
+    public static T FromJson<T>(string json)
+    {
+        try
+        {
+            json = json.Replace("\"\"", "[]");
+
+            if (regex == null)
+                regex = new Regex(pattern);
+
+            foreach (Match match in regex.Matches(json))
+            {
+                string withot_quotation_marks = match.Value.Replace("\"", "");
+                json = json.Replace(match.Value, withot_quotation_marks);
+            }
+
+            T outData = JsonUtility.FromJson<T>(json);
+
+            return outData;
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log(string.Format("Json parsing failure\n{0}", e.Message));
+            return default(T);
+        }
+    }
+
+    #endregion
 }
