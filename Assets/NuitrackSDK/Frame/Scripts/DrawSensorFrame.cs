@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace NuitrackSDK.NuitrackDemos
 {
@@ -15,12 +16,19 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] GameObject depthImage;
         [SerializeField] GameObject userImage;
         [SerializeField] GameObject segmentOverlay;
+        [SerializeField] Toggle segmentToggle;
+        [SerializeField] GameObject skeletonsOverlay;
+        [SerializeField] Toggle skeletonToggle;
+        [SerializeField] GameObject facesOverlay;
+        [SerializeField] Toggle facesToggle;
         [SerializeField] FrameType defaultFrameType = FrameType.Color;
 
         [SerializeField] RectTransform panel;
         [SerializeField] int windowPercent = 20;
         [SerializeField] bool fullscreenDefault = true;
         [SerializeField] bool showSegmentOverlay = false;
+        [SerializeField] bool showSkeletonsOverlay = false;
+        [SerializeField] bool showFacesOverlay = false;
 
         bool isFullscreen;
 
@@ -36,7 +44,12 @@ namespace NuitrackSDK.NuitrackDemos
             SelectFrame(defaultFrameType);
             isFullscreen = fullscreenDefault;
             SwitchFullscreen();
+            segmentToggle.isOn = showSegmentOverlay;
             segmentOverlay.SetActive(showSegmentOverlay);
+            skeletonToggle.isOn = showSkeletonsOverlay;
+            skeletonsOverlay.SetActive(showSkeletonsOverlay);
+            facesToggle.isOn = showFacesOverlay;
+            facesOverlay.SetActive(showFacesOverlay);
         }
 
         void SelectFrame(FrameType frameType)
@@ -46,9 +59,19 @@ namespace NuitrackSDK.NuitrackDemos
             userImage.SetActive(frameType == FrameType.User);
         }
 
-        public void SwitchSegmentOverlay()
+        public void SwitchSegmentOverlay(bool value)
         {
-            segmentOverlay.SetActive(!segmentOverlay.activeSelf);
+            segmentOverlay.SetActive(value);
+        }
+
+        public void SwitchSkeletonsOverlay(bool value)
+        {
+            skeletonsOverlay.SetActive(value);
+        }
+
+        public void SwitchFacesOverlay(bool value)
+        {
+            facesOverlay.SetActive(value);
         }
 
         public void SwitchFullscreen()
