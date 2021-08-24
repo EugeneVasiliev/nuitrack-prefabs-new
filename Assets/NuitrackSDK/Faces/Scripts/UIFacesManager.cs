@@ -4,8 +4,9 @@ using nuitrack;
 
 public class UIFacesManager : MonoBehaviour
 {
-    [Range(0, 6)]
-    public int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
+    [SerializeField] RectTransform spawnRectTransform;
+
+    [SerializeField, Range(0, 6)] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
     [SerializeField] UIFaceInfo faceFrame;
 
     List<UIFaceInfo> uiFaces = new List<UIFaceInfo>();
@@ -14,10 +15,13 @@ public class UIFacesManager : MonoBehaviour
     {
         for (int i = 0; i < faceCount; i++)
         {
-            GameObject newFrame = Instantiate(faceFrame.gameObject, transform);
+            GameObject newFrame = Instantiate(faceFrame.gameObject, spawnRectTransform);
             newFrame.SetActive(false);
+
             UIFaceInfo faceInfo = newFrame.GetComponent<UIFaceInfo>();
+            faceInfo.Initialize(spawnRectTransform);
             faceInfo.autoProcessing = false;
+
             uiFaces.Add(faceInfo);
         }
 

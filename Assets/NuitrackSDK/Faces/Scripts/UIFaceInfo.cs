@@ -15,19 +15,20 @@ public class UIFaceInfo : MonoBehaviour
     [SerializeField] Slider surprise;
     [SerializeField] Slider happy;
 
-    RectTransform canvasTransform;
-
+    RectTransform spawnTransform;
     RectTransform frameTransform;
+    Image image;
 
-    Instances[] faces;
+    Instances[] instances;
 
-    JsonInfo faceInfo;
+    JsonInfo jsonInfo;
 
-    void Start()
+    public void Initialize(RectTransform spawnTransform)
     {
+        this.spawnTransform = spawnTransform;
+
         frameTransform = GetComponent<RectTransform>();
-        canvasTransform = GetComponentInParent<Canvas>().GetComponent<RectTransform>();
-        infoPanel.SetActive(showInfo);
+        image = frameTransform.GetComponent<Image>();
     }
 
     void Update()
@@ -40,50 +41,47 @@ public class UIFaceInfo : MonoBehaviour
 
     public void ProcessFace(nuitrack.Skeleton skeleton)
     {
-        try
+        string json = nuitrack.Nuitrack.GetInstancesJson();
+        
+        jsonInfo = NuitrackUtils.FromJson<JsonInfo>(json);
+
+        if (jsonInfo == null)
+            return;
+
+        instances = jsonInfo.Instances;
+        for (int i = 0; i < instances.Length; i++)
         {
-            string json = nuitrack.Nuitrack.GetInstancesJson();
-            faceInfo = JsonUtility.FromJson<JsonInfo>(json.Replace("\"\"", "[]"));
-
-            faces = faceInfo.Instances;
-            for (int i = 0; i < faces.Length; i++)
+            if (instances != null && i < instances.Length && skeleton.ID == instances[i].id)
             {
-                if (faces != null && i < faces.Length && skeleton.ID == faces[i].id)
+                Face currentFace = instances[i].face;
+
+                if (skeleton != null && currentFace.rectangle != null && spawnTransform)
                 {
-                    Face currentFace = faces[i].face;
+                    image.enabled = true;
+                    infoPanel.SetActive(showInfo);
 
-                    if (skeleton != null && currentFace.rectangle != null && canvasTransform)
-                    {
-                        frameTransform.GetComponent<Image>().enabled = true;
-                        infoPanel.SetActive(showInfo);
+                    Vector2 newPosition = new Vector2(
+                        spawnTransform.rect.width * (Mathf.Clamp01(currentFace.rectangle.left) - 0.5f) + frameTransform.rect.width / 2,
+                        spawnTransform.rect.height * (0.5f - Mathf.Clamp01(currentFace.rectangle.top)) - frameTransform.rect.height / 2);
 
-                        Vector2 newPosition = new Vector2(
-                            canvasTransform.rect.width * (Mathf.Clamp01(currentFace.rectangle.left) - 0.5f) + frameTransform.rect.width / 2,
-                            canvasTransform.rect.height * (0.5f - Mathf.Clamp01(currentFace.rectangle.top)) - frameTransform.rect.height / 2);
+                    frameTransform.sizeDelta = new Vector2(currentFace.rectangle.width * spawnTransform.rect.width, currentFace.rectangle.height * spawnTransform.rect.height);
+                    frameTransform.anchoredPosition = newPosition;
 
-                        frameTransform.sizeDelta = new Vector2(currentFace.rectangle.width * canvasTransform.rect.width, currentFace.rectangle.height * canvasTransform.rect.height);
-                        frameTransform.anchoredPosition = newPosition;
+                    ageText.text = currentFace.age.type;
+                    yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);
+                    genderText.text = currentFace.gender;
 
-                        ageText.text = currentFace.age.type;
-                        yearsText.text = "Years: " + currentFace.age.years.ToString("F1");
-                        genderText.text = currentFace.gender;
-
-                        neutral.value = currentFace.emotions.neutral;
-                        angry.value = currentFace.emotions.angry;
-                        surprise.value = currentFace.emotions.surprise;
-                        happy.value = currentFace.emotions.happy;
-                    }
-                    else
-                    {
-                        frameTransform.GetComponent<Image>().enabled = false;
-                        infoPanel.SetActive(false);
-                    }
+                    neutral.value = currentFace.emotions.neutral;
+                    angry.value = currentFace.emotions.angry;
+                    surprise.value = currentFace.emotions.surprise;
+                    happy.value = currentFace.emotions.happy;
+                }
+                else
+                {
+                    image.enabled = false;
+                    infoPanel.SetActive(false);
                 }
             }
-        }
-        catch (System.Exception)
-        {
-            Debug.Log("Face Error ");
         }
     }
 }
