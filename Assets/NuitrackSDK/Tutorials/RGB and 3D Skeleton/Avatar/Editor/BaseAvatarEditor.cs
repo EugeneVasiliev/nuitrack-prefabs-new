@@ -82,8 +82,8 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.Neck, new Vector2(0.00f, 0.66f), true),
-                            new GUIJoint(JointType.Head, new Vector2(0.00f, 0.76f), true)
+                            new GUIJoint(JointType.Neck, new Vector2(0.00f, 0.7f), true),
+                            new GUIJoint(JointType.Head, new Vector2(0.00f, 0.80f), true)
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Head") }
@@ -132,7 +132,7 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.LeftCollar, new Vector2(-0.14f, 0.60f), true),
+                            new GUIJoint(JointType.LeftCollar, new Vector2(-0.12f, 0.60f), true),
                             new GUIJoint(JointType.LeftShoulder, new Vector2(-0.30f, 0.57f)),
                             new GUIJoint(JointType.LeftElbow, new Vector2(-0.48f, 0.30f)),
                             new GUIJoint(JointType.LeftWrist, new Vector2(-0.66f, 0.03f))
@@ -153,7 +153,7 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.RightCollar, new Vector2(0.14f, 0.60f), true),
+                            new GUIJoint(JointType.RightCollar, new Vector2(0.12f, 0.60f), true),
                             new GUIJoint(JointType.RightShoulder, new Vector2(0.30f, 0.57f)),
                             new GUIJoint(JointType.RightElbow, new Vector2(0.48f, 0.30f)),
                             new GUIJoint(JointType.RightWrist, new Vector2(0.66f, 0.03f))
@@ -355,6 +355,8 @@ namespace NuitrackSDK.Avatar.Editor
 
         protected virtual void OnEnable()
         {
+            selectJoint = JointType.None;
+
             foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
 
             BaseAvatar avatar = serializedObject.targetObject as BaseAvatar;
@@ -382,7 +384,7 @@ namespace NuitrackSDK.Avatar.Editor
             useCurrentUserTracker.boolValue = EditorGUILayout.Toggle("Use current user tracker", useCurrentUserTracker.boolValue);
             serializedObject.ApplyModifiedProperties();
 
-            if (!myScript.UseCurrentUserTracker)
+            if (!useCurrentUserTracker.boolValue)
             {
                 SerializedProperty skeletonID = serializedObject.FindProperty("skeletonID");
                 skeletonID.intValue = EditorGUILayout.IntSlider("Skeleton ID", skeletonID.intValue, myScript.MinSkeletonID, myScript.MaxSkeletonID);

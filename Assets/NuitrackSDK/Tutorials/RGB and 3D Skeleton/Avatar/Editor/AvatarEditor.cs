@@ -13,10 +13,9 @@ namespace NuitrackSDK.Avatar.Editor
     {
         protected override void OnEnable()
         {
-            Avatar avatar = serializedObject.targetObject as Avatar;
+            base.OnEnable();
 
-            if (avatar.ModelJoints == null)
-                avatar.ModelJoints = new List<ModelJoint>();
+            Avatar avatar = serializedObject.targetObject as Avatar;
 
             List<JointType> avatarJoints = avatar.ModelJoints.Select(k => k.jointType).ToList();
   
@@ -33,8 +32,6 @@ namespace NuitrackSDK.Avatar.Editor
 
                     index++;
                 }
-
-            base.OnEnable();
         }
 
         protected override void AddJoint(JointType jointType, Transform objectTransform, ref Dictionary<JointType, ModelJoint> jointsDict)

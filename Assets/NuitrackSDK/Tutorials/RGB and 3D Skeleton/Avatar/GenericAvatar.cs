@@ -9,7 +9,6 @@ namespace NuitrackSDK.Avatar
     public class GenericAvatar : BaseAvatar
     {
         [Header("Root")]
-        [SerializeField] Transform root;
         [SerializeField] nuitrack.JointType rootJointType = nuitrack.JointType.Waist;
 
         [Header("Space")]
@@ -25,31 +24,19 @@ namespace NuitrackSDK.Avatar
            "It can cause model distortions and artifacts.")]
         [SerializeField] bool alignJointPosition = false;
 
+        Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = null;
 
         Quaternion SpaceRotation
         {
             get
             {
-                return space != null ? space.rotation : Quaternion.identity;
+                return space == null ? Quaternion.identity : space.rotation;
             }
         }
 
         Vector3 SpaceToWorldPoint(Vector3 spacePoint)
         {
-            return space != null ? space.TransformPoint(spacePoint) : spacePoint;
-        }
-
-        List<ModelJoint> SortClamp(List<ModelJoint> sourceModelJoints)
-        {
-            List<ModelJoint> outList = new List<ModelJoint>();
-
-            Dictionary<nuitrack.JointType, ModelJoint> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
-            List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
-
-            foreach (nuitrack.JointType jointType in jointTypes)
-                outList.Add(dict[jointType]);
-
-            return outList;
+            return space == null ? spacePoint : space.TransformPoint(spacePoint);
         }
 
         nuitrack.JointType GetRecursiveParent(nuitrack.JointType startJoint, List<nuitrack.JointType> jointsDict)
@@ -64,28 +51,25 @@ namespace NuitrackSDK.Avatar
 
         void Awake()
         {
-            modelJoints = SortClamp(modelJoints);
-
             foreach (ModelJoint modelJoint in modelJoints)
             {
                 modelJoint.jointType = modelJoint.jointType.TryGetMirrored();
-
-                //if(modelJoint.jointType != nuitrack.JointType.LeftHip && modelJoint.jointType != nuitrack.JointType.RightHip)
-                    modelJoint.parentJointType = modelJoint.jointType.GetParent();
-
-                Debug.Log(modelJoint.jointType + " < " + modelJoint.parentJointType);
+                modelJoint.parentJointType = modelJoint.jointType.GetParent();
             }
 
-            Dictionary<nuitrack.JointType, ModelJoint> jointsRigged = modelJoints.ToDictionary(k => k.jointType);
+            jointsRigged = modelJoints.ToDictionary(k => k.jointType);
 
             foreach (KeyValuePair<nuitrack.JointType, ModelJoint> joint in jointsRigged)
             {
                 ModelJoint modelJoint = joint.Value;
 
-                modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
+                if (modelJoint.bone != null)
+                {
+                    modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
 
-                if (modelJoint.parentJointType != nuitrack.JointType.None)
-                    modelJoint.parentBone = jointsRigged[modelJoint.parentJointType].bone;
+                    if (alignmentBoneLength && modelJoint.parentJointType != nuitrack.JointType.None && jointsRigged.ContainsKey(modelJoint.parentJointType))
+                        modelJoint.parentBone = jointsRigged[modelJoint.parentJointType].bone;
+                }
             }
         }
 
@@ -94,24 +78,21 @@ namespace NuitrackSDK.Avatar
             if (skeleton == null)
                 return;
 
-            nuitrack.Joint rootJ = skeleton.GetJoint(rootJointType);
-            root.position = SpaceToWorldPoint(rootJ.ToVector3() * 0.001f);
-
             foreach (ModelJoint modelJoint in modelJoints)
             {
-                nuitrack.Joint joint = skeleton.GetJoint(modelJoint.jointType);
+                JointTransform jointTransform = GetJointTransform(modelJoint.jointType);
 
-                if (joint.Confidence < jointConfidence)
+                if (!jointTransform.IsActive)
                     continue;
 
                 //Bone rotation
-                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.ToQuaternion() * modelJoint.baseRotOffset;
+                Quaternion jointOrient = jointTransform.Rotation * modelJoint.baseRotOffset;
                 modelJoint.bone.rotation = SpaceRotation * jointOrient;
 
                 //Bone position
-                Vector3 jointPosition = SpaceToWorldPoint(joint.ToVector3() * 0.001f);
+                Vector3 jointPosition = SpaceToWorldPoint(jointTransform.Position);
 
-                if (alignJointPosition)
+                if (alignJointPosition || modelJoint.jointType == rootJointType)
                     modelJoint.bone.position = jointPosition;
 
                 //Bone scale
