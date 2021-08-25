@@ -4,6 +4,8 @@ using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
 
+using nuitrack;
+
 namespace NuitrackSDK.Avatar.Editor
 {
     public static class Styles
@@ -26,11 +28,11 @@ namespace NuitrackSDK.Avatar.Editor
 
         public class GUIJoint
         {
-            public nuitrack.JointType jointType;
+            public JointType jointType;
             public Vector2 mapPosition;
             public bool optional = false;
 
-            public GUIJoint(nuitrack.JointType jointType, Vector2 mapPosition, bool optional = false)
+            public GUIJoint(JointType jointType, Vector2 mapPosition, bool optional = false)
             {
                 this.jointType = jointType;
                 this.mapPosition = mapPosition;
@@ -62,8 +64,8 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.Waist, new Vector2(0.00f, 0.08f)),
-                            new GUIJoint(nuitrack.JointType.Torso, new Vector2(0.00f, 0.35f)),
+                            new GUIJoint(JointType.Waist, new Vector2(0.00f, 0.08f)),
+                            new GUIJoint(JointType.Torso, new Vector2(0.00f, 0.35f)),
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Torso") }
@@ -80,8 +82,8 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.Neck, new Vector2(0.00f, 0.66f), true),
-                            new GUIJoint(nuitrack.JointType.Head, new Vector2(0.00f, 0.76f), true)
+                            new GUIJoint(JointType.Neck, new Vector2(0.00f, 0.66f), true),
+                            new GUIJoint(JointType.Head, new Vector2(0.00f, 0.76f), true)
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Head") }
@@ -95,10 +97,10 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.LeftHip, new Vector2(-0.16f, 0.01f)),
-                            new GUIJoint(nuitrack.JointType.LeftKnee, new Vector2(-0.21f, -0.40f)),
-                            new GUIJoint(nuitrack.JointType.LeftAnkle, new Vector2(-0.23f, -0.80f)),
-                            //new GUIJoint(nuitrack.JointType.LeftFoot, new Vector2(0.25f, -0.89f), true),
+                            new GUIJoint(JointType.LeftHip, new Vector2(-0.16f, 0.01f)),
+                            new GUIJoint(JointType.LeftKnee, new Vector2(-0.21f, -0.40f)),
+                            new GUIJoint(JointType.LeftAnkle, new Vector2(-0.23f, -0.80f)),
+                            //new GUIJoint(JointType.LeftFoot, new Vector2(0.25f, -0.89f), true),
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/RightLeg") }
@@ -113,10 +115,10 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.RightHip, new Vector2(0.16f, 0.01f)),
-                            new GUIJoint(nuitrack.JointType.RightKnee,  new Vector2(0.21f, -0.40f)),
-                            new GUIJoint(nuitrack.JointType.RightAnkle, new Vector2(0.23f, -0.80f)),
-                            //new GUIJoint(nuitrack.JointType.RightFoot, new Vector2(-0.25f, -0.89f), true)
+                            new GUIJoint(JointType.RightHip, new Vector2(0.16f, 0.01f)),
+                            new GUIJoint(JointType.RightKnee,  new Vector2(0.21f, -0.40f)),
+                            new GUIJoint(JointType.RightAnkle, new Vector2(0.23f, -0.80f)),
+                            //new GUIJoint(JointType.RightFoot, new Vector2(-0.25f, -0.89f), true)
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/LeftLeg") }
@@ -130,10 +132,10 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.LeftCollar, new Vector2(-0.14f, 0.60f), true),
-                            new GUIJoint(nuitrack.JointType.LeftShoulder, new Vector2(-0.30f, 0.57f)),
-                            new GUIJoint(nuitrack.JointType.LeftElbow, new Vector2(-0.48f, 0.30f)),
-                            new GUIJoint(nuitrack.JointType.LeftWrist, new Vector2(-0.66f, 0.03f))
+                            new GUIJoint(JointType.LeftCollar, new Vector2(-0.14f, 0.60f), true),
+                            new GUIJoint(JointType.LeftShoulder, new Vector2(-0.30f, 0.57f)),
+                            new GUIJoint(JointType.LeftElbow, new Vector2(-0.48f, 0.30f)),
+                            new GUIJoint(JointType.LeftWrist, new Vector2(-0.66f, 0.03f))
                         },
 
                         guiContents = new List<GUIContent>()
@@ -151,10 +153,10 @@ namespace NuitrackSDK.Avatar.Editor
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(nuitrack.JointType.RightCollar, new Vector2(0.14f, 0.60f), true),
-                            new GUIJoint(nuitrack.JointType.RightShoulder, new Vector2(0.30f, 0.57f)),
-                            new GUIJoint(nuitrack.JointType.RightElbow, new Vector2(0.48f, 0.30f)),
-                            new GUIJoint(nuitrack.JointType.RightWrist, new Vector2(0.66f, 0.03f))
+                            new GUIJoint(JointType.RightCollar, new Vector2(0.14f, 0.60f), true),
+                            new GUIJoint(JointType.RightShoulder, new Vector2(0.30f, 0.57f)),
+                            new GUIJoint(JointType.RightElbow, new Vector2(0.48f, 0.30f)),
+                            new GUIJoint(JointType.RightWrist, new Vector2(0.66f, 0.03f))
                         },
 
                         guiContents = new List<GUIContent>()
@@ -172,7 +174,7 @@ namespace NuitrackSDK.Avatar.Editor
     {
         Dictionary<AvatarMaskBodyPart, bool> foldOpenned;
 
-        nuitrack.JointType selectJoint = nuitrack.JointType.None;
+        JointType selectJoint = JointType.None;
 
         protected Rect GetAvatarViewRect()
         {
@@ -285,7 +287,7 @@ namespace NuitrackSDK.Avatar.Editor
             return dropTransform;
         }
 
-        protected List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<nuitrack.JointType, ModelJoint> jointsList)
+        protected List<AvatarMaskBodyPart> GetActiveBodyParts(Dictionary<JointType, ModelJoint> jointsList)
         {
             List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
 
@@ -317,7 +319,7 @@ namespace NuitrackSDK.Avatar.Editor
             return false;
         }
 
-        protected virtual void AddJoint(nuitrack.JointType jointType, Transform objectTransform, ref Dictionary<nuitrack.JointType, ModelJoint> jointsDict)
+        protected virtual void AddJoint(JointType jointType, Transform objectTransform, ref Dictionary<JointType, ModelJoint> jointsDict)
         {
             BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
 
@@ -354,6 +356,11 @@ namespace NuitrackSDK.Avatar.Editor
         protected virtual void OnEnable()
         {
             foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
+
+            BaseAvatar avatar = serializedObject.targetObject as BaseAvatar;
+
+            if (avatar.ModelJoints == null)
+                avatar.ModelJoints = new List<ModelJoint>();
         }
 
         public override void OnInspectorGUI()
@@ -387,7 +394,7 @@ namespace NuitrackSDK.Avatar.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        string GetUnityDisplayName(nuitrack.JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
+        string GetUnityDisplayName(JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
         {
             string displayName = jointType.ToUnityBones().ToString();
 
@@ -408,7 +415,7 @@ namespace NuitrackSDK.Avatar.Editor
 
             ref List<ModelJoint> modelJoints = ref myScript.ModelJoints;
 
-            Dictionary<nuitrack.JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
+            Dictionary<JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
 
             List<AvatarMaskBodyPart> bodyParts = GetActiveBodyParts(jointsDict);
             DrawDude(rect, bodyParts);
@@ -427,7 +434,7 @@ namespace NuitrackSDK.Avatar.Editor
 
                 foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
-                    nuitrack.JointType jointType = guiJoint.jointType;
+                    JointType jointType = guiJoint.jointType;
                     Transform jointTransform = jointsDict.ContainsKey(jointType) ? jointsDict[jointType].bone : null;
 
                     Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, jointTransform != null, jointType == selectJoint);
