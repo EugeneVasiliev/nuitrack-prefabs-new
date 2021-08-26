@@ -46,11 +46,11 @@ public class NuitrackErrorSolver : MonoBehaviour
                         errorMessage = "Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. And try allow all permissions." +
                             "Path: " + nuitrackHomePath;
                     else if (ex.ToString().Contains("Can't create DepthSensor"))
-                        errorMessage = "Can't create DepthSensor module. Sensor connected?";
+                        errorMessage = "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay? \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                     else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
                         errorMessage = "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)";
                     else
-                        errorMessage = "Perhaps the sensor is already being used in other program.";
+                        errorMessage = "Perhaps the sensor is already being used in other program. \nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
 
                     errorMessage = "<color=red><b>" + errorMessage + "</b></color>";
                 }
@@ -71,7 +71,7 @@ public class NuitrackErrorSolver : MonoBehaviour
             if (showInLog) Debug.LogError(ex.ToString());
         }
 #endif
-
+        if (showInLog && Application.loadedLevelName != "allModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color");
         if (showInLog) Debug.LogError(troubleshootingPageMessage);
         return (errorMessage + "\n" + troubleshootingPageMessage);
     }

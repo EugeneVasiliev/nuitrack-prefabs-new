@@ -98,7 +98,8 @@ public class SwitchDll : IPreprocessBuildWithReport
         }
         catch
         {
-            Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>");
+            Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
+                "<color=red><b>It is recommended to test on allModulesScene</b></color>");
         }
     }
 
