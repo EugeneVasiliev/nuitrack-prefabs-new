@@ -339,6 +339,11 @@ public class NuitrackManager : MonoBehaviour
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
                 }
+
+                Debug.Log(
+                    "Nuitrack Config parameters:\n" +
+                    "Skeletonization Type: " + nuitrack.Nuitrack.GetConfigValue("Skeletonization.Type") + "\n" +
+                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse"));
             }
 
             Debug.Log("Init OK");
