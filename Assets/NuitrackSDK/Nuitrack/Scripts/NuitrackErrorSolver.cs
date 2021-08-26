@@ -5,23 +5,34 @@ using System.Security.AccessControl;
 
 public class NuitrackErrorSolver : MonoBehaviour
 {
-    public static void CheckError(System.Exception ex)
+    public static string CheckError(System.Exception ex, bool showInLog = true)
     {
-#if UNITY_EDITOR
+        string errorMessage = string.Empty;
+        string troubleshootingPageMessage = "<color=red><b>Also look Nuitrack Troubleshooting page:</b></color>github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md" +
+            "\nIf all else fails and you decide to contact our technical support, do not forget to attach the Unity Log File (docs.unity3d.com/Manual/LogFiles.html) and specify the Nuitrack version";
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN 
         string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
-        string incorrectInstallingMessage = "Check your Environment Variables in Windows settings. " +
-                "There should be two variables \"NUITRACK_HOME\" with a path to Nuitrack and a \"Path\" c with a path to %NUITRACK_HOME%/bin " +
-                "Maybe the installation probably did not complete correctly, then look Troubleshooting Page.";
+        string incorrectInstallingMessage =
+            "1.Is Nuitrack installed at all? (github.com/3DiVi/nuitrack-sdk/tree/master/Platforms) \n" +
+            "2.Try restart PC \n" +
+            "3.Check your Environment Variables in Windows settings. " +
+            "There should be two variables \"NUITRACK_HOME\" with a path to \"Nuitrack\\nuitrack\\nutrack\" and a \"Path\" with a path to %NUITRACK_HOME%\\bin " +
+            "Maybe the installation probably did not complete correctly, in this case, look Troubleshooting Page.";
+
         if (nuitrackHomePath == null)
-            Debug.LogError("<color=red><b>Check Environment Variable [NUITRACK_HOME]</b></color>" +
-                "\n So what's now? 1. Is Nuitrack installed at all? 2.Try restart PC 3. " + incorrectInstallingMessage);
+            errorMessage = "<color=red><b>" + "Environment Variable [NUITRACK_HOME] not found" + "</b></color>" +
+                "\n" + incorrectInstallingMessage;
         else
         {
             string nuitrackModulePath = nuitrackHomePath + "\\middleware\\NuitrackModule.dll";
             if (!(File.Exists(nuitrackModulePath)))
             {
-                Debug.LogError("<color=red><b>File: " + nuitrackModulePath + " not exists. Check Path in Environment Variable [NUITRACK_HOME]</b></color>. Nuitrack path is really: " + nuitrackHomePath + " ?" +
-                    "\n So what's now? 1.Try restart PC 2. " + incorrectInstallingMessage);
+                errorMessage = "<color=red><b>" + "File: " + nuitrackModulePath + " not exists or Unity doesn't have enough rights to access it." + "</b></color>" + " Nuitrack path is really: " + 
+                    nuitrackHomePath + " ?\n" + incorrectInstallingMessage + "\n" +
+                    "4.Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. " +
+                    "Can you create text-file in " + nuitrackHomePath + "\\middleware folder?" + "Try allow Full controll permissions for Users. " +
+                    "(More details: winaero.com/how-to-take-ownership-and-get-full-access-to-files-and-folders-in-windows-10/)";
             }
             else
             {
@@ -32,15 +43,23 @@ public class NuitrackErrorSolver : MonoBehaviour
                 catch (System.Exception)
                 {
                     if (ex.ToString().Contains("Cannot load library module"))
-                        Debug.LogError("<color=red><b>Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. And try allow all permissions.</b></color> Path: " + nuitrackHomePath);
-                    else if(ex.ToString().Contains("Can't create DepthSensor"))
-                        Debug.LogError("<color=red><b>Can't create DepthSensor module. Sensor connected?</b></color>");
+                        errorMessage = "Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. And try allow all permissions." +
+                            "Path: " + nuitrackHomePath;
+                    else if (ex.ToString().Contains("Can't create DepthSensor"))
+                        errorMessage = "Can't create DepthSensor module. Sensor connected?";
+                    else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
+                        errorMessage = "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)";
                     else
-                        Debug.LogError("<color=red><b>Perhaps the sensor is already being used in some other program.</b></color>");
+                        errorMessage = "Perhaps the sensor is already being used in other program.";
+
+                    errorMessage = "<color=red><b>" + errorMessage + "</b></color>";
                 }
             }
         }
 
+        if (showInLog) Debug.LogError(errorMessage);
+#endif
+#if UNITY_EDITOR_WIN
         if (ex.ToString().Contains("TBB"))
         {
             string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
@@ -49,10 +68,11 @@ public class NuitrackErrorSolver : MonoBehaviour
         }
         else
         {
-            Debug.LogError(ex.ToString());
+            if (showInLog) Debug.LogError(ex.ToString());
         }
-
-        Debug.LogError("<color=red><b>Also look Nuitrack Troubleshooting page:</b></color> https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md#windows");
 #endif
+
+        if (showInLog) Debug.LogError(troubleshootingPageMessage);
+        return (errorMessage + "\n" + troubleshootingPageMessage);
     }
 }
