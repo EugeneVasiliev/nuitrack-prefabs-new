@@ -9,7 +9,7 @@ public class NuitrackErrorSolver : MonoBehaviour
     {
         string errorMessage = string.Empty;
         string troubleshootingPageMessage = "<color=red><b>Also look Nuitrack Troubleshooting page:</b></color>github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md" +
-            "\nIf all else fails and you decide to contact our technical support, do not forget to attach the Unity Log File (docs.unity3d.com/Manual/LogFiles.html) and specify the Nuitrack version";
+            "\nIf all else fails and you decide to contact our technical support, do not forget to attach the Unity Editor Log File (in %LOCALAPPDATA%/Unity/Editor) and specify the Nuitrack version";
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN 
         string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");

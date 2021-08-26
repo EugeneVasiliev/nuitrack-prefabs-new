@@ -522,6 +522,7 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    bool licenseIsOver = false;
     void Update()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -535,7 +536,18 @@ public class NuitrackManager : MonoBehaviour
             }
             catch (System.Exception ex)
             {
-                Debug.LogError(ex.ToString());
+                if (ex.ToString().Contains("LicenseNotAcquiredException") && licenseIsOver == false)
+                {
+                    licenseIsOver = true;
+                    if (Time.time > 5.0f)
+                        Debug.LogError("Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing");
+                    else
+                        Debug.LogError("Activate Nuitrack license https://nuitrack.com/#pricing");
+                }
+                else
+                {
+                    Debug.LogError(ex.ToString());
+                }
             }
         }
     }
