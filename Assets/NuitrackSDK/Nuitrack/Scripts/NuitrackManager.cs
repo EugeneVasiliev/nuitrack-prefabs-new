@@ -33,6 +33,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
+    float workingTime = 0.0f;
+
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
@@ -537,6 +539,7 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
+                workingTime += Time.deltaTime;
                 nuitrack.Nuitrack.Update();
             }
             catch (System.Exception ex)
@@ -544,7 +547,8 @@ public class NuitrackManager : MonoBehaviour
                 if (ex.ToString().Contains("LicenseNotAcquiredException") && licenseIsOver == false)
                 {
                     licenseIsOver = true;
-                    if (Time.time > 5.0f)
+                    Debug.Log(workingTime);
+                    if (workingTime > 5.0f)
                         Debug.LogError("Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing");
                     else
                         Debug.LogError("Activate Nuitrack license https://nuitrack.com/#pricing");
