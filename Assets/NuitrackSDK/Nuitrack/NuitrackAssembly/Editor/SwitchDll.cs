@@ -94,11 +94,11 @@ public class SwitchDll : IPreprocessBuildWithReport
             nuitrack.Nuitrack.Init();
             Debug.Log("Nuitrack version: " + nuitrack.Nuitrack.GetVersion());
             nuitrack.Nuitrack.Release();
-            Debug.Log("Test Nuitrack init was successful!");
+            Debug.Log("<color=green><b>Test Nuitrack init was successful!</b></color>");
         }
         catch
         {
-            Debug.LogWarning("Test Nuitrack init failed!");
+            Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>");
         }
     }
 
