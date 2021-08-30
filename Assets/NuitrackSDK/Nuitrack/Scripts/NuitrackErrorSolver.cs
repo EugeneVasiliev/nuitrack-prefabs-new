@@ -55,16 +55,15 @@ public class NuitrackErrorSolver : MonoBehaviour
                 catch (System.Exception)
                 {
                     if (ex.ToString().Contains("Cannot load library module"))
-                        errorMessage = accessDeniedMessage +
-                            "Path: " + nuitrackHomePath;
+                        errorMessage = "<color=red><b>" + accessDeniedMessage + "</b></color>" +
+                            "Path: " + nuitrackHomePath +
+                            "\nIf that doesn't work, check to see if you have used any other skeleton tracking software. If so, try uninstalling it and rebooting.";
                     else if (ex.ToString().Contains("Can't create DepthSensor"))
-                        errorMessage = "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay? \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
+                        errorMessage = "<color=red><b>" + "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay?" + "</b></color>" + " \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                     else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
-                        errorMessage = "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)";
+                        errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
                     else
-                        errorMessage = "Perhaps the sensor is already being used in other program. \nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
-
-                    errorMessage = "<color=red><b>" + errorMessage + "</b></color>";
+                        errorMessage = "<color=red><b>" + "Perhaps the sensor is already being used in other program. " + "</b></color>" + "\nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                 }
             }
         }
