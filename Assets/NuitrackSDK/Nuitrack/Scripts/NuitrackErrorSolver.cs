@@ -19,7 +19,21 @@ public class NuitrackErrorSolver : MonoBehaviour
             "3.Check your Environment Variables in Windows settings. " +
             "There should be two variables \"NUITRACK_HOME\" with a path to \"Nuitrack\\nuitrack\\nutrack\" and a \"Path\" with a path to %NUITRACK_HOME%\\bin " +
             "Maybe the installation probably did not complete correctly, in this case, look Troubleshooting Page.";
+        string accessDeniedMessage = "Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. " +
+                    "Can you create text-file in " + nuitrackHomePath + "\\middleware folder?" + " Try allow Full controll permissions for Users. " +
+                    "(More details: winaero.com/how-to-take-ownership-and-get-full-access-to-files-and-folders-in-windows-10/)";
 
+#endif
+#if UNITY_EDITOR_WIN
+        if (ex.ToString().Contains("TBB"))
+        {
+            string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
+            string nuitrackTbbPath = nuitrackHomePath + "\\bin\\tbb.dll";
+            errorMessage = "<color=red><b>You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)</b></color>";
+        }
+        else
+#endif
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         if (nuitrackHomePath == null)
             errorMessage = "<color=red><b>" + "Environment Variable [NUITRACK_HOME] not found" + "</b></color>" +
                 "\n" + incorrectInstallingMessage;
@@ -28,11 +42,9 @@ public class NuitrackErrorSolver : MonoBehaviour
             string nuitrackModulePath = nuitrackHomePath + "\\middleware\\NuitrackModule.dll";
             if (!(File.Exists(nuitrackModulePath)))
             {
-                errorMessage = "<color=red><b>" + "File: " + nuitrackModulePath + " not exists or Unity doesn't have enough rights to access it." + "</b></color>" + " Nuitrack path is really: " + 
+                errorMessage = "<color=red><b>" + "File: " + nuitrackModulePath + " not exists or Unity doesn't have enough rights to access it." + "</b></color>" + " Nuitrack path is really: " +
                     nuitrackHomePath + " ?\n" + incorrectInstallingMessage + "\n" +
-                    "4.Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. " +
-                    "Can you create text-file in " + nuitrackHomePath + "\\middleware folder?" + "Try allow Full controll permissions for Users. " +
-                    "(More details: winaero.com/how-to-take-ownership-and-get-full-access-to-files-and-folders-in-windows-10/)";
+                    "4." + accessDeniedMessage;
             }
             else
             {
@@ -43,7 +55,7 @@ public class NuitrackErrorSolver : MonoBehaviour
                 catch (System.Exception)
                 {
                     if (ex.ToString().Contains("Cannot load library module"))
-                        errorMessage = "Check the read\\write permissions for the folder where Nuitrack Runtime is installed, as well as for all subfolders and files. And try allow all permissions." +
+                        errorMessage = accessDeniedMessage +
                             "Path: " + nuitrackHomePath;
                     else if (ex.ToString().Contains("Can't create DepthSensor"))
                         errorMessage = "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay? \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
@@ -59,20 +71,10 @@ public class NuitrackErrorSolver : MonoBehaviour
 
         if (showInLog) Debug.LogError(errorMessage);
 #endif
-#if UNITY_EDITOR_WIN
-        if (ex.ToString().Contains("TBB"))
-        {
-            string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
-            string nuitrackTbbPath = nuitrackHomePath + "\\bin\\tbb.dll";
-            Debug.LogError("<color=red><b>You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)</b></color>");
-        }
-        else
-        {
-            if (showInLog) Debug.LogError(ex.ToString());
-        }
-#endif
         if (showInLog && Application.loadedLevelName != "allModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color");
         if (showInLog) Debug.LogError(troubleshootingPageMessage);
+        if (showInLog) Debug.LogError(ex.ToString());
+
         return (errorMessage + "\n" + troubleshootingPageMessage);
     }
 }
