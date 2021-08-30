@@ -50,7 +50,14 @@ public class NuitrackErrorSolver : MonoBehaviour
             {
                 try
                 {
-                    new FileIOPermission(FileIOPermissionAccess.Read, AccessControlActions.View, nuitrackModulePath);
+                    new FileStream(nuitrackModulePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+                    if (ex.ToString().Contains("Can't create DepthSensor"))
+                        errorMessage = "<color=red><b>" + "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay?" + "</b></color>" + " \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
+                    else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
+                        errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
+                    else
+                        errorMessage = "<color=red><b>" + "Perhaps the sensor is already being used in other program. " + "</b></color>" + "\nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                 }
                 catch (System.Exception)
                 {
@@ -58,19 +65,13 @@ public class NuitrackErrorSolver : MonoBehaviour
                         errorMessage = "<color=red><b>" + accessDeniedMessage + "</b></color>" +
                             "Path: " + nuitrackHomePath +
                             "\nIf that doesn't work, check to see if you have used any other skeleton tracking software. If so, try uninstalling it and rebooting.";
-                    else if (ex.ToString().Contains("Can't create DepthSensor"))
-                        errorMessage = "<color=red><b>" + "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay?" + "</b></color>" + " \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
-                    else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
-                        errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
-                    else
-                        errorMessage = "<color=red><b>" + "Perhaps the sensor is already being used in other program. " + "</b></color>" + "\nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                 }
             }
         }
 
         if (showInLog) Debug.LogError(errorMessage);
 #endif
-        if (showInLog && Application.loadedLevelName != "allModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color");
+        if (showInLog && Application.loadedLevelName != "allModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color>");
         if (showInLog) Debug.LogError(troubleshootingPageMessage);
         if (showInLog) Debug.LogError(ex.ToString());
 
