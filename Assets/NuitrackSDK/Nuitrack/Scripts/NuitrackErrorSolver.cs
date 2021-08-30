@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.IO;
-using System.Security.Permissions;
-using System.Security.AccessControl;
 
 public class NuitrackErrorSolver : MonoBehaviour
 {
@@ -50,7 +48,7 @@ public class NuitrackErrorSolver : MonoBehaviour
             {
                 try
                 {
-                    new FileStream(nuitrackModulePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    using (FileStream test = new FileStream(nuitrackModulePath, FileMode.Open, FileAccess.Read, FileShare.Read)) { }
 
                     if (ex.ToString().Contains("Can't create DepthSensor"))
                         errorMessage = "<color=red><b>" + "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay?" + "</b></color>" + " \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
