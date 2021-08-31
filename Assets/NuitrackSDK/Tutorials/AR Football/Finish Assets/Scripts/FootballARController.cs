@@ -1,13 +1,16 @@
-﻿#if ENABLE_AR_TUTORIAL
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if ENABLE_AR_TUTORIAL
 using UnityEngine.Networking;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-
+#endif
 public class FootballARController : MonoBehaviour {
     public Camera mainCamera;
+    [SerializeField] Transform aRDevice; // must be the parent of the camera
+
+#if ENABLE_AR_TUTORIAL
 
     // A model to place when a raycast from a user touch hits a plane.
     Environment environment;
@@ -23,8 +26,6 @@ public class FootballARController : MonoBehaviour {
 
     [SerializeField] ARRaycastManager raycastManager;
     [SerializeField] ARPlaneManager planeManager;
-
-    [SerializeField] Transform aRDevice; // must be the parent of the camera
 
     static List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -89,5 +90,5 @@ public class FootballARController : MonoBehaviour {
 
         mainCamera.transform.parent = aRDevice.transform; //return the camera back
     }
-}
 #endif
+}

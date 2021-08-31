@@ -1,8 +1,14 @@
-﻿#if ENABLE_AR_TUTORIAL
+﻿using UnityEngine;
+#if ENABLE_AR_TUTORIAL
 using UnityEngine.Networking;
 
-public class QuickConnectNetworkDiscovery : NetworkDiscovery
-{
+public class QuickConnectNetworkDiscovery : NetworkDiscovery {
+#else
+public class QuickConnectNetworkDiscovery : MonoBehaviour {
+#endif
+
+#if ENABLE_AR_TUTORIAL
+
     // Overridden method of the NetworkDiscovery class. Initially, it simply receives messages from the found servers (does not connect). Now OnReceivedBroadcast automatically connects to it when the server is found
     public override void OnReceivedBroadcast(string fromAddress, string data)
     {
@@ -14,5 +20,5 @@ public class QuickConnectNetworkDiscovery : NetworkDiscovery
         NetworkManager.singleton.networkAddress = fromAddress; // Found IP is substituted into NetworkManager
         NetworkManager.singleton.StartClient(); // Connects
     }
-}
 #endif
+}

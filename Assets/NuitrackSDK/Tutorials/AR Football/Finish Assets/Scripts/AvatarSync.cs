@@ -1,15 +1,18 @@
-﻿#if ENABLE_AR_TUTORIAL
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+#if ENABLE_AR_TUTORIAL
 using UnityEngine.Networking;
 
-public class AvatarSync : NetworkBehaviour
-{
+public class AvatarSync : NetworkBehaviour {
+#else
+public class AvatarSync : MonoBehaviour {
+#endif
 
     [SerializeField]
     Transform[] syncBones;
     [SerializeField]
     Transform avatar;
+#if ENABLE_AR_TUTORIAL
 
     [ClientRpc] //The server sends to all clients
     public void RpcOnBonesTransformUpdate(BonesInfoMessage boneMsg)
@@ -51,5 +54,5 @@ public class AvatarSync : NetworkBehaviour
         public Quaternion[] bonesRot;  //bone turns
         public Vector3 avatarPos;  //avatar position
     }
-}
 #endif
+}

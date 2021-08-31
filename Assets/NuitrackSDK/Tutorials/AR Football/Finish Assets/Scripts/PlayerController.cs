@@ -1,12 +1,15 @@
-﻿#if ENABLE_AR_TUTORIAL
-using UnityEngine;
+﻿using UnityEngine;
+#if ENABLE_AR_TUTORIAL
 using UnityEngine.Networking;
 
-public class PlayerController : NetworkBehaviour
-{
+public class PlayerController : NetworkBehaviour {
+#else
+public class PlayerController : MonoBehaviour {
+#endif
 
     [SerializeField]
     GameObject ballPrefab;
+#if ENABLE_AR_TUTORIAL
 
     [Command] //Called on the server, requires the Cmd prefix
     void CmdKick(Vector3 startPos, Vector3 endPos)
@@ -21,5 +24,5 @@ public class PlayerController : NetworkBehaviour
     {
         CmdKick(startPos, endPos);
     }
-}
 #endif
+}

@@ -1,8 +1,8 @@
-﻿#if ENABLE_AR_TUTORIAL
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+#if ENABLE_AR_TUTORIAL
 using UnityEngine.Networking;
-
+#endif
 public class NetworkController : MonoBehaviour
 {
     [HideInInspector]
@@ -20,7 +20,7 @@ public class NetworkController : MonoBehaviour
     [Header("Client")]
     [SerializeField]
     Text connectText; //The text field where the message will be displayed upon connection
-
+#if ENABLE_AR_TUTORIAL
     private void Start()
     {
         //If this is not a client, then we create a server
@@ -61,5 +61,5 @@ public class NetworkController : MonoBehaviour
                 connectText.text = "Connect";
         }
     }
-}
 #endif
+}

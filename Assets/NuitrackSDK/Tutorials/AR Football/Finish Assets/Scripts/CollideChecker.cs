@@ -1,5 +1,4 @@
-﻿#if ENABLE_AR_TUTORIAL
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CollideChecker : MonoBehaviour
 {
@@ -9,4 +8,3 @@ public class CollideChecker : MonoBehaviour
         GetComponentInParent<BallController>().OnCollide(collision); // If the ball collides with something, then we report this to the BallController, which is located on the parent object
     }
 }
-#endif

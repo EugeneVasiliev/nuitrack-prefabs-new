@@ -1,11 +1,10 @@
-﻿#if ENABLE_AR_TUTORIAL
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BallController : MonoBehaviour
 {
-
     [SerializeField]
     GameObject ball;
+#if ENABLE_AR_TUTORIAL
     Vector3 startPosition;
     Vector3 endPosition;
     float ballSpeed = 3;
@@ -43,9 +42,10 @@ public class BallController : MonoBehaviour
         endPosition = endPos;
         startPosition = startPos;
     }
-
+#endif
     public void OnCollide(Collision collision)
     {
+#if ENABLE_AR_TUTORIAL
         if (inGame && networkController.isClient == false)
         {
             Debug.Log("Ball collide");
@@ -55,6 +55,6 @@ public class BallController : MonoBehaviour
             rb.useGravity = true;
             inGame = false;
         }
+#endif
     }
 }
-#endif
