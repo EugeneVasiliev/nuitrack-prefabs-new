@@ -2,8 +2,11 @@
 
 public class CameraRecenter : MonoBehaviour
 {
+    [Header("This object doesn't rotated")]
     [SerializeField] Transform headBasisTransform;
+    [Header("This object will be rotated after calibration")]
     [SerializeField] Transform yAxisCorrectionTransform;
+    [Header("This object should rotate to follow the head (Cardboard plugin, etc)")]
     [SerializeField] Transform gazeDirectionTransform;
 
     TPoseCalibration poseCalibration;
