@@ -47,8 +47,6 @@ public class SwitchDll : IPreprocessBuildWithReport
 
         ScriptingImplementation backend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
 
-        Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup);
-
         bool useStructureSensor = false;
 
         if (buildTargetGroup == BuildTargetGroup.iOS)
@@ -89,16 +87,18 @@ public class SwitchDll : IPreprocessBuildWithReport
             SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
         }
 
+        string backendMessage = "Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup;
+
         try
         {
             nuitrack.Nuitrack.Init();
             nuitrack.Nuitrack.Release();
-            Debug.Log("<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>");
+            Debug.Log("<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>\n" + backendMessage);
         }
         catch
         {
             Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
-                "<color=red><b>It is recommended to test on allModulesScene</b></color>");
+                "<color=red><b>It is recommended to test on allModulesScene</b></color>\n" + backendMessage);
         }
     }
 
@@ -111,7 +111,7 @@ public class SwitchDll : IPreprocessBuildWithReport
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
         if (value)
-            Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Switch Nuitrack dll to " + plugin.assetPath);
+            Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Nuitrack dll switched to " + plugin.assetPath);
 
         plugin.SetCompatibleWithAnyPlatform(false);
         plugin.SetCompatibleWithPlatform(BuildTarget.iOS, value);
