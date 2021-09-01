@@ -69,7 +69,7 @@ public class NuitrackErrorSolver : MonoBehaviour
 
         if (showInLog) Debug.LogError(errorMessage);
 #endif
-        if (showInLog && Application.loadedLevelName != "allModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color>");
+        if (showInLog && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "AllModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color>");
         if (showInLog) Debug.LogError(troubleshootingPageMessage);
         if (showInLog) Debug.LogError(ex.ToString());
 
