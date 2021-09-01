@@ -45,7 +45,7 @@ namespace NuitrackSDK.NuitrackDemos
         [Header ("Options")]
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
-        //[SerializeField] Transform rootModel;
+        [SerializeField] Transform sensorSpace;
 
         [Header("VR settings")]
         [SerializeField] GameObject vrHead;
@@ -55,7 +55,7 @@ namespace NuitrackSDK.NuitrackDemos
         [Header("Calibration")]
         [SerializeField] bool recenterOnSuccess;
         TPoseCalibration tPoseCalibration;
-        Vector3 basePivotOffset;
+        Vector3 basePivotOffset = Vector3.zero;
         Vector3 startPoint; //Root joint model bone position on start
 
         /// <summary> Model bones </summary> Dictionary with joints
@@ -76,6 +76,19 @@ namespace NuitrackSDK.NuitrackDemos
             };
 
             modelJoints.Add(modelJoint);
+        }
+
+        Quaternion SpaceRotation
+        {
+            get
+            {
+                return sensorSpace == null || sensorSpace == transform ? transform.rotation : sensorSpace.rotation;
+            }
+        }
+
+        Vector3 SpaceToWorldPoint(Vector3 spacePoint)
+        {
+            return sensorSpace == null || sensorSpace == transform ? transform.TransformPoint(spacePoint) : sensorSpace.TransformPoint(spacePoint);
         }
 
         void Start()
@@ -116,7 +129,7 @@ namespace NuitrackSDK.NuitrackDemos
 
                 if (modelJoint.bone)
                 {
-                    modelJoint.baseRotOffset = Quaternion.Inverse(transform.rotation) * modelJoint.bone.rotation;
+                    modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
                     jointsRigged.Add(modelJoint.jointType.TryGetMirrored(), modelJoint);
 
                     //Adding base distances between the child bone and the parent bone 
@@ -163,9 +176,9 @@ namespace NuitrackSDK.NuitrackDemos
         {
             if (mappingMode == MappingMode.Indirect)
             {
-                Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3();
-                jointsRigged[rootJoint].bone.localPosition = 0.001f * new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z);
-                jointsRigged[rootJoint].bone.localPosition += basePivotOffset;
+                Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3() * 0.001f;
+                //Vector3 localPosition = new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z) + basePivotOffset;
+                jointsRigged[rootJoint].bone.position = SpaceToWorldPoint(SpaceRotation * pos);
             }
 
             foreach (var riggedJoint in jointsRigged)
@@ -178,12 +191,20 @@ namespace NuitrackSDK.NuitrackDemos
                     ModelJoint modelJoint = riggedJoint.Value;
 
                     //Bone rotation
-                    modelJoint.bone.rotation = transform.rotation * joint.ToQuaternionMirrored() * modelJoint.baseRotOffset;
+                    Quaternion jointRotation = sensorSpace == null || sensorSpace == transform ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
+
+                    modelJoint.bone.rotation = SpaceRotation * (jointRotation * modelJoint.baseRotOffset);
+
 
                     if (mappingMode == MappingMode.Direct)
                     {
-                        //Bone position
-                        Vector3 newPos = Quaternion.Euler(0, 180, 0) * transform.rotation * (0.001f * joint.ToVector3()) + transform.position + basePivotOffset;
+                        Vector3 newPos;
+
+                        if (sensorSpace == null)
+                            newPos = Quaternion.Euler(0, 180, 0) * SpaceRotation * (0.001f * joint.ToVector3()) + transform.position + basePivotOffset;
+                        else
+                            newPos = SpaceToWorldPoint((0.001f * joint.ToVector3()) + basePivotOffset);
+
                         modelJoint.bone.position = newPos;
 
                         //Bone scale
