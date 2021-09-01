@@ -33,6 +33,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
+    float workingTime = 0.0f;
+
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
     [SerializeField] bool runInBackground = false;
@@ -339,6 +341,11 @@ public class NuitrackManager : MonoBehaviour
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
                 }
+
+                Debug.Log(
+                    "Nuitrack Config parameters:\n" +
+                    "Skeletonization Type: " + nuitrack.Nuitrack.GetConfigValue("Skeletonization.Type") + "\n" +
+                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse"));
             }
 
             Debug.Log("Init OK");
@@ -373,18 +380,7 @@ public class NuitrackManager : MonoBehaviour
         catch (System.Exception ex)
         {
             initException = ex;
-#if UNITY_EDITOR
-            if (ex.ToString().Contains("TBB"))
-            {
-                string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
-                string nuitrackTbbPath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME") + "\\bin\\tbb.dll";
-                Debug.LogError("!!!You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)");
-            }
-            else
-            {
-                Debug.LogError(ex.ToString());
-            }
-#endif
+            NuitrackErrorSolver.CheckError(ex);
         }
     }
 
@@ -533,6 +529,7 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+    bool licenseIsOver = false;
     void Update()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -542,11 +539,24 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
+                workingTime += Time.deltaTime;
                 nuitrack.Nuitrack.Update();
             }
             catch (System.Exception ex)
             {
-                Debug.LogError(ex.ToString());
+                if (ex.ToString().Contains("LicenseNotAcquiredException") && licenseIsOver == false)
+                {
+                    licenseIsOver = true;
+                    Debug.Log(workingTime);
+                    if (workingTime > 5.0f)
+                        Debug.LogError("Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing");
+                    else
+                        Debug.LogError("Activate Nuitrack license https://nuitrack.com/#pricing");
+                }
+                else
+                {
+                    Debug.LogError(ex.ToString());
+                }
             }
         }
     }
