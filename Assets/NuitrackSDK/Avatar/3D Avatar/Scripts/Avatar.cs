@@ -196,12 +196,10 @@ namespace NuitrackSDK.NuitrackDemos
 
                     if (mappingMode == MappingMode.Direct)
                     {
-                        Vector3 newPos;
+                        Vector3 jointPos = (0.001f * joint.ToVector3()) + basePivotOffset;
+                        Vector3 localPos = sensorSpace == null || sensorSpace == transform ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
 
-                        if (sensorSpace == null)
-                            newPos = Quaternion.Euler(0, 180, 0) * SpaceRotation * (0.001f * joint.ToVector3()) + transform.position + basePivotOffset;
-                        else
-                            newPos = SpaceToWorldPoint((0.001f * joint.ToVector3()) + basePivotOffset);
+                        Vector3 newPos = SpaceToWorldPoint(localPos);
 
                         modelJoint.bone.position = newPos;
 
