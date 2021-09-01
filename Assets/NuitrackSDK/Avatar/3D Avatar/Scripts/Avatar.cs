@@ -43,9 +43,9 @@ namespace NuitrackSDK.NuitrackDemos
         List<ModelJoint> modelJoints = new List<ModelJoint>();
 
         [Header ("Options")]
+        [SerializeField] Transform sensorSpace;
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
-        [SerializeField] Transform sensorSpace;
 
         [Header("VR settings")]
         [SerializeField] GameObject vrHead;
@@ -176,8 +176,7 @@ namespace NuitrackSDK.NuitrackDemos
         {
             if (mappingMode == MappingMode.Indirect)
             {
-                Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3() * 0.001f;
-                //Vector3 localPosition = new Vector3(-pos.x / transform.localScale.x, pos.y / transform.localScale.y, -pos.z / transform.localScale.z) + basePivotOffset;
+                Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
                 jointsRigged[rootJoint].bone.position = SpaceToWorldPoint(SpaceRotation * pos);
             }
 
@@ -194,7 +193,6 @@ namespace NuitrackSDK.NuitrackDemos
                     Quaternion jointRotation = sensorSpace == null || sensorSpace == transform ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
 
                     modelJoint.bone.rotation = SpaceRotation * (jointRotation * modelJoint.baseRotOffset);
-
 
                     if (mappingMode == MappingMode.Direct)
                     {
