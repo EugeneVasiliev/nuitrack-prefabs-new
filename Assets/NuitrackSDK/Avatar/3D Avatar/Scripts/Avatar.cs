@@ -43,6 +43,8 @@ namespace NuitrackSDK.NuitrackDemos
         List<ModelJoint> modelJoints = new List<ModelJoint>();
 
         [Header ("Options")]
+        [Tooltip ("(optional) Specify the transform, which represents the sensor " +
+            "coordinate system, to display the Avatar in front of the sensor.")]
         [SerializeField] Transform sensorSpace;
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
@@ -78,17 +80,20 @@ namespace NuitrackSDK.NuitrackDemos
             modelJoints.Add(modelJoint);
         }
 
-        Quaternion SpaceRotation
+        bool IsTransformSpace
         {
             get
             {
-                return sensorSpace == null || sensorSpace == transform ? transform.rotation : sensorSpace.rotation;
+                return sensorSpace == null || sensorSpace == transform;
             }
         }
 
-        Vector3 SpaceToWorldPoint(Vector3 spacePoint)
+        Transform SpaceTransform
         {
-            return sensorSpace == null || sensorSpace == transform ? transform.TransformPoint(spacePoint) : sensorSpace.TransformPoint(spacePoint);
+            get
+            {
+                return IsTransformSpace ? transform : sensorSpace;
+            }
         }
 
         void Start()
@@ -129,7 +134,7 @@ namespace NuitrackSDK.NuitrackDemos
 
                 if (modelJoint.bone)
                 {
-                    modelJoint.baseRotOffset = Quaternion.Inverse(SpaceRotation) * modelJoint.bone.rotation;
+                    modelJoint.baseRotOffset = Quaternion.Inverse(SpaceTransform.rotation) * modelJoint.bone.rotation;
                     jointsRigged.Add(modelJoint.jointType.TryGetMirrored(), modelJoint);
 
                     //Adding base distances between the child bone and the parent bone 
@@ -141,8 +146,11 @@ namespace NuitrackSDK.NuitrackDemos
             if (vrHead)
                 spawnedHead = Instantiate(vrHead).transform;
 
-            if(jointsRigged.ContainsKey(rootJoint))
-                startPoint = jointsRigged[rootJoint].bone.localPosition;
+            if (jointsRigged.ContainsKey(rootJoint))
+            {
+                Vector3 rootPosition = jointsRigged[rootJoint].bone.position;
+                startPoint = SpaceTransform.InverseTransformPoint(rootPosition);
+            }
         }
 
         /// <summary>
@@ -176,8 +184,8 @@ namespace NuitrackSDK.NuitrackDemos
         {
             if (mappingMode == MappingMode.Indirect)
             {
-                Vector3 pos = skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
-                jointsRigged[rootJoint].bone.position = SpaceToWorldPoint(SpaceRotation * pos);
+                Vector3 rootPosition = SpaceTransform.rotation * skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
+                jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
             }
 
             foreach (var riggedJoint in jointsRigged)
@@ -190,16 +198,16 @@ namespace NuitrackSDK.NuitrackDemos
                     ModelJoint modelJoint = riggedJoint.Value;
 
                     //Bone rotation
-                    Quaternion jointRotation = sensorSpace == null || sensorSpace == transform ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
+                    Quaternion jointRotation = IsTransformSpace ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
 
-                    modelJoint.bone.rotation = SpaceRotation * (jointRotation * modelJoint.baseRotOffset);
+                    modelJoint.bone.rotation = SpaceTransform.rotation * (jointRotation * modelJoint.baseRotOffset);
 
                     if (mappingMode == MappingMode.Direct)
                     {
                         Vector3 jointPos = (0.001f * joint.ToVector3()) + basePivotOffset;
-                        Vector3 localPos = sensorSpace == null || sensorSpace == transform ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
+                        Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
 
-                        Vector3 newPos = SpaceToWorldPoint(localPos);
+                        Vector3 newPos = SpaceTransform.TransformPoint(localPos);
 
                         modelJoint.bone.position = newPos;
 
@@ -227,14 +235,20 @@ namespace NuitrackSDK.NuitrackDemos
 
         public IEnumerator CalculateOffset()
         {
-            if (!recenterOnSuccess) yield break;
+            if (!recenterOnSuccess || !IsTransformSpace) 
+                yield break;
+            
             yield return new WaitForEndOfFrame();
             yield return new WaitForEndOfFrame();
 
             if (jointsRigged.ContainsKey(rootJoint))
             {
-                Vector3 basePos = jointsRigged[rootJoint].bone.localPosition;
-                Vector3 newPivotOffset = startPoint - basePos + basePivotOffset;
+                Debug.Log("OK");
+
+                Vector3 rootPosition = jointsRigged[rootJoint].bone.position;
+
+                Vector3 rootSpacePosition = SpaceTransform.InverseTransformPoint(rootPosition);
+                Vector3 newPivotOffset = startPoint - rootSpacePosition + basePivotOffset;
                 newPivotOffset.x = 0;
 
                 basePivotOffset = newPivotOffset;
