@@ -44,7 +44,9 @@ namespace NuitrackSDK.NuitrackDemos
 
         [Header ("Options")]
         [Tooltip ("(optional) Specify the transform, which represents the sensor " +
-            "coordinate system, to display the Avatar in front of the sensor.")]
+            "coordinate system, to display the Avatar in front of the sensor." +
+            "\nCalibration is not supported." +
+            "\n\nIf not specified, the object transformation is used.")]
         [SerializeField] Transform sensorSpace;
         [SerializeField] MappingMode mappingMode;
         [SerializeField] JointType rootJoint = JointType.Waist;
@@ -247,8 +249,6 @@ namespace NuitrackSDK.NuitrackDemos
 
             if (jointsRigged.ContainsKey(rootJoint))
             {
-                Debug.Log("OK");
-
                 Vector3 rootPosition = jointsRigged[rootJoint].bone.position;
 
                 Vector3 rootSpacePosition = SpaceTransform.InverseTransformPoint(rootPosition);
