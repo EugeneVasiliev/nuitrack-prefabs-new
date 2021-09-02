@@ -186,11 +186,7 @@ namespace NuitrackSDK.NuitrackDemos
         {
             if (mappingMode == MappingMode.Indirect)
             {
-                Vector3 rootPosition = SpaceTransform.rotation * skeleton.GetJoint(rootJoint).ToVector3() * 0.001f;
-
-                if (IsTransformSpace)
-                    rootPosition += basePivotOffset + startPoint;
-
+                Vector3 rootPosition = SpaceTransform.rotation * skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
                 jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
             }
 
