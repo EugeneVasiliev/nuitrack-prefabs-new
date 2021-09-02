@@ -38,7 +38,14 @@ namespace NuitrackSDK.Tutorials.RGBand3DSkeleton
             nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
 
             float viewAspectRatio = (float)viewCanvas.rect.width / viewCanvas.rect.height;
-            float targetAspectRatio = viewAspectRatio > frameAspectRatio ? (float)frame.Rows / frame.Cols : (float)viewCanvas.rect.height / viewCanvas.rect.width;
+
+            //The frame from the sensor fills the screen and the FOV is
+            //determined for the axis along which the frame reaches the edges of the screen.
+            //If the screen is wider than the frame from the sensor, then the alignment will
+            //occur according to the inverse aspect ratio of the frame(otherwise the screen).
+            float targetAspectRatio = viewAspectRatio > frameAspectRatio ? 
+                (float)frame.Rows / frame.Cols : 
+                (float)viewCanvas.rect.height / viewCanvas.rect.width;
 
             // Setting the camera's vFOV equal to the depth sensor's vFOV. 
             // Nuitrack does not yet have a representation of vFOV, so we use the hFOV to vFOV conversion.
