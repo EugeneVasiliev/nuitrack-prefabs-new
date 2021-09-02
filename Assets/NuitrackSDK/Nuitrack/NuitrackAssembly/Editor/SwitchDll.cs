@@ -17,6 +17,11 @@ public class SwitchDll : IPreprocessBuildWithReport
         Check();
     }
 
+    public void OnPreprocessBuild(BuildReport report)
+    {
+        Check();
+    }
+
     [MenuItem("Nuitrack/Auto switch dll")]
     public static void Check()
     {
@@ -61,30 +66,30 @@ public class SwitchDll : IPreprocessBuildWithReport
 
         if (buildTargetGroup == BuildTargetGroup.iOS)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
+            SwitchCompatibleWithPlatform(pluginMONO, false);
 
             if (useStructureSensor)
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
+                SwitchCompatibleWithPlatform(pluginIL2CPP, false);
+                SwitchCompatibleWithPlatform(pluginIOS, true);
             }
             else
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+                SwitchCompatibleWithPlatform(pluginIL2CPP, true);
+                SwitchCompatibleWithPlatform(pluginIOS, false);
             }
         }
         else if((buildTargetGroup == BuildTargetGroup.Android || buildTargetGroup == BuildTargetGroup.Standalone) && backend == ScriptingImplementation.IL2CPP)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+            SwitchCompatibleWithPlatform(pluginIL2CPP, true);
+            SwitchCompatibleWithPlatform(pluginMONO, false);
+            SwitchCompatibleWithPlatform(pluginIOS, false);
         }
         else
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, true);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+            SwitchCompatibleWithPlatform(pluginIL2CPP, false);
+            SwitchCompatibleWithPlatform(pluginMONO, true);
+            SwitchCompatibleWithPlatform(pluginIOS, false);
         }
 
         string backendMessage = "Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup;
@@ -102,12 +107,6 @@ public class SwitchDll : IPreprocessBuildWithReport
         }
     }
 
-    [MenuItem("Nuitrack/Open Troubleshooting Page")]
-    public static void GoToTroubleshootingPage()
-    {
-        Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md#windows");
-    }
-
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
         if (value)
@@ -122,10 +121,5 @@ public class SwitchDll : IPreprocessBuildWithReport
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, value);
         plugin.SetCompatibleWithEditor(value);
-    }
-
-    public void OnPreprocessBuild(BuildReport report)
-    {
-        Check();
     }
 }
