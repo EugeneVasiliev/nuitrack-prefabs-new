@@ -109,7 +109,7 @@ public class SwitchDll : IPreprocessBuildWithReport
 
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
-        if (value)
+        if (value && plugin.GetCompatibleWithPlatform(BuildTarget.StandaloneWindows64) != value)
             Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Nuitrack dll switched to " + plugin.assetPath);
 
         plugin.SetCompatibleWithAnyPlatform(false);

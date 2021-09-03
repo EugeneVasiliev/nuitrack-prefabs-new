@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.Diagnostics;
 using System.IO;
+using System;
 
 [InitializeOnLoad]
 public class NuitrackMenu : MonoBehaviour
@@ -33,34 +34,46 @@ public class NuitrackMenu : MonoBehaviour
     [MenuItem("Nuitrack/Open Nuitrack Activation Tool", priority = 1)]
     public static void OpenNuitrackApp()
     {
-        string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
-        string path = Path.Combine(nuitrackHomePath, "activation_tool", "Nuitrack.exe");
+        string nuitrackHomePath = Environment.GetEnvironmentVariable("NUITRACK_HOME");
+        string workingDir = Path.Combine(nuitrackHomePath, "activation_tool");
+        string path = Path.Combine(workingDir, "Nuitrack.exe");
 
         if (nuitrackHomePath != null)
-            RunProgram(path);
+            RunProgram(path, workingDir);
     }
 
     [MenuItem("Nuitrack/Open Nuitrack Test Sample", priority = 1)]
     public static void OpenNuitrackTestSample()
     {
-        string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
-        string path = Path.Combine(nuitrackHomePath, "bin", "nuitrack_sample.exe");
+        string nuitrackHomePath = Environment.GetEnvironmentVariable("NUITRACK_HOME");
+        string workingDir = Path.Combine(nuitrackHomePath, "bin");
+        string path = Path.Combine(workingDir, "nuitrack_sample.exe");
 
         if (nuitrackHomePath != null)
-            RunProgram(path);
+            RunProgram(path, workingDir);
     }
 
-    static void RunProgram(string path)
+    static void RunProgram(string appPath, string workingDirectory)
     {
-        if (File.Exists(path))
+        try
         {
-            Process nuitrackApp = Process.Start(path);
-            nuitrackApp.WaitForExit();
-            nuitrackApp.Close();
+            if (File.Exists(appPath))
+            {
+                Process app = new Process();
+                app.StartInfo.FileName = appPath;
+                app.StartInfo.WorkingDirectory = workingDirectory;
+                app.Start();
+                app.WaitForExit();
+                app.Close();
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("Program not found", appPath + " not found!", "ОК");
+            }
         }
-        else
+        catch (Exception e)
         {
-            EditorUtility.DisplayDialog("Nuitrack.exe not found", path + " not found!", "ОК");
+            UnityEngine.Debug.LogError("Unable to launch app: " + e.Message);
         }
     }
 }
