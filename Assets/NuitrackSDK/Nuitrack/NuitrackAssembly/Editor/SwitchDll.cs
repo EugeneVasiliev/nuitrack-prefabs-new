@@ -22,7 +22,7 @@ public class SwitchDll : IPreprocessBuildWithReport
         Check();
     }
 
-    [MenuItem("Nuitrack/Auto switch dll")]
+    //[MenuItem("Nuitrack/Auto switch dll")]
     public static void Check()
     {
         PluginImporter pluginIL2CPP = (PluginImporter)PluginImporter.GetAtPath(pathIL2CPP);
