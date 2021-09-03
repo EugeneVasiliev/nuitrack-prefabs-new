@@ -22,7 +22,7 @@ public class NuitrackMenu : MonoBehaviour
     [MenuItem("Nuitrack/Help/Open Github Page", priority = 2)]
     public static void GoToGithubPage()
     {
-        Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/");
+        Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/");
     }
 
     [MenuItem("Nuitrack/Help/Manage Nuitrack License", priority = 2)]
