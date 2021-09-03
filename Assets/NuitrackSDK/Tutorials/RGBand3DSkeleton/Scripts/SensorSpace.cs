@@ -3,37 +3,32 @@ using UnityEngine.UI;
 
 namespace NuitrackSDK.Tutorials.RGBand3DSkeleton
 {
-    public class FrameAspectRatioFitter : MonoBehaviour
+    public class SensorSpace : MonoBehaviour
     {
         [SerializeField] new Camera camera;
 
         [SerializeField] RectTransform viewCanvas;
         [SerializeField] AspectRatioFitter aspectRatioFitter;
 
-        bool waitEvent = true;
-
         void OnEnable()
         {
-            waitEvent = true;
             NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
         }
 
         void OnDisable()
         {
-            if (waitEvent)
-                NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
+            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
         }
 
         private void NuitrackManager_onColorUpdate(nuitrack.ColorFrame frame)
         {
-            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
-
-            waitEvent = false;
-
             float frameAspectRatio = (float)frame.Cols / frame.Rows;
             
             // Setting the aspect ratio RGB image is the same as that of nuitrack.ColorFrame.
             aspectRatioFitter.aspectRatio = frameAspectRatio;
+
+            if (camera == null)
+                return;
 
             nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
 
