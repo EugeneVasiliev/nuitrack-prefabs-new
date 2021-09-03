@@ -35,7 +35,24 @@ public class NuitrackMenu : MonoBehaviour
     {
         string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
         string path = Path.Combine(nuitrackHomePath, "activation_tool", "Nuitrack.exe");
-        if (nuitrackHomePath != null && File.Exists(path))
+
+        if (nuitrackHomePath != null)
+            RunProgram(path);
+    }
+
+    [MenuItem("Nuitrack/Open Nuitrack Test Sample", priority = 1)]
+    public static void OpenNuitrackTestSample()
+    {
+        string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
+        string path = Path.Combine(nuitrackHomePath, "bin", "nuitrack_sample.exe");
+
+        if (nuitrackHomePath != null)
+            RunProgram(path);
+    }
+
+    static void RunProgram(string path)
+    {
+        if (File.Exists(path))
         {
             Process nuitrackApp = Process.Start(path);
             nuitrackApp.WaitForExit();
