@@ -348,7 +348,7 @@ public class NuitrackManager : MonoBehaviour
                     "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse"));
             }
 
-            Debug.Log("Init OK");
+            Debug.Log("Nuitrack Init OK");
 
             DepthSensor = nuitrack.DepthSensor.Create();
 
@@ -363,7 +363,7 @@ public class NuitrackManager : MonoBehaviour
             HandTracker = nuitrack.HandTracker.Create();
 
             nuitrack.Nuitrack.Run();
-            Debug.Log("Run OK");
+            Debug.Log("Nuitrack Run OK");
 
             ChangeModulesState(
                 skeletonTrackerModuleOn,
@@ -630,7 +630,7 @@ public class NuitrackManager : MonoBehaviour
             HandTracker = null;
 
             nuitrack.Nuitrack.Release();
-            Debug.Log("CloseUserGen");
+            Debug.Log("Nuitrack Stop OK");
             nuitrackInitialized = false;
         }
         catch (System.Exception ex)
