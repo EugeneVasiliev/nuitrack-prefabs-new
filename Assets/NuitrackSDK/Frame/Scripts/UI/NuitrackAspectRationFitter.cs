@@ -15,6 +15,18 @@ namespace NuitrackSDK.Frame
 
         [SerializeField] FrameMode frameMode = FrameMode.Color;
 
+        RectTransform m_Rect;
+
+        public RectTransform RectTransform
+        {
+            get
+            {
+                if (m_Rect == null)
+                    m_Rect = GetComponent<RectTransform>();
+                return m_Rect;
+            }
+        }
+
         protected override void OnEnable()
         {
             base.OnEnable();
