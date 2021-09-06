@@ -104,17 +104,16 @@ public class PointCloud : MonoBehaviour
                     rgbCol = new Color32(colorFrame[i, j].Red, colorFrame[i, j].Green, colorFrame[i, j].Blue, 255);
                 rgbColors[pointIndex] = rgbCol;
 
-                points[pointIndex].GetComponent<Renderer>().material.color = rgbCol;
-
-                //change of position of the point (cube) in Z (depth)
-                Vector3 newPos = NuitrackManager.DepthSensor.ConvertProjToRealCoords(j, i, depthFrame[i, j]).ToVector3();
-                //NuitrackManager.depthSensor.ConvertRealToProjCoords(j - depthFrame.Cols, i, depthFrame[i, j]).ToVector3();
-
                 //Hide the "point" if its depth is 0
                 if (depthFrame[i, j] == 0)
                     points[pointIndex].SetActive(false);
                 else
                 {
+                    points[pointIndex].GetComponent<Renderer>().material.color = rgbCol;
+
+                    //change of position of the point (cube) in Z (depth)
+                    Vector3 newPos = NuitrackManager.DepthSensor.ConvertProjToRealCoords(j, i, depthFrame[i, j]).ToVector3();
+
                     points[pointIndex].SetActive(true);
                     points[pointIndex].transform.position = newPos;
 
