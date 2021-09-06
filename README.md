@@ -1,7 +1,7 @@
 **Main**
 
 Nuitrack Unity Package (tutorials inside)  
-Unity-2017.4.0f1
+Look actual version in ProjectSettings/ProjectVersion.txt
 
 **Namespace convention**
 

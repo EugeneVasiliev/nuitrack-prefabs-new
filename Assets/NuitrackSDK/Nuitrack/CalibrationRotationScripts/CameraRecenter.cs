@@ -2,8 +2,11 @@
 
 public class CameraRecenter : MonoBehaviour
 {
+    [Header("This object doesn't rotated")]
     [SerializeField] Transform headBasisTransform;
+    [Header("This object will be rotated after calibration")]
     [SerializeField] Transform yAxisCorrectionTransform;
+    [Header("This object should rotate to follow the head (Cardboard plugin, etc)")]
     [SerializeField] Transform gazeDirectionTransform;
 
     TPoseCalibration poseCalibration;
@@ -13,7 +16,7 @@ public class CameraRecenter : MonoBehaviour
     private void Start()
     {
         yAxisCorrectionTransform.localRotation = correctionQ;
-        Debug.Log("Note: For IOS and Android you can use Google Cardboard: https://developers.google.com/cardboard/develop/unity/quickstart");
+        Debug.Log("Note: For rotating head on IOS and Android you can use Google Cardboard: https://developers.google.com/cardboard/develop/unity/quickstart");
     }
 
     void Recenter(Quaternion rotation)

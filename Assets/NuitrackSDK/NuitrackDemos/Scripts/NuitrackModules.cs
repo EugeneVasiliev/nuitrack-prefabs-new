@@ -40,7 +40,7 @@ namespace NuitrackSDK.NuitrackDemos
         {
             exceptionsLogger = GameObject.FindObjectOfType<ExceptionsLogger>();
             NuitrackInitState state = NuitrackLoader.initState;
-            if (state != NuitrackInitState.INIT_OK)
+            if (state != NuitrackInitState.INIT_OK && Application.platform == RuntimePlatform.Android)
             {
                 exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
             }
@@ -90,7 +90,7 @@ namespace NuitrackSDK.NuitrackDemos
         private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
         {
             if (!NuitrackManager.Instance.nuitrackInitialized)
-                exceptionsLogger.AddEntry(NuitrackManager.Instance.initException.ToString());
+                exceptionsLogger.AddEntry(NuitrackErrorSolver.CheckError(NuitrackManager.Instance.initException, false) + "\n\n\n" + NuitrackManager.Instance.initException.ToString());
 
             if (skelVisId == 0)
             {

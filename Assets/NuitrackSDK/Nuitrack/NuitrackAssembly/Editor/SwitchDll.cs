@@ -17,7 +17,12 @@ public class SwitchDll : IPreprocessBuildWithReport
         Check();
     }
 
-    [MenuItem("Nuitrack/Auto switch dll")]
+    public void OnPreprocessBuild(BuildReport report)
+    {
+        Check();
+    }
+
+    //[MenuItem("Nuitrack/Auto switch dll")]
     public static void Check()
     {
         PluginImporter pluginIL2CPP = (PluginImporter)PluginImporter.GetAtPath(pathIL2CPP);
@@ -47,8 +52,6 @@ public class SwitchDll : IPreprocessBuildWithReport
 
         ScriptingImplementation backend = PlayerSettings.GetScriptingBackend(buildTargetGroup);
 
-        Debug.Log("Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup);
-
         bool useStructureSensor = false;
 
         if (buildTargetGroup == BuildTargetGroup.iOS)
@@ -63,48 +66,51 @@ public class SwitchDll : IPreprocessBuildWithReport
 
         if (buildTargetGroup == BuildTargetGroup.iOS)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
+            SwitchCompatibleWithPlatform(pluginMONO, false);
 
             if (useStructureSensor)
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, true);
+                SwitchCompatibleWithPlatform(pluginIL2CPP, false);
+                SwitchCompatibleWithPlatform(pluginIOS, true);
             }
             else
             {
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
-                SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+                SwitchCompatibleWithPlatform(pluginIL2CPP, true);
+                SwitchCompatibleWithPlatform(pluginIOS, false);
             }
         }
         else if((buildTargetGroup == BuildTargetGroup.Android || buildTargetGroup == BuildTargetGroup.Standalone) && backend == ScriptingImplementation.IL2CPP)
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, true);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+            SwitchCompatibleWithPlatform(pluginIL2CPP, true);
+            SwitchCompatibleWithPlatform(pluginMONO, false);
+            SwitchCompatibleWithPlatform(pluginIOS, false);
         }
         else
         {
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIL2CPP, false);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginMONO, true);
-            SwitchDll.SwitchCompatibleWithPlatform(pluginIOS, false);
+            SwitchCompatibleWithPlatform(pluginIL2CPP, false);
+            SwitchCompatibleWithPlatform(pluginMONO, true);
+            SwitchCompatibleWithPlatform(pluginIOS, false);
         }
+
+        string backendMessage = "Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup;
 
         try
         {
             nuitrack.Nuitrack.Init();
             nuitrack.Nuitrack.Release();
-            Debug.Log("Test Nuitrack init was successful!");
+            Debug.Log("<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>\n" + backendMessage);
         }
         catch
         {
-            Debug.LogWarning("Test Nuitrack init failed!");
+            Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
+                "<color=red><b>It is recommended to test on allModulesScene</b></color>\n" + backendMessage);
         }
     }
 
     public static void SwitchCompatibleWithPlatform(PluginImporter plugin, bool value)
     {
-        if (value)
-            Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Switch Nuitrack dll to " + plugin.assetPath);
+        if (value && plugin.GetCompatibleWithPlatform(BuildTarget.StandaloneWindows64) != value)
+            Debug.Log("Platform " + EditorUserBuildSettings.activeBuildTarget + ". Nuitrack dll switched to " + plugin.assetPath);
 
         plugin.SetCompatibleWithAnyPlatform(false);
         plugin.SetCompatibleWithPlatform(BuildTarget.iOS, value);
@@ -115,10 +121,5 @@ public class SwitchDll : IPreprocessBuildWithReport
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, value);
         plugin.SetCompatibleWithEditor(value);
-    }
-
-    public void OnPreprocessBuild(BuildReport report)
-    {
-        Check();
     }
 }
