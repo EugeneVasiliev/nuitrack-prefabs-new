@@ -21,13 +21,17 @@ namespace NuitrackSDKEditor
             {
                 NuitrackManager nuitrackManager = FindObjectOfType<NuitrackManager>();
 
-                if(nuitrackManager != null)
+                if (nuitrackManager != null)
                 {
                     EditorGUIUtility.PingObject(nuitrackManager);
                     Debug.LogWarning("NuitrackManager already exists on the scene.");
                 }
                 else
-                    Selection.activeObject = PrefabUtility.InstantiatePrefab(nuitrackScriptsPrefab);
+                {
+                    UnityEngine.Object nuitrackScripts = PrefabUtility.InstantiatePrefab(nuitrackScriptsPrefab);
+                    Undo.RegisterCreatedObjectUndo(nuitrackScripts, string.Format("Create object {0}", nuitrackScripts.name));
+                    Selection.activeObject = nuitrackScripts;
+                }
             }
         }
 
