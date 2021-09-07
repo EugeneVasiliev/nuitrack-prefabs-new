@@ -3,7 +3,7 @@ using System.IO;
 
 public class NuitrackErrorSolver : MonoBehaviour
 {
-    public static string CheckError(System.Exception ex, bool showInLog = true)
+    public static string CheckError(System.Exception ex, bool showInLog = true, bool showTroubleshooting = true)
     {
         string errorMessage = string.Empty;
         string troubleshootingPageMessage = "<color=red><b>Also look Nuitrack Troubleshooting page:</b></color>github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md" +
@@ -54,6 +54,13 @@ public class NuitrackErrorSolver : MonoBehaviour
                         errorMessage = "<color=red><b>" + "Can't create DepthSensor module. Sensor connected? Is the connection stable? Are the wires okay?" + "</b></color>" + " \nTry start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                     else if (ex.ToString().Contains("System.DllNotFoundException: libnuitrack"))
                         errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
+                    else if (ex.ToString().Contains("LicenseNotAcquiredException"))
+                    {
+                        if (NuitrackManager.Instance.workingTime > 15.0f)
+                            errorMessage = "<color=red><b>" + "Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing" + "</b></color>";
+                        else
+                            errorMessage = "<color=red><b>" + "Activate Nuitrack license. Menu: Nuitrack/Open Nuitrack Activation Tool" + "</b></color>";
+                    }
                     else
                         errorMessage = "<color=red><b>" + "Perhaps the sensor is already being used in other program. " + "</b></color>" + "\nIf not, try start " + nuitrackHomePath + "\\bin\\nuitrack_sample.exe";
                 }
@@ -70,9 +77,12 @@ public class NuitrackErrorSolver : MonoBehaviour
         if (showInLog) Debug.LogError(errorMessage);
 #endif
         if (showInLog && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "AllModulesScene") Debug.LogError("<color=red><b>It is recommended to test on allModulesScene</b></color>");
-        if (showInLog) Debug.LogError(troubleshootingPageMessage);
+        if (showInLog && showTroubleshooting) Debug.LogError(troubleshootingPageMessage);
         if (showInLog) Debug.LogError(ex.ToString());
 
-        return (errorMessage + "\n" + troubleshootingPageMessage);
+        if (showTroubleshooting)
+            errorMessage += "\n" + troubleshootingPageMessage;
+
+        return (errorMessage);
     }
 }
