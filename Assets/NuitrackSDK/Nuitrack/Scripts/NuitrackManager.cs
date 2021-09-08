@@ -33,7 +33,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    float workingTime = 0.0f;
+    [HideInInspector] public float workingTime = 0.0f;
+    [HideInInspector] public bool licenseTimeIsOver = false;
 
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
@@ -153,7 +154,7 @@ public class NuitrackManager : MonoBehaviour
 
         Application.targetFrameRate = 60;
         Application.runInBackground = runInBackground;
-        //Debug.Log ("NuitrackStart");
+
         initState = NuitrackLoader.InitNuitrackLibraries();
 
         if (asyncInit)
@@ -220,7 +221,6 @@ public class NuitrackManager : MonoBehaviour
 
     public void ChangeModulesState(bool skel, bool hand, bool depth, bool color, bool gest, bool user)
     {
-        //Debug.Log("" + skel + hand + depth + gest + user);
         skeletonTrackerModuleOn = skel;
         handsTrackerModuleOn = hand;
         depthModuleOn = depth;
@@ -296,8 +296,7 @@ public class NuitrackManager : MonoBehaviour
         {
             if (nuitrackInitialized)
                 return;
-            //Debug.Log("Application.runInBackground " + Application.runInBackground);
-            //CloseUserGen(); //just in case
+
             if (wifiConnect == WifiConnect.VicoVR)
             {
                 nuitrack.Nuitrack.Init("", nuitrack.Nuitrack.NuitrackMode.DEBUG);
@@ -389,7 +388,6 @@ public class NuitrackManager : MonoBehaviour
         if (DepthFrame != null)
             DepthFrame.Dispose();
         DepthFrame = (nuitrack.DepthFrame)frame.Clone();
-        //Debug.Log("Depth Update");
         onDepthUpdate?.Invoke(DepthFrame);
     }
 
@@ -398,7 +396,6 @@ public class NuitrackManager : MonoBehaviour
         if (ColorFrame != null)
             ColorFrame.Dispose();
         ColorFrame = (nuitrack.ColorFrame)frame.Clone();
-        //Debug.Log("Color Update");
         onColorUpdate?.Invoke(ColorFrame);
     }
 
@@ -415,7 +412,6 @@ public class NuitrackManager : MonoBehaviour
         if (SkeletonData != null)
             SkeletonData.Dispose();
         SkeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
-        //Debug.Log("Skeleton Update ");
         sensorConnected = true;
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
     }
@@ -441,7 +437,6 @@ public class NuitrackManager : MonoBehaviour
         HandTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
         onHandsTrackerUpdate?.Invoke(HandTrackerData);
 
-        //Debug.Log ("Grabbed hands");
         if (HandTrackerData == null) return;
         if (CurrentUserTracker.CurrentUser != 0)
         {
@@ -455,7 +450,6 @@ public class NuitrackManager : MonoBehaviour
 
     void OnApplicationPause(bool pauseStatus)
     {
-        //Debug.Log("pauseStatus " + pauseStatus);
         if (pauseStatus)
         {
             StopNuitrack();
@@ -482,6 +476,8 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
+        workingTime = 0;
+        licenseTimeIsOver = false;
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!IsNuitrackLibrariesInitialized())
             return;
@@ -529,12 +525,14 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
-    bool licenseIsOver = false;
     void Update()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (IsNuitrackLibrariesInitialized())
 #endif
+        if (licenseTimeIsOver)
+            return;
+
         if (!pauseState || (asyncInit && _threadRunning))
         {
             try
@@ -544,14 +542,10 @@ public class NuitrackManager : MonoBehaviour
             }
             catch (System.Exception ex)
             {
-                if (ex.ToString().Contains("LicenseNotAcquiredException") && licenseIsOver == false)
+                if (ex.ToString().Contains("LicenseNotAcquiredException"))
                 {
-                    licenseIsOver = true;
-                    Debug.Log(workingTime);
-                    if (workingTime > 5.0f)
-                        Debug.LogError("Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing");
-                    else
-                        Debug.LogError("Activate Nuitrack license https://nuitrack.com/#pricing");
+                    NuitrackErrorSolver.CheckError(ex, true, false);
+                    licenseTimeIsOver = true;
                 }
                 else
                 {
@@ -563,9 +557,6 @@ public class NuitrackManager : MonoBehaviour
 
     public void DepthModuleClose()
     {
-        //Debug.Log ("changeModuls: start");
-        //if (!depthModuleOn)
-        //    return;
         depthModuleOn = false;
         userTrackerModuleOn = false;
         colorModuleOn = false;
@@ -577,13 +568,10 @@ public class NuitrackManager : MonoBehaviour
             gesturesRecognizerModuleOn,
             userTrackerModuleOn
         );
-        //Debug.Log ("changeModuls: end");
     }
 
     public void DepthModuleStart()
     {
-        //if (depthModuleOn)
-        //    return;
         depthModuleOn = true;
         userTrackerModuleOn = true;
         colorModuleOn = true;

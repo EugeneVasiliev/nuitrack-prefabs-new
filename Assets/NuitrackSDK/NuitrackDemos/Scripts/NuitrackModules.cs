@@ -29,6 +29,7 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] Dropdown dropdownModelSwitcher;
 
         int sensorFrameId = 0;
+        bool licenseIsOver;
 
         public void SwitchCamera()
         {
@@ -144,7 +145,11 @@ namespace NuitrackSDK.NuitrackDemos
             }
             catch (Exception ex)
             {
-                exceptionsLogger.AddEntry(ex.ToString());
+                if (!licenseIsOver)
+                {
+                    licenseIsOver = true;
+                    exceptionsLogger.AddEntry(NuitrackErrorSolver.CheckError(ex, false, false));
+                }
             }
         }
 
