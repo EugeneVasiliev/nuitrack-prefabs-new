@@ -37,11 +37,11 @@ namespace NuitrackSDK.VicoVRCalibration
 
         void OnEnable()
         {
-            if (NuitrackLoader.initState != NuitrackInitState.INIT_OK && Application.platform != RuntimePlatform.IPhonePlayer)
-            {
-                gameObject.SetActive(false);
-                return;
-            }
+            //if (NuitrackLoader.initState != NuitrackInitState.INIT_OK && Application.platform != RuntimePlatform.IPhonePlayer)
+            //{
+            //    gameObject.SetActive(false);
+            //    return;
+            //}
 
             if (autoFindGvrHead)
             {
