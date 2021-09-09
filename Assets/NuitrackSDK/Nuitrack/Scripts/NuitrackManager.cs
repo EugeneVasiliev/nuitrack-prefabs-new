@@ -93,6 +93,10 @@ public class NuitrackManager : MonoBehaviour
 
     [HideInInspector] public System.Exception initException;
 
+    [Header("You can use *.oni or *.bag file instead of a sensor")]
+    [SerializeField] bool useFileRecord;
+    [SerializeField] string[] pathToFileRecord;
+
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
     {
@@ -313,6 +317,31 @@ public class NuitrackManager : MonoBehaviour
             {
                 nuitrack.Nuitrack.Init();
 
+                if (useFileRecord && (Application.platform == RuntimePlatform.WindowsPlayer || Application.isEditor))
+                {
+                    string path = pathToFileRecord[0];
+                    path = path.Replace('\\', '/');
+                    try
+                    {
+                        if (path.Split('.').Length == 2)
+                        {
+                            print(path.Split('.')[1]);
+                            print(path);
+                            if (path.Split('.')[1] == "oni")
+                                nuitrack.Nuitrack.SetConfigValue("OpenNIModule.FileRecord", path);
+                            else
+                                nuitrack.Nuitrack.SetConfigValue("Realsense2Module.FileRecord", path);
+                        }
+                        else
+                            Debug.Log("Check File Record Path!");
+                    }
+                    catch (System.Exception)
+                    {
+                        Debug.LogError("File " + path + "  Cannot be loaded!");
+                    }
+
+                }
+
                 if (depth2ColorRegistration)
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
@@ -357,7 +386,7 @@ public class NuitrackManager : MonoBehaviour
                         devicesInfo += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "] ";
                     }
                 }
-                    
+                
                 //licenseInfo = JsonUtility.FromJson<LicenseInfo>(nuitrack.Nuitrack.GetDeviceList());
 
                 Debug.Log(
