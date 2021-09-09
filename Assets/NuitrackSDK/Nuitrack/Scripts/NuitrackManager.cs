@@ -33,8 +33,9 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [HideInInspector] public float workingTime = 0.0f;
     [HideInInspector] public bool licenseTimeIsOver = false;
+    [HideInInspector] public float workingTime = 0.0f;
+    [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
 
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
@@ -340,11 +341,29 @@ public class NuitrackManager : MonoBehaviour
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
                 }
+                string devicesInfo = "";
+                if(nuitrack.Nuitrack.GetDeviceList().Count > 0)
+                {
+                    for (int i = 0; i < nuitrack.Nuitrack.GetDeviceList().Count; i++)
+                    {
+                        nuitrack.device.NuitrackDevice device = nuitrack.Nuitrack.GetDeviceList()[i];
+                        string sensorName = device.GetInfo(nuitrack.device.DeviceInfoType.DEVICE_NAME);
+                        if (i == 0)
+                        {
+                            licenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
+                            licenseInfo.SensorName = sensorName;
+                        }
+
+                        devicesInfo += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "] ";
+                    }
+                }
+                    
+                //licenseInfo = JsonUtility.FromJson<LicenseInfo>(nuitrack.Nuitrack.GetDeviceList());
 
                 Debug.Log(
-                    "Nuitrack Config parameters:\n" +
+                    "Nuitrack Start Info:\n" +
                     "Skeletonization Type: " + nuitrack.Nuitrack.GetConfigValue("Skeletonization.Type") + "\n" +
-                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse"));
+                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse") + devicesInfo);
             }
 
             Debug.Log("Nuitrack Init OK");
@@ -476,8 +495,8 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
-        workingTime = 0;
         licenseTimeIsOver = false;
+        workingTime = 0;
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!IsNuitrackLibrariesInitialized())
             return;
@@ -537,8 +556,8 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
-                workingTime += Time.deltaTime;
                 nuitrack.Nuitrack.Update();
+                workingTime += Time.deltaTime;
             }
             catch (System.Exception ex)
             {
