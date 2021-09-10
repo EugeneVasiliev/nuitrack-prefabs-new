@@ -319,14 +319,11 @@ public class NuitrackManager : MonoBehaviour
 
                 if (useFileRecord && (Application.platform == RuntimePlatform.WindowsPlayer || Application.isEditor))
                 {
-                    string path = pathToFileRecord[0];
-                    path = path.Replace('\\', '/');
+                    string path = pathToFileRecord[0].Replace('\\', '/');
                     try
                     {
                         if (path.Split('.').Length == 2)
                         {
-                            print(path.Split('.')[1]);
-                            print(path);
                             if (path.Split('.')[1] == "oni")
                                 nuitrack.Nuitrack.SetConfigValue("OpenNIModule.FileRecord", path);
                             else
