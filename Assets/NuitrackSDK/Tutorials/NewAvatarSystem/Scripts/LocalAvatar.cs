@@ -73,10 +73,10 @@ namespace NuitrackSDK.Tutorials.RGBand3DSkeleton
             List<ModelJoint> outList = new List<ModelJoint>();
 
             Dictionary<nuitrack.JointType, ModelJoint> dict = sourceModelJoints.ToDictionary(k => k.jointType, v => v);
-            List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
+            //List<nuitrack.JointType> jointTypes = dict.Keys.ToList().SortClamp();
 
-            foreach (nuitrack.JointType jointType in jointTypes)
-                outList.Add(dict[jointType]);
+            //foreach (nuitrack.JointType jointType in jointTypes)
+            //    outList.Add(dict[jointType]);
 
             return outList;
         }
