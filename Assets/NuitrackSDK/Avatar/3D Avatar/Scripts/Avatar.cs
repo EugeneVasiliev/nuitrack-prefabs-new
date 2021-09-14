@@ -125,27 +125,28 @@ namespace NuitrackSDK.Avatar
         {
             if (mappingMode == MappingMode.Indirect)
             {
-                Vector3 rootPosition = SpaceTransform.rotation * skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
+                Vector3 rootPosition = SpaceTransform.rotation * GetJointTransform(rootJoint).Position + basePivotOffset;
                 jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
             }
 
             foreach (var riggedJoint in jointsRigged)
             {
                 //Get joint from the Nuitrack
-                nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                if (joint.Confidence > jointConfidence)
+                //nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
+                JointTransform jointTransform = GetJointTransform(riggedJoint.Key);
+                if (jointTransform.IsActive)
                 {
                     //Get modelJoint
                     ModelJoint modelJoint = riggedJoint.Value;
 
                     //Bone rotation
-                    Quaternion jointRotation = IsTransformSpace ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
+                    Quaternion jointRotation = IsTransformSpace ? jointTransform.RotationMirrored : jointTransform.Rotation;
 
                     modelJoint.bone.rotation = SpaceTransform.rotation * (jointRotation * modelJoint.baseRotOffset);
 
                     if (mappingMode == MappingMode.Direct)
                     {
-                        Vector3 jointPos = (0.001f * joint.ToVector3()) + basePivotOffset;
+                        Vector3 jointPos = jointTransform.Position + basePivotOffset;
                         Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
 
                         Vector3 newPos = SpaceTransform.TransformPoint(localPos);
