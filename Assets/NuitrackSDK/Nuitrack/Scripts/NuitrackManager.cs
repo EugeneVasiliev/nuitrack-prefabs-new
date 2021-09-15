@@ -34,7 +34,6 @@ public class NuitrackManager : MonoBehaviour
     handsTrackerModuleOn = true;
 
     [HideInInspector] public bool licenseTimeIsOver = false;
-    [HideInInspector] public float workingTime = 0.0f;
     [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
 
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
@@ -522,7 +521,6 @@ public class NuitrackManager : MonoBehaviour
     public void StartNuitrack()
     {
         licenseTimeIsOver = false;
-        workingTime = 0;
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!IsNuitrackLibrariesInitialized())
             return;
@@ -583,7 +581,6 @@ public class NuitrackManager : MonoBehaviour
             try
             {
                 nuitrack.Nuitrack.Update();
-                workingTime += Time.deltaTime;
             }
             catch (System.Exception ex)
             {

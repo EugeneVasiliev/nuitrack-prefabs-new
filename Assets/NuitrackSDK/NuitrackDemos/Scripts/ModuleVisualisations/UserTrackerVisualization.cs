@@ -25,6 +25,7 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] Mesh sampleMesh;
         [SerializeField] float meshScaling = 1f;
         [SerializeField] Material visualizationMaterial;
+        public Material visMat;
 
         int pointsPerVis, parts;
 
@@ -79,7 +80,7 @@ namespace NuitrackSDK.NuitrackDemos
             if (!initialized) Initialize();
 
             this.showBackground = showBackground;
-            visualizationMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
+            visMat.SetInt("_ShowBorders", showBorders ? 1 : 0);
         }
 
         IEnumerator WaitInit()
@@ -117,6 +118,7 @@ namespace NuitrackSDK.NuitrackDemos
             hRes = mode.XRes / frameStep;
 
             depthToScale = meshScaling * 2f * Mathf.Tan(0.5f * mode.HFOV) / hRes;
+            visMat = new Material(visualizationMaterial);
 
             InitMeshes(
               ((mode.XRes / frameStep) + (mode.XRes % frameStep == 0 ? 0 : 1)),
@@ -148,9 +150,9 @@ namespace NuitrackSDK.NuitrackDemos
             {
                 sampleVertices[i] *= depthToScale;
                 sampleVertsV4[i] = sampleVertices[i];
-                //visualizationMaterial.SetVector("_Offsets" + i.ToString(), sampleVertices[i]); //unity 5.3-
+                //visMat.SetVector("_Offsets" + i.ToString(), sampleVertices[i]); //unity 5.3-
             }
-            visualizationMaterial.SetVectorArray("_Offsets", sampleVertsV4); //unity 5.4+
+            visMat.SetVectorArray("_Offsets", sampleVertsV4); //unity 5.4+
 
             sampleTriangles = sampleMesh.triangles;
             sampleNormals = sampleMesh.normals;
@@ -175,8 +177,8 @@ namespace NuitrackSDK.NuitrackDemos
             fX = 0.5f / Mathf.Tan(0.5f * hfov);
             fY = fX * cols / rows;
 
-            visualizationMaterial.SetFloat("fX", fX);
-            visualizationMaterial.SetFloat("fY", fY);
+            visMat.SetFloat("fX", fX);
+            visMat.SetFloat("fY", fY);
 
             //generation of triangle indexes, vertices, uvs and normals for all visualization parts
 
@@ -245,7 +247,7 @@ namespace NuitrackSDK.NuitrackDemos
                 visualizationParts[i].AddComponent<MeshFilter>();
                 visualizationParts[i].GetComponent<MeshFilter>().mesh = visualizationMeshes[i];
                 visualizationParts[i].AddComponent<MeshRenderer>();
-                visualizationParts[i].GetComponent<Renderer>().sharedMaterial = visualizationMaterial;
+                visualizationParts[i].GetComponent<Renderer>().sharedMaterial = visMat;
             }
         }
         #endregion
@@ -320,14 +322,14 @@ namespace NuitrackSDK.NuitrackDemos
             if (!showBackground)
             {
                 FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
-                visualizationMaterial.SetTexture("_RGBTex", rgbRenderTexture);
+                visMat.SetTexture("_RGBTex", rgbRenderTexture);
             }
             else
-                visualizationMaterial.SetTexture("_RGBTex", rgbTexture);
+                visMat.SetTexture("_RGBTex", rgbTexture);
 
-            visualizationMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
-            visualizationMaterial.SetTexture("_DepthTex", depthTexture);
-            visualizationMaterial.SetTexture("_SegmentationTex", segmentationTexture);
+            visMat.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
+            visMat.SetTexture("_DepthTex", depthTexture);
+            visMat.SetTexture("_SegmentationTex", segmentationTexture);
         }
 
         void OnDestroy()
