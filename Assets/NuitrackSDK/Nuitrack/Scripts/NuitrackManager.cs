@@ -635,6 +635,28 @@ public class NuitrackManager : MonoBehaviour
         StartNuitrack();
     }
 
+    public JsonInfo GetNuitrackJson()
+    {
+        try
+        {
+            if (nuitrack.Nuitrack.GetVersion() <= 3509)
+            {
+                Debug.LogError("For face tracking use newer Nuitrack Runtime version. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms");
+            }
+            else
+            {
+                string json = nuitrack.Nuitrack.GetInstancesJson();
+                return NuitrackUtils.FromJson<JsonInfo>(json);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            NuitrackErrorSolver.CheckError(ex);
+        }
+
+        return new JsonInfo();
+    }
+
     public void CloseUserGen()
     {
         try

@@ -41,7 +41,7 @@ public class UIFaceInfo : MonoBehaviour
 
     public void ProcessFace(nuitrack.Skeleton skeleton)
     {
-        jsonInfo = NuitrackUtils.GetNuitrackJson();
+        jsonInfo = NuitrackManager.Instance.GetNuitrackJson();
 
         if (jsonInfo == null)
             return;
