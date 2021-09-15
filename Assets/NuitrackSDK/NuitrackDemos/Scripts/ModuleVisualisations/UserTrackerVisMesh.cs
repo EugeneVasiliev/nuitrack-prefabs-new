@@ -35,6 +35,8 @@ namespace NuitrackSDK.NuitrackDemos
 
         public void SetShaderProperties(bool showBackground, bool showBorders)
         {
+            if(!meshMat)
+                meshMat = new Material(meshMaterial);
             this.showBackground = showBackground;
             meshMat.SetInt("_ShowBorders", showBorders ? 1 : 0);
         }
