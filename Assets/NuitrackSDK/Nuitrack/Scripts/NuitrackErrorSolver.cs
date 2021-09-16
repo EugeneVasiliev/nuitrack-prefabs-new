@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.IO;
 
-public class NuitrackErrorSolver : MonoBehaviour
+public class NuitrackErrorSolver
 {
     public static string CheckError(System.Exception ex, bool showInLog = true, bool showTroubleshooting = true)
     {

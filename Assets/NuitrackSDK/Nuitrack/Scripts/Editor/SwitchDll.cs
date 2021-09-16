@@ -100,8 +100,11 @@ public class SwitchDll : IPreprocessBuildWithReport
             nuitrack.Nuitrack.Release();
             Debug.Log("<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>\n" + backendMessage);
         }
-        catch
+        catch (System.Exception ex)
         {
+            if (ex.ToString().Contains("TBB"))
+                TBBReplacer.ShowMessage();
+
             Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
                 "<color=red><b>It is recommended to test on allModulesScene</b></color>\n" + backendMessage);
         }

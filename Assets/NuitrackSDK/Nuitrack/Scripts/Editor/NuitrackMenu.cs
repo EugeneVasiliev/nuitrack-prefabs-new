@@ -67,7 +67,7 @@ namespace NuitrackSDKEditor
             string path = Path.Combine(workingDir, "Nuitrack.exe");
 
             if (nuitrackHomePath != null)
-                RunProgram(path, workingDir);
+                ProgramStarter.Run(path, workingDir, true);
         }
 
         [MenuItem("Nuitrack/Open Nuitrack Test Sample", priority = 1)]
@@ -78,31 +78,7 @@ namespace NuitrackSDKEditor
             string path = Path.Combine(workingDir, "nuitrack_sample.exe");
 
             if (nuitrackHomePath != null)
-                RunProgram(path, workingDir);
-        }
-
-        static void RunProgram(string appPath, string workingDirectory)
-        {
-            try
-            {
-                if (File.Exists(appPath))
-                {
-                    System.Diagnostics.Process app = new System.Diagnostics.Process();
-                    app.StartInfo.FileName = appPath;
-                    app.StartInfo.WorkingDirectory = workingDirectory;
-                    app.Start();
-                    app.WaitForExit();
-                    app.Close();
-                }
-                else
-                {
-                    EditorUtility.DisplayDialog("Program not found", appPath + " not found!", "ОК");
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Unable to launch app: " + e.Message);
-            }
+                ProgramStarter.Run(path, workingDir, true);
         }
     }
 }
