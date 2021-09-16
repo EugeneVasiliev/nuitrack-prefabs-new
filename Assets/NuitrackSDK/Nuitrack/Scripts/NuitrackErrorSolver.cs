@@ -56,7 +56,7 @@ public class NuitrackErrorSolver
                         errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
                     else if (ex.ToString().Contains("LicenseNotAcquiredException"))
                     {
-                        if (NuitrackManager.Instance.workingTime > 15.0f)
+                        if (NuitrackManager.Instance.licenseInfo.Trial)
                             errorMessage = "<color=red><b>" + "Nuitrack Trial time is over. Restart app. For unlimited time of use, you can switch to another license https://nuitrack.com/#pricing" + "</b></color>";
                         else
                             errorMessage = "<color=red><b>" + "Activate Nuitrack license. Menu: Nuitrack/Open Nuitrack Activation Tool" + "</b></color>";

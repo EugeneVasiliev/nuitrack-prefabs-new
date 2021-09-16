@@ -35,31 +35,31 @@ namespace NuitrackSDKEditor
             }
         }
 
-        [MenuItem("Nuitrack/Help/Open Tutorials Page", priority = 2)]
-        public static void GoToDocsPage()
-        {
-            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/");
-        }
-
-        [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 2)]
-        public static void GoToTroubleshootingPage()
-        {
-            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md#troubleshooting");
-        }
-
-        [MenuItem("Nuitrack/Help/Open Github Page", priority = 2)]
+        [MenuItem("Nuitrack/Help/Open Github Page", priority = 20)]
         public static void GoToGithubPage()
         {
             Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/");
         }
 
-        [MenuItem("Nuitrack/Help/Manage Nuitrack License", priority = 2)]
+        [MenuItem("Nuitrack/Help/Open Tutorials Page", priority = 21)]
+        public static void GoToDocsPage()
+        {
+            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/");
+        }
+
+        [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]
+        public static void GoToTroubleshootingPage()
+        {
+            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md#troubleshooting");
+        }
+
+        [MenuItem("Nuitrack/Manage Nuitrack License", priority = 1)]
         public static void GoToLicensePage()
         {
             Application.OpenURL("https://cognitive.3divi.com");
         }
 
-        [MenuItem("Nuitrack/Open Nuitrack Activation Tool", priority = 1)]
+        [MenuItem("Nuitrack/Open Nuitrack Activation Tool", priority = 0)]
         public static void OpenNuitrackApp()
         {
             string nuitrackHomePath = Environment.GetEnvironmentVariable("NUITRACK_HOME");
