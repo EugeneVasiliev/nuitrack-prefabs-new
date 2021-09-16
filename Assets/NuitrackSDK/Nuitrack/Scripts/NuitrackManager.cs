@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
 
+using System.IO;
+
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
 #endif
@@ -33,8 +35,8 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [HideInInspector] public float workingTime = 0.0f;
     [HideInInspector] public bool licenseTimeIsOver = false;
+    [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
 
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
     [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
@@ -91,6 +93,10 @@ public class NuitrackManager : MonoBehaviour
     [HideInInspector] public bool nuitrackInitialized = false;
 
     [HideInInspector] public System.Exception initException;
+
+    [Header("You can use *.oni or *.bag file instead of a sensor")]
+    [SerializeField] bool useFileRecord;
+    [SerializeField] string pathToFileRecord;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
@@ -312,6 +318,29 @@ public class NuitrackManager : MonoBehaviour
             {
                 nuitrack.Nuitrack.Init();
 
+                if (useFileRecord && (Application.platform == RuntimePlatform.WindowsPlayer || Application.isEditor))
+                {
+                    string path = pathToFileRecord.Replace('\\', '/');
+                    try
+                    {
+                        FileInfo fileInfo = new FileInfo(path);
+                        if(fileInfo.Exists && fileInfo.Extension != string.Empty)
+                        { 
+                            if (fileInfo.Extension == ".oni")
+                                nuitrack.Nuitrack.SetConfigValue("OpenNIModule.FileRecord", path);
+                            else
+                                nuitrack.Nuitrack.SetConfigValue("Realsense2Module.FileRecord", path);
+                        }
+                        else
+                            Debug.LogError(string.Format("Check the path to the recording file! File path: {0}", path));
+                    }
+                    catch (System.Exception)
+                    {
+                        Debug.LogError("File " + path + "  Cannot be loaded!");
+                    }
+
+                }
+
                 if (depth2ColorRegistration)
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Depth2ColorRegistration", "true");
@@ -340,11 +369,29 @@ public class NuitrackManager : MonoBehaviour
                 {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
                 }
+                string devicesInfo = "";
+                if(nuitrack.Nuitrack.GetDeviceList().Count > 0)
+                {
+                    for (int i = 0; i < nuitrack.Nuitrack.GetDeviceList().Count; i++)
+                    {
+                        nuitrack.device.NuitrackDevice device = nuitrack.Nuitrack.GetDeviceList()[i];
+                        string sensorName = device.GetInfo(nuitrack.device.DeviceInfoType.DEVICE_NAME);
+                        if (i == 0)
+                        {
+                            licenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
+                            licenseInfo.SensorName = sensorName;
+                        }
+
+                        devicesInfo += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "] ";
+                    }
+                }
+                
+                //licenseInfo = JsonUtility.FromJson<LicenseInfo>(nuitrack.Nuitrack.GetDeviceList());
 
                 Debug.Log(
-                    "Nuitrack Config parameters:\n" +
+                    "Nuitrack Start Info:\n" +
                     "Skeletonization Type: " + nuitrack.Nuitrack.GetConfigValue("Skeletonization.Type") + "\n" +
-                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse"));
+                    "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse") + devicesInfo);
             }
 
             Debug.Log("Nuitrack Init OK");
@@ -476,7 +523,6 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
-        workingTime = 0;
         licenseTimeIsOver = false;
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!IsNuitrackLibrariesInitialized())
@@ -537,7 +583,6 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
-                workingTime += Time.deltaTime;
                 nuitrack.Nuitrack.Update();
             }
             catch (System.Exception ex)
@@ -591,6 +636,31 @@ public class NuitrackManager : MonoBehaviour
         StopNuitrack();
         useNuitrackAi = use;
         StartNuitrack();
+    }
+
+    public static JsonInfo NuitrackJson 
+    { 
+        get
+        {
+            try
+            {
+                if (nuitrack.Nuitrack.GetVersion() <= 3509)
+                {
+                    Debug.LogError("For face tracking use newer Nuitrack Runtime version. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms");
+                }
+                else
+                {
+                    string json = nuitrack.Nuitrack.GetInstancesJson();
+                    return NuitrackUtils.FromJson<JsonInfo>(json);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                NuitrackErrorSolver.CheckError(ex);
+            }
+
+            return null;
+        }
     }
 
     public void CloseUserGen()

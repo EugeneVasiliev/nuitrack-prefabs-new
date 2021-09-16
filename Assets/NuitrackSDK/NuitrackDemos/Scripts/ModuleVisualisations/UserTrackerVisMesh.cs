@@ -20,6 +20,7 @@ namespace NuitrackSDK.NuitrackDemos
         GameObject[] visualizationParts;
         [SerializeField] Material meshMaterial;
         [SerializeField] Color[] userCols;
+        Material meshMat;
 
         RenderTexture depthTexture, rgbTexture, segmentationTexture;
 
@@ -34,8 +35,10 @@ namespace NuitrackSDK.NuitrackDemos
 
         public void SetShaderProperties(bool showBackground, bool showBorders)
         {
+            if(!meshMat)
+                meshMat = new Material(meshMaterial);
             this.showBackground = showBackground;
-            meshMaterial.SetInt("_ShowBorders", showBorders ? 1 : 0);
+            meshMat.SetInt("_ShowBorders", showBorders ? 1 : 0);
         }
 
         void Start()
@@ -68,8 +71,9 @@ namespace NuitrackSDK.NuitrackDemos
             fX = 0.5f / Mathf.Tan(0.5f * hfov);
             fY = fX * cols / rows;
 
-            meshMaterial.SetFloat("fX", fX);
-            meshMaterial.SetFloat("fY", fY);
+            meshMat = new Material(meshMaterial);
+            meshMat.SetFloat("fX", fX);
+            meshMat.SetFloat("fY", fY);
 
             int numMeshes;
             const uint maxVertices = uint.MaxValue;
@@ -137,7 +141,7 @@ namespace NuitrackSDK.NuitrackDemos
                 visualizationParts[i].AddComponent<MeshFilter>();
                 visualizationParts[i].GetComponent<MeshFilter>().mesh = meshes[i];
                 visualizationParts[i].AddComponent<MeshRenderer>();
-                visualizationParts[i].GetComponent<Renderer>().sharedMaterial = meshMaterial;
+                visualizationParts[i].GetComponent<Renderer>().sharedMaterial = meshMat;
 
             }
         }
@@ -195,19 +199,19 @@ namespace NuitrackSDK.NuitrackDemos
             if (!showBackground)
             {
                 FrameUtils.TextureUtils.Cut(rgbTexture, segmentationTexture, ref rgbRenderTexture);
-                meshMaterial.SetTexture("_RGBTex", rgbRenderTexture);
+                meshMat.SetTexture("_RGBTex", rgbRenderTexture);
             }
             else
-                meshMaterial.SetTexture("_RGBTex", rgbTexture);
+                meshMat.SetTexture("_RGBTex", rgbTexture);
 
             depthTexture = depthFrame.ToRenderTexture();
             segmentationTexture = userFrame.ToRenderTexture(userCols, textureCache);
 
-            meshMaterial.SetTexture("_DepthTex", depthTexture);
-            meshMaterial.SetTexture("_SegmentationTex", segmentationTexture);
+            meshMat.SetTexture("_DepthTex", depthTexture);
+            meshMat.SetTexture("_SegmentationTex", segmentationTexture);
 
 
-            meshMaterial.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
+            meshMat.SetFloat("_maxSensorDepth", FrameUtils.DepthToTexture.MaxSensorDepth);
         }
 
         void OnDestroy()
