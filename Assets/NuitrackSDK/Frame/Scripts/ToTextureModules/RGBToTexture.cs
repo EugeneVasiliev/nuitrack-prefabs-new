@@ -81,7 +81,7 @@ namespace NuitrackSDK.Frame
                 textureCache.timeStamp = frame.Timestamp;
 
                 if (instanceShader == null)
-                    InitShader("RGB2BGR");
+                    InitShader("BGR2RGB");
 
                 if (dstRgbTexture2D == null)
                 {

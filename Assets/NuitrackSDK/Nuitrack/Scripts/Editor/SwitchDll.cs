@@ -97,8 +97,24 @@ public class SwitchDll : IPreprocessBuildWithReport
         try
         {
             nuitrack.Nuitrack.Init();
+
+            string initSuccessMessage = "<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>\n" + backendMessage;
+            if (nuitrack.Nuitrack.GetDeviceList().Count > 0)
+            {
+                for (int i = 0; i < nuitrack.Nuitrack.GetDeviceList().Count; i++)
+                {
+                    nuitrack.device.NuitrackDevice device = nuitrack.Nuitrack.GetDeviceList()[i];
+                    string sensorName = device.GetInfo(nuitrack.device.DeviceInfoType.DEVICE_NAME);
+                    initSuccessMessage += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "]";
+                }
+            }
+            else
+            {
+                initSuccessMessage += "\nSensor not connected";
+            }
+
             nuitrack.Nuitrack.Release();
-            Debug.Log("<color=green><b>Test Nuitrack (ver." + nuitrack.Nuitrack.GetVersion() + ") init was successful!</b></color>\n" + backendMessage);
+            Debug.Log(initSuccessMessage);
         }
         catch
         {

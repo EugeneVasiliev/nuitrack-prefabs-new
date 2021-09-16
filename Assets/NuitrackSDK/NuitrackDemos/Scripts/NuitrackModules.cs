@@ -172,7 +172,6 @@ namespace NuitrackSDK.NuitrackDemos
         public void SwitchNuitrackAi()
         {
             NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
-            ChangeModules(prevDepth, prevColor, prevUser, prevSkel, prevHand, prevGesture);
         }
     }
 }
