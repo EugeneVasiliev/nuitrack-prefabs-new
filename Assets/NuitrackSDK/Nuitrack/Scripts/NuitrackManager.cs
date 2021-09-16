@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
 
+using System.IO;
+
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
 #endif
@@ -94,7 +96,7 @@ public class NuitrackManager : MonoBehaviour
 
     [Header("You can use *.oni or *.bag file instead of a sensor")]
     [SerializeField] bool useFileRecord;
-    [SerializeField] string[] pathToFileRecord;
+    [SerializeField] string pathToFileRecord;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
@@ -318,18 +320,19 @@ public class NuitrackManager : MonoBehaviour
 
                 if (useFileRecord && (Application.platform == RuntimePlatform.WindowsPlayer || Application.isEditor))
                 {
-                    string path = pathToFileRecord[0].Replace('\\', '/');
+                    string path = pathToFileRecord.Replace('\\', '/');
                     try
                     {
-                        if (path.Split('.').Length == 2)
-                        {
-                            if (path.Split('.')[1] == "oni")
+                        FileInfo fileInfo = new FileInfo(path);
+                        if(fileInfo.Exists && fileInfo.Extension != string.Empty)
+                        { 
+                            if (fileInfo.Extension == ".oni")
                                 nuitrack.Nuitrack.SetConfigValue("OpenNIModule.FileRecord", path);
                             else
                                 nuitrack.Nuitrack.SetConfigValue("Realsense2Module.FileRecord", path);
                         }
                         else
-                            Debug.Log("Check File Record Path!");
+                            Debug.LogError(string.Format("Check the path to the recording file! File path: {0}", path));
                     }
                     catch (System.Exception)
                     {
@@ -635,26 +638,29 @@ public class NuitrackManager : MonoBehaviour
         StartNuitrack();
     }
 
-    public JsonInfo GetNuitrackJson()
-    {
-        try
+    public static JsonInfo NuitrackJson 
+    { 
+        get
         {
-            if (nuitrack.Nuitrack.GetVersion() <= 3509)
+            try
             {
-                Debug.LogError("For face tracking use newer Nuitrack Runtime version. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms");
+                if (nuitrack.Nuitrack.GetVersion() <= 3509)
+                {
+                    Debug.LogError("For face tracking use newer Nuitrack Runtime version. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms");
+                }
+                else
+                {
+                    string json = nuitrack.Nuitrack.GetInstancesJson();
+                    return NuitrackUtils.FromJson<JsonInfo>(json);
+                }
             }
-            else
+            catch (System.Exception ex)
             {
-                string json = nuitrack.Nuitrack.GetInstancesJson();
-                return NuitrackUtils.FromJson<JsonInfo>(json);
+                NuitrackErrorSolver.CheckError(ex);
             }
-        }
-        catch (System.Exception ex)
-        {
-            NuitrackErrorSolver.CheckError(ex);
-        }
 
-        return new JsonInfo();
+            return null;
+        }
     }
 
     public void CloseUserGen()

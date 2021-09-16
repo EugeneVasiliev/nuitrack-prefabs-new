@@ -46,7 +46,10 @@ public class FaceManager : MonoBehaviour
 
     void Update()
     {
-        faceInfo = NuitrackManager.Instance.GetNuitrackJson();
+        faceInfo = NuitrackManager.NuitrackJson;
+
+        if (faceInfo == null)
+            return;
 
         faces = faceInfo.Instances;
         for (int i = 0; i < faceControllers.Count; i++)

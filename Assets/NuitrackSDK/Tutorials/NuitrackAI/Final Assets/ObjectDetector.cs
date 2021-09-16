@@ -32,7 +32,10 @@ public class ObjectDetector : MonoBehaviour
 
     void Update()
     {
-        objectInfo = NuitrackManager.Instance.GetNuitrackJson();
+        objectInfo = NuitrackManager.NuitrackJson;
+
+        if (objectInfo == null)
+            return;
 
         objects = objectInfo.Instances;
         cigaretteDetected = false;

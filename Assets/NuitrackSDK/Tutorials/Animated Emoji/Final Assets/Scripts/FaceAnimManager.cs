@@ -31,7 +31,7 @@ public class FaceAnimManager : MonoBehaviour
 
     void OnSkeletonUpdate(SkeletonData skeletonData)
     {
-        if (faceInfo.Instances.Length == 0)
+        if (faceInfo == null || faceInfo.Instances.Length == 0)
             return;
 
         for (int i = 0; i < faceAnimControllers.Count; i++)
@@ -56,7 +56,7 @@ public class FaceAnimManager : MonoBehaviour
 
     private void Update()
     {
-        faceInfo = NuitrackManager.Instance.GetNuitrackJson();
+        faceInfo = NuitrackManager.NuitrackJson;
     }
 
     private void OnDestroy()
