@@ -15,14 +15,15 @@ public class TBBReplacer
         string unityTbbPath = CmdPath(Path.Combine(editorPath, "tbb.dll"));
         string unityTbbBackupPath = CmdPath(Path.Combine(editorPath, "tbb_backup.dll"));
 
-        StreamWriter sw;
         FileInfo fi = new FileInfo(batName);
-        sw = fi.AppendText();
-        sw.WriteLine("rename " + CmdPath(Path.Combine(editorPath, "tbb.dll")) + " " + "tbb_backup.dll");
-        sw.WriteLine("copy " + nuitrackTbbPath + " " + unityTbbPath);
-        sw.WriteLine("start \"\" " + CmdPath(EditorApplication.applicationPath) + " -projectPath " + CmdPath(Directory.GetCurrentDirectory()));
-        sw.WriteLine("del " + batName);
-        sw.Close();
+        using (StreamWriter sw = fi.AppendText())
+        {
+            sw.WriteLine("rename " + CmdPath(Path.Combine(editorPath, "tbb.dll")) + " " + "tbb_backup.dll");
+            sw.WriteLine("copy " + nuitrackTbbPath + " " + unityTbbPath);
+            sw.WriteLine("start \"\" " + CmdPath(EditorApplication.applicationPath) + " -projectPath " + CmdPath(Directory.GetCurrentDirectory()));
+            sw.WriteLine("del " + batName);
+        }
+
         EditorApplication.quitting += Quit;
         EditorApplication.Exit(0);
     }
