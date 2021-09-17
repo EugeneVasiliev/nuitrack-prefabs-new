@@ -13,10 +13,19 @@ public class UIAvatar : MonoBehaviour
     Dictionary<nuitrack.JointType, RectTransform> connections;
     Dictionary<nuitrack.JointType, RectTransform> joints;
 
+    bool initialized = false;
+
     void Start()
+    {
+        if (!initialized)
+            Init();
+    }
+
+    void Init()
     {
         CreateSkeletonParts();
         parentRect = GetComponent<RectTransform>();
+        initialized = true;
     }
 
     void CreateSkeletonParts()
@@ -59,6 +68,9 @@ public class UIAvatar : MonoBehaviour
     {
         if (skeleton == null)
             return;
+
+        if (!initialized)
+            Init();
 
         foreach (KeyValuePair<nuitrack.JointType, RectTransform> jointsInfo in joints)
         {
