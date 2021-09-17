@@ -204,34 +204,25 @@ namespace NuitrackSDK.Frame
         /// If not null and the resolution or format does not match, the Texture2D will be reinitialized.</param>
         public void Copy(RenderTexture source, ref Texture2D dest)
         {
-            bool fastCopySupported = false;
             TextureFormat textureFormat;
 
             if (EqualsEnum<TextureFormat>(source.format))
-            {
-                fastCopySupported = true;
                 textureFormat = ConvertEnum<TextureFormat>(source.format);
-            }
             else
                 textureFormat = TextureFormat.ARGB32;
 
             if (dest == null || dest.width != source.width || dest.height != source.height || dest.format != textureFormat)
                 dest = new Texture2D(source.width, source.height, textureFormat, false);
 
-            if (fastCopySupported && CopyTextureSupportType(CopyTextureSupport.RTToTexture))
-                Graphics.CopyTexture(source, dest);
-            else
-            {
-                Rect rect = new Rect(0, 0, source.width, source.height);
+            Rect rect = new Rect(0, 0, source.width, source.height);
 
-                RenderTexture saveRT = RenderTexture.active;
+            RenderTexture saveRT = RenderTexture.active;
 
-                RenderTexture.active = source;
-                dest.ReadPixels(rect, 0, 0, false);
-                dest.Apply();
+            RenderTexture.active = source;
+            dest.ReadPixels(rect, 0, 0, false);
+            dest.Apply();
 
-                RenderTexture.active = saveRT;
-            }
+            RenderTexture.active = saveRT;
         }
 
         #endregion
