@@ -363,20 +363,21 @@ namespace NuitrackSDK.Avatar.Editor
 
             if (avatar.ModelJoints == null)
                 avatar.ModelJoints = new List<ModelJoint>();
-        }
+        } 
 
         public override void OnInspectorGUI()
         {
-            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
+            DrawSkeletonSettings();
+            DrawSubAvatarGUI();
 
-            DrawDefaultInspector();
-
-            DrawSkeletonSettings(myScript);
-            DrawSkeletonMap(myScript);
+            DrawCustomDefaultInspector();
+            DrawSkeletonMap();
         }
 
-        protected void DrawSkeletonSettings(BaseAvatar myScript)
+        protected void DrawSkeletonSettings()
         {
+            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Skeleton settings", EditorStyles.boldLabel);
 
@@ -396,6 +397,30 @@ namespace NuitrackSDK.Avatar.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
+        protected virtual void DrawSubAvatarGUI()
+        {
+
+        }
+
+        protected virtual void DrawCustomDefaultInspector()
+        {
+            SerializedProperty property = serializedObject.GetIterator();
+
+            bool expanded = true;
+            while (property.NextVisible(expanded))
+            {
+                if ("m_Script" != property.propertyPath)
+                    EditorGUILayout.PropertyField(property, true);
+
+                //using (new EditorGUI.DisabledScope("m_Script" == property.propertyPath))
+                //{
+                //    EditorGUILayout.PropertyField(property, true);
+                //}
+                expanded = false;
+            }
+            serializedObject.ApplyModifiedProperties();
+        }   
+
         string GetUnityDisplayName(JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
         {
             string displayName = jointType.ToUnityBones().ToString();
@@ -408,8 +433,10 @@ namespace NuitrackSDK.Avatar.Editor
             return ObjectNames.NicifyVariableName(displayName);
         }
 
-        protected void DrawSkeletonMap(BaseAvatar myScript)
+        protected void DrawSkeletonMap()
         {
+            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Avatar map", EditorStyles.boldLabel);
 

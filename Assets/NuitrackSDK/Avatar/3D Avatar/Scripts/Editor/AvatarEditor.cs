@@ -41,5 +41,23 @@ namespace NuitrackSDK.Avatar.Editor
             Undo.RecordObject(avatar, "Avatar mapping modified");
             jointsDict[jointType].bone = objectTransform;
         }
+
+        protected override void DrawSubAvatarGUI()
+        {
+            EditorGUILayout.Space();
+
+            SerializedProperty vrModeProperty = serializedObject.FindProperty("vrMode");
+            vrModeProperty.boolValue = EditorGUILayout.Toggle("VR mode", vrModeProperty.boolValue);
+            serializedObject.ApplyModifiedProperties();
+
+            if(vrModeProperty.boolValue)
+            {
+                SerializedProperty vrHeadProperty = serializedObject.FindProperty("vrHead");
+                EditorGUILayout.ObjectField(vrHeadProperty, typeof(GameObject));
+
+                SerializedProperty headTransformProperty = serializedObject.FindProperty("headTransform");
+                EditorGUILayout.ObjectField(headTransformProperty, typeof(Transform));
+            }
+        }
     }
 }

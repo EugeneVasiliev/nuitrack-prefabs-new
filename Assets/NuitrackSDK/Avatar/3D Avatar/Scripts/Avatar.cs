@@ -5,12 +5,6 @@ using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.Avatar
 {
-    enum MappingMode
-    {
-        Indirect,
-        Direct,
-    }
-
     public class Avatar : BaseAvatar
     {
         [Header ("Options")]
@@ -20,12 +14,16 @@ namespace NuitrackSDK.Avatar
             "\n\nIf not specified, the object transformation is used.")]
         [SerializeField] Transform sensorSpace;
 
-        [SerializeField] MappingMode mappingMode;
+        [Tooltip("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
+           "ensuring that the model's size best matches the user's size.")]
+        [SerializeField] bool alignmentBoneLength = true;
+
         [SerializeField] JointType rootJoint = JointType.Waist;
 
         [Header("VR settings")]
-        [SerializeField] GameObject vrHead;
-        [SerializeField] Transform headTransform;
+        [SerializeField, HideInInspector] bool vrMode = false;
+        [SerializeField, HideInInspector] GameObject vrHead;
+        [SerializeField, HideInInspector] Transform headTransform;
         Transform spawnedHead;
 
         [Header("Calibration")]
@@ -86,8 +84,11 @@ namespace NuitrackSDK.Avatar
                     AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
             }
 
-            if (vrHead)
+            if (vrMode)
+            {
                 spawnedHead = Instantiate(vrHead).transform;
+                spawnedHead.position = headTransform.position;
+            }
 
             if (jointsRigged.ContainsKey(rootJoint))
             {
@@ -114,7 +115,7 @@ namespace NuitrackSDK.Avatar
         {
             base.Update();
 
-            if (spawnedHead)
+            if (vrMode)
                 spawnedHead.position = headTransform.position;
         }
 
@@ -123,7 +124,7 @@ namespace NuitrackSDK.Avatar
         /// </summary>
         protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
         {
-            if (mappingMode == MappingMode.Indirect)
+            if (!alignmentBoneLength)
             {
                 Vector3 rootPosition = SpaceTransform.rotation * GetJointTransform(rootJoint).Position + basePivotOffset;
                 jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
@@ -144,7 +145,7 @@ namespace NuitrackSDK.Avatar
 
                     modelJoint.bone.rotation = SpaceTransform.rotation * (jointRotation * modelJoint.baseRotOffset);
 
-                    if (mappingMode == MappingMode.Direct)
+                    if (alignmentBoneLength)
                     {
                         Vector3 jointPos = jointTransform.Position + basePivotOffset;
                         Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
