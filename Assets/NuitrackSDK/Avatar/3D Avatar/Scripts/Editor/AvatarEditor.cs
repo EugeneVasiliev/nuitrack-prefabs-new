@@ -34,11 +34,13 @@ namespace NuitrackSDK.Avatar.Editor
                 }
         }
 
-        protected override void AddJoint(JointType jointType, Transform objectTransform, ref Dictionary<JointType, ModelJoint> jointsDict)
+        protected override void AddJoint(JointType jointType, Transform objectTransform)
         {
             Avatar avatar = serializedObject.targetObject as Avatar;
 
             Undo.RecordObject(avatar, "Avatar mapping modified");
+
+            Dictionary<JointType, ModelJoint> jointsDict = avatar.ModelJoints.ToDictionary(k => k.jointType);
             jointsDict[jointType].bone = objectTransform;
         }
 

@@ -73,7 +73,7 @@ namespace NuitrackSDK.Avatar
         [SerializeField, HideInInspector] 
         protected float jointConfidence = 0.1f;
 
-        [SerializeField, HideInInspector] 
+        [SerializeField] 
         protected List<ModelJoint> modelJoints;
 
         protected ulong lastTimeStamp = 0;
