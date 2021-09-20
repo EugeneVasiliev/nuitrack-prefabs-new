@@ -6,16 +6,17 @@ using System.Collections.Generic;
 
 using nuitrack;
 
-namespace NuitrackSDK.Avatar.Editor
+
+namespace NuitrackSDKEditor.Avatar
 {
-    [CustomEditor(typeof(Avatar), true)]
+    [CustomEditor(typeof(NuitrackSDK.Avatar.Avatar), true)]
     public class AvatarEditor : BaseAvatarEditor
     {
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            Avatar avatar = serializedObject.targetObject as Avatar;
+            NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
             List<JointType> avatarJoints = avatar.ModelJoints.Select(k => k.jointType).ToList();
   
@@ -36,7 +37,7 @@ namespace NuitrackSDK.Avatar.Editor
 
         protected override void AddJoint(JointType jointType, Transform objectTransform)
         {
-            Avatar avatar = serializedObject.targetObject as Avatar;
+            NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
             Undo.RecordObject(avatar, "Avatar mapping modified");
 

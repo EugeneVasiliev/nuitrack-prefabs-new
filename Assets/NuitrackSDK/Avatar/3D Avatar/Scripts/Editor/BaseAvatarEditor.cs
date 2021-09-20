@@ -6,7 +6,10 @@ using System.Collections.Generic;
 
 using nuitrack;
 
-namespace NuitrackSDK.Avatar.Editor
+using NuitrackSDK.Avatar;
+
+
+namespace NuitrackSDKEditor.Avatar
 {
     public static class Styles
     {
@@ -170,7 +173,7 @@ namespace NuitrackSDK.Avatar.Editor
     }
 
     [CustomEditor(typeof(BaseAvatar), true)]
-    public class BaseAvatarEditor : UnityEditor.Editor
+    public class BaseAvatarEditor : Editor
     {
         //JointType selectJoint = JointType.None;
 
@@ -263,9 +266,7 @@ namespace NuitrackSDK.Avatar.Editor
             Dictionary<JointType, ModelJoint> jointsDict = myScript.ModelJoints.ToDictionary(k => k.jointType);
 
             if (jointsDict[jointType].bone != null)
-            {
-                //EditorGUIUtility.PingObject(jointsDict[jointType].bone);
-            }
+                EditorGUIUtility.PingObject(jointsDict[jointType].bone);
         }
 
         public override void OnInspectorGUI()
@@ -341,263 +342,6 @@ namespace NuitrackSDK.Avatar.Editor
             {
                 Dictionary<JointType, Transform> jointDict = myScript.ModelJoints.Where(v => v.bone != null).ToDictionary(k => k.jointType, v => v.bone);
                 skeletonJointListUI.Draw(jointDict);
-            }
-        }
-    }
-
-    public class SkeletonMapper<T> where T : Object
-    {
-        public delegate void DropHandler(T dropObject, JointType jointType);
-        public delegate void SelectHandler(JointType jointType);
-
-        public event DropHandler onDrop;
-        public event SelectHandler onSelected;
-
-        public JointType SelectJoint { get; set; } = JointType.None;
-
-        protected void OnDropAction(T dropObject, JointType jointType)
-        {
-            if (onDrop != null)
-                onDrop(dropObject, jointType);
-        }
-
-        protected void OnSelectedAction(JointType jointType)
-        {
-            if (onSelected != null)
-                onSelected(jointType);
-        } 
-
-        protected bool HandleClick(Rect clickRect)
-        {
-            Event evt = Event.current;
-
-            if (evt.type == EventType.MouseDown && clickRect.Contains(evt.mousePosition))
-            {
-                evt.Use();
-                return true;
-            }
-            return false;
-        }
-    }
-
-    public class SkeletonMapperUI<T> : SkeletonMapper<T> where T : Object
-    {
-        List<AvatarMaskBodyPart> GetActiveBodyParts(List<JointType> jointsList)
-        {
-            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
-
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
-                foreach (Styles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
-                    if (!guiJoint.optional && !jointsList.Contains(guiJoint.jointType))
-                    {
-                        bodyParts.Remove(bodyPart.Key);
-                        break;
-                    }
-
-            return bodyParts;
-        }
-
-        Rect DrawAvatarJointIcon(Rect rect, Styles.GUIJoint guiJoint, bool filled, bool selected)
-        {
-            Vector2 pos = guiJoint.mapPosition;
-            pos.Scale(new Vector2(rect.width * 0.5f, -rect.height * 0.5f));
-            pos += rect.center;
-
-            Texture dotGUI = (guiJoint.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
-            Vector2 position = new Vector2(pos.x - dotGUI.width * 0.5f, pos.y - dotGUI.height * 0.5f);
-
-            //------------------------
-
-            Rect jointRect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
-
-            Color oldColor = GUI.color;
-            GUI.color = Styles.Dot.color;
-            GUI.DrawTexture(jointRect, dotGUI);
-            GUI.color = oldColor;
-
-            if (filled)
-                GUI.DrawTexture(jointRect, Styles.Dot.fill.image);
-
-            if (selected)
-                GUI.DrawTexture(jointRect, Styles.Dot.selection.image);
-
-            return jointRect;
-        }
-
-        public void Draw(List<JointType> activeJoints)
-        {
-            Rect rect = GUILayoutUtility.GetRect(Styles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(Styles.UnityDude.image.width));
-            rect.x += (EditorGUIUtility.currentViewWidth - rect.width) / 2;
-
-            Color oldColor = GUI.color;
-
-            GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
-            GUI.DrawTexture(rect, Styles.UnityDude.image);
-
-            List<AvatarMaskBodyPart> filled = GetActiveBodyParts(activeJoints);
-
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
-            {
-                GUI.color = filled.Contains(bodyPart.Key) ? Styles.mainColor : Styles.disableColor;
-
-                foreach (GUIContent guiContent in bodyPart.Value.guiContents)
-                    GUI.DrawTexture(rect, guiContent.image);
-            }
-
-            GUI.color = oldColor;
-
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
-            {
-                AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                Styles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
-
-                foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
-                {
-                    JointType jointType = guiJoint.jointType;
-                    bool isActive = activeJoints.Contains(jointType);
-
-                    Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, isActive, jointType == SelectJoint);
-
-                    T newJoint = HandleDragDrop(jointPointRect);
-
-                    if(newJoint != null)
-                        OnDropAction(newJoint, jointType);
-
-                    if(HandleClick(jointPointRect))
-                        OnSelectedAction(jointType);
-                }
-            }
-        }
-
-        T HandleDragDrop(Rect dropRect)
-        {
-            EventType eventType = Event.current.type;
-
-            T dropObject = default(T);
-
-            if ((eventType == EventType.DragPerform || eventType == EventType.DragUpdated) && 
-                dropRect.Contains(Event.current.mousePosition) && GUI.enabled)
-            {
-                Object[] references = DragAndDrop.objectReferences;
-                Object validatedObject = references.Length == 1 ? references[0] : null;
-
-                T validObj = GetValidType(validatedObject);
-
-                if (validObj != null && !validObj.Equals(default(T)))
-                {
-                    DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
-
-                    if (eventType == EventType.DragPerform)
-                        dropObject = validObj;
-
-                    GUI.changed = true;
-                    DragAndDrop.AcceptDrag();
-                    DragAndDrop.activeControlID = 0;
-                }
-            }
-
-            return dropObject;
-        }
-
-        T GetValidType(Object validatedObject)
-        {
-            if (EditorUtility.IsPersistent(validatedObject))
-                return default(T);
-
-            if (validatedObject is T)
-                return (T)validatedObject;
-            else if (validatedObject is GameObject)
-                return (validatedObject as GameObject).GetComponent<T>();
-
-            return default(T);
-        }
-    }
-
-    public class SkeletonJointListUI<T> : SkeletonMapper<T> where T : Object
-    {
-        Dictionary<AvatarMaskBodyPart, bool> foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
-
-        protected Rect DrawJointDot(Vector2 position, Styles.GUIJoint guiJoint, bool filled, bool selected)
-        {
-            Texture dotGUI = (guiJoint.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
-
-            Rect rect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
-
-            Color oldColor = GUI.color;
-            GUI.color = Styles.Dot.color;
-            GUI.DrawTexture(rect, dotGUI);
-            GUI.color = oldColor;
-
-            if (filled)
-                GUI.DrawTexture(rect, Styles.Dot.fill.image);
-
-            if (selected)
-                GUI.DrawTexture(rect, Styles.Dot.selection.image);
-
-            return rect;
-        }
-
-        string GetUnityDisplayName(JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
-        {
-            string displayName = jointType.ToUnityBones().ToString();
-
-            if (bodyPart == AvatarMaskBodyPart.LeftArm || bodyPart == AvatarMaskBodyPart.LeftLeg)
-                displayName = displayName.Replace("Left", "");
-            else if (bodyPart == AvatarMaskBodyPart.RightArm || bodyPart == AvatarMaskBodyPart.RightLeg)
-                displayName = displayName.Replace("Right", "");
-
-            return ObjectNames.NicifyVariableName(displayName);
-        }
-
-        public void Draw(Dictionary<JointType, T> jointsDict)
-        {
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
-            {
-                AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                Styles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
-
-                foldOpenned[bodyPart] = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned[bodyPart], guiBodyPart.Lable);
-
-                if (foldOpenned[bodyPart])
-                {
-                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-                    foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
-                    {
-                        JointType jointType = guiJoint.jointType;
-
-                        T jointItem = jointsDict.ContainsKey(jointType) ? jointsDict[jointType] : null;
-
-                        Rect controlRect = EditorGUILayout.GetControlRect();
-                        Vector2 position = new Vector2(controlRect.x, controlRect.y);
-
-                        Rect jointRect = DrawJointDot(position, guiJoint, jointItem != null, jointType == SelectJoint);
-                        controlRect.xMin += jointRect.width;
-
-                        string displayName = GetUnityDisplayName(jointType, bodyPart);
-
-                        T newJointObject = EditorGUI.ObjectField(controlRect, displayName, jointItem, typeof(T), true) as T;
-
-                        if (jointType == SelectJoint)
-                        {
-                            System.Type type = typeof(EditorGUIUtility);
-                            System.Reflection.FieldInfo field = type.GetField("s_LastControlID", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-                            int id = (int)field.GetValue(null);
-
-                            GUIUtility.keyboardControl = id;
-                        }
-
-                        if (newJointObject != jointItem)
-                            OnDropAction(newJointObject, jointType);
-
-                        if (HandleClick(controlRect))
-                            OnSelectedAction(jointType);
-                    }
-
-                    EditorGUILayout.EndVertical();
-                }
-
-                EditorGUILayout.EndFoldoutHeaderGroup();
             }
         }
     }
