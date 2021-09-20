@@ -180,6 +180,22 @@ namespace NuitrackSDKEditor.Avatar
         SkeletonMapperUI<Transform> skeletonMapper = null;
         SkeletonJointListUI<Transform> skeletonJointListUI = null;
 
+        readonly List<string> excludeFields = new List<string>()
+        {
+            "m_Script",
+
+            "useCurrentUserTracker",
+            "skeletonID",
+            "jointConfidence",
+
+            "modelJoints"
+        };
+
+        protected virtual List<string> GetExcludeFields()
+        {
+            return excludeFields;
+        }
+
         protected virtual void AddJoint(JointType jointType, Transform objectTransform)
         {
             BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
@@ -308,20 +324,8 @@ namespace NuitrackSDKEditor.Avatar
 
         protected virtual void DrawCustomDefaultInspector()
         {
-            SerializedProperty property = serializedObject.GetIterator();
-
-            bool expanded = true;
-            while (property.NextVisible(expanded))
-            {
-                if ("m_Script" != property.propertyPath)
-                    EditorGUILayout.PropertyField(property, true);
-
-                //using (new EditorGUI.DisabledScope("m_Script" == property.propertyPath))
-                //{
-                //    EditorGUILayout.PropertyField(property, true);
-                //}
-                expanded = false;
-            }
+            string[] excludeFieldsName = GetExcludeFields().ToArray();
+            DrawPropertiesExcluding(serializedObject, excludeFieldsName);
             serializedObject.ApplyModifiedProperties();
         }   
 

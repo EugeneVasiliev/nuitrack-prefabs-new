@@ -12,6 +12,13 @@ namespace NuitrackSDKEditor.Avatar
     [CustomEditor(typeof(NuitrackSDK.Avatar.Avatar), true)]
     public class AvatarEditor : BaseAvatarEditor
     {
+        readonly List<string> subExcludeFields = new List<string>()
+        {
+            "vrMode",
+            "vrHead",
+            "headTransform"
+        };
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -33,6 +40,16 @@ namespace NuitrackSDKEditor.Avatar
 
                     index++;
                 }
+        }
+
+        protected override List<string> GetExcludeFields()
+        {
+            List<string> excludeList = new List<string>();
+
+            excludeList.AddRange(base.GetExcludeFields());
+            excludeList.AddRange(subExcludeFields);
+
+            return excludeList;
         }
 
         protected override void AddJoint(JointType jointType, Transform objectTransform)
