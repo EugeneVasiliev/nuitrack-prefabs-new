@@ -79,13 +79,6 @@ namespace NuitrackSDK.NuitrackDemos
             directAvatarMan.SetActive(skelVisId == 4);
         }
 
-        bool prevDepth = false;
-        bool prevColor = false;
-        bool prevUser = false;
-        bool prevSkel = false;
-        bool prevHand = false;
-        bool prevGesture = false;
-
         bool currentDepth, currentColor, currentUser, currentSkeleton, currentHands, currentGestures;
 
         private void InitTrackers(bool depthOn, bool colorOn, bool userOn, bool skeletonOn, bool handsOn, bool gesturesOn)
