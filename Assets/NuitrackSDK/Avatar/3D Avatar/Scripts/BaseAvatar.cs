@@ -64,16 +64,16 @@ namespace NuitrackSDK.Avatar
     public abstract class BaseAvatar : MonoBehaviour
     {
         [Header("Options")]
-        [SerializeField] 
-        protected bool useCurrentUserTracker = true;
+        [SerializeField, HideInNuitrackSDKInspector] 
+        bool useCurrentUserTracker = true;
         
-        [SerializeField]
-        protected int skeletonID = 1;
+        [SerializeField, HideInNuitrackSDKInspector]
+        int skeletonID = 1;
 
-        [SerializeField] 
-        protected float jointConfidence = 0.1f;
+        [SerializeField, HideInNuitrackSDKInspector] 
+        float jointConfidence = 0.1f;
 
-        [SerializeField] 
+        [SerializeField, HideInNuitrackSDKInspector] 
         protected List<ModelJoint> modelJoints;
 
         protected ulong lastTimeStamp = 0;

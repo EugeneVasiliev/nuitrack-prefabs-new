@@ -29,7 +29,7 @@ namespace NuitrackSDKEditor.Avatar
 
         Rect DrawJointDot(Vector2 position, Styles.GUIJoint guiJoint, bool filled, bool selected)
         {
-            Texture dotGUI = (guiJoint.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
+            Texture dotGUI = (guiJoint.Optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
 
             Rect rect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
 
@@ -83,7 +83,7 @@ namespace NuitrackSDKEditor.Avatar
 
                     foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                     {
-                        JointType jointType = guiJoint.jointType;
+                        JointType jointType = guiJoint.JointType;
 
                         T jointItem = jointsDict.ContainsKey(jointType) ? jointsDict[jointType] : null;
 

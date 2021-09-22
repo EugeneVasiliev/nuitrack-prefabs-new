@@ -6,8 +6,10 @@ using System.Collections.Generic;
 
 using nuitrack;
 
+using NuitrackSDK;
 using NuitrackSDK.Avatar;
 
+using Reflection = System.Reflection;
 
 namespace NuitrackSDKEditor.Avatar
 {
@@ -31,15 +33,15 @@ namespace NuitrackSDKEditor.Avatar
 
         public class GUIJoint
         {
-            public JointType jointType;
-            public Vector2 mapPosition;
-            public bool optional = false;
+            public JointType JointType { get; private set; }
+            public Vector2 MapPosition { get; private set; }
+            public bool Optional { get; private set; } = false;
 
             public GUIJoint(JointType jointType, Vector2 mapPosition, bool optional = false)
             {
-                this.jointType = jointType;
-                this.mapPosition = mapPosition;
-                this.optional = optional;
+                JointType = jointType;
+                MapPosition = mapPosition;
+                Optional = optional;
             }
         }
 
@@ -175,25 +177,35 @@ namespace NuitrackSDKEditor.Avatar
     [CustomEditor(typeof(BaseAvatar), true)]
     public class BaseAvatarEditor : Editor
     {
-        //JointType selectJoint = JointType.None;
-
         SkeletonMapperUI<Transform> skeletonMapper = null;
         SkeletonJointListUI<Transform> skeletonJointListUI = null;
 
-        readonly List<string> excludeFields = new List<string>()
+        protected JointType SelectJoint { get; set; } = JointType.None;
+
+        Reflection.FieldInfo[] GetFieldInfo(System.Type typeObject)
         {
-            "m_Script",
+            Reflection.FieldInfo[] fields = typeObject.GetFields(
+                Reflection.BindingFlags.Instance | 
+                Reflection.BindingFlags.NonPublic | 
+                Reflection.BindingFlags.Public);
 
-            "useCurrentUserTracker",
-            "skeletonID",
-            "jointConfidence",
+            if (typeObject.BaseType != typeof(MonoBehaviour))
+            {
+                Reflection.FieldInfo[] baseTypeFields = GetFieldInfo(typeObject.BaseType);
+                fields = fields.Concat(baseTypeFields).ToArray();
+            }
 
-            "modelJoints"
-        };
+            return fields;
+        }
 
-        protected virtual List<string> GetExcludeFields()
+        protected string[] GetHideInNuitrackSDKInspectorFieldNames()
         {
-            return excludeFields;
+            Reflection.FieldInfo[] fields = GetFieldInfo(target.GetType());
+
+            string[] excludeFieldsNames = fields.Where(f => f.IsDefined(typeof(HideInNuitrackSDKInspector), true)).Select(f => f.Name).ToArray();
+            excludeFieldsNames = excludeFieldsNames.Append("m_Script").ToArray();
+
+            return excludeFieldsNames;
         }
 
         protected virtual void AddJoint(JointType jointType, Transform objectTransform)
@@ -204,34 +216,38 @@ namespace NuitrackSDKEditor.Avatar
 
             Dictionary<JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
 
-            if (objectTransform != null)
-            {
-                Undo.RecordObject(myScript, "Avatar mapping modified");
+            Undo.RecordObject(myScript, "Avatar mapping modified");
 
-                if (jointsDict.ContainsKey(jointType))
-                    jointsDict[jointType].bone = objectTransform;
-                else
+            if (jointsDict.ContainsKey(jointType))
+                jointsDict[jointType].bone = objectTransform;
+            else
+            {
+                ModelJoint modelJoint = new ModelJoint()
                 {
-                    ModelJoint modelJoint = new ModelJoint()
-                    {
-                        bone = objectTransform,
-                        jointType = jointType,
-                    };
+                    bone = objectTransform,
+                    jointType = jointType,
+                };
 
-                    modelJoints.Add(modelJoint);
-                }
+                modelJoints.Add(modelJoint);
             }
-            else if (jointsDict.ContainsKey(jointType))
+        }
+
+        protected virtual void RemoveJoint(JointType jointType)
+        {
+            BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
+
+            ref List<ModelJoint> modelJoints = ref myScript.ModelJoints;
+            Dictionary<JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
+
+            if (jointsDict.ContainsKey(jointType))
             {
-                Undo.RecordObject(myScript, "Remove avatar joint object");          
+                Undo.RecordObject(myScript, "Remove avatar joint object");
                 modelJoints.Remove(jointsDict[jointType]);
             }
         }
 
         protected virtual void OnEnable()
         {
-            //selectJoint = JointType.None;
-
             BaseAvatar avatar = serializedObject.targetObject as BaseAvatar;
 
             if (avatar.ModelJoints == null)
@@ -259,25 +275,27 @@ namespace NuitrackSDKEditor.Avatar
 
         void SkeletonMapper_onDrop(Transform newJoint, JointType jointType)
         {
-            AddJoint(jointType, newJoint);
-
             if (newJoint != null)
             {
+                AddJoint(jointType, newJoint);
+                
                 EditorGUIUtility.PingObject(newJoint);
-                //selectJoint = jointType;
+                SelectJoint = jointType;
 
-                skeletonMapper.SelectJoint = jointType;
-                skeletonJointListUI.SelectJoint = jointType;
+                skeletonMapper.SelectJoint = SelectJoint;
+                skeletonJointListUI.SelectJoint = SelectJoint;
             }
+            else
+                RemoveJoint(jointType);
         }
 
         void SkeletonMapper_onSelected(JointType jointType)
         {
             BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
 
-            //selectJoint = jointType;
-            skeletonMapper.SelectJoint = jointType;
-            skeletonJointListUI.SelectJoint = jointType;
+            SelectJoint = jointType;
+            skeletonMapper.SelectJoint = SelectJoint;
+            skeletonJointListUI.SelectJoint = SelectJoint;
 
             Dictionary<JointType, ModelJoint> jointsDict = myScript.ModelJoints.ToDictionary(k => k.jointType);
 
@@ -320,12 +338,12 @@ namespace NuitrackSDKEditor.Avatar
         protected virtual void DrawSubAvatarGUI()
         {
 
-        }
+        }      
 
         protected virtual void DrawCustomDefaultInspector()
         {
-            string[] excludeFieldsName = GetExcludeFields().ToArray();
-            DrawPropertiesExcluding(serializedObject, excludeFieldsName);
+            string[] excludeFieldsNames = GetHideInNuitrackSDKInspectorFieldNames();        
+            DrawPropertiesExcluding(serializedObject, excludeFieldsNames);
             serializedObject.ApplyModifiedProperties();
         }   
 
@@ -338,7 +356,7 @@ namespace NuitrackSDKEditor.Avatar
 
             if (skeletonMapper != null)
             {
-                List<JointType> activeJoints = (from j in myScript.ModelJoints where j.bone != null select j.jointType).ToList();
+                List<JointType> activeJoints = myScript.ModelJoints.Where(j => j.bone != null).Select(j => j.jointType).ToList();
                 skeletonMapper.Draw(activeJoints);
             }
 

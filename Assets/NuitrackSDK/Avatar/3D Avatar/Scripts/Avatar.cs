@@ -21,9 +21,9 @@ namespace NuitrackSDK.Avatar
         [SerializeField] JointType rootJoint = JointType.Waist;
 
         [Header("VR settings")]
-        [SerializeField] bool vrMode = false;
-        [SerializeField] GameObject vrHead;
-        [SerializeField] Transform headTransform;
+        [SerializeField, HideInNuitrackSDKInspector] bool vrMode = false;
+        [SerializeField, HideInNuitrackSDKInspector] GameObject vrHead;
+        [SerializeField, HideInNuitrackSDKInspector] Transform headTransform;
         Transform spawnedHead;
 
         [Header("Calibration")]

@@ -12,13 +12,6 @@ namespace NuitrackSDKEditor.Avatar
     [CustomEditor(typeof(NuitrackSDK.Avatar.Avatar), true)]
     public class AvatarEditor : BaseAvatarEditor
     {
-        readonly List<string> subExcludeFields = new List<string>()
-        {
-            "vrMode",
-            "vrHead",
-            "headTransform"
-        };
-
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -32,24 +25,14 @@ namespace NuitrackSDKEditor.Avatar
             foreach (Styles.GUIBodyPart guiBodyPart in Styles.BodyParts.Values)
                 foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
-                    if (!avatarJoints.Contains(guiJoint.jointType))
+                    if (!avatarJoints.Contains(guiJoint.JointType))
                     {
-                        ModelJoint modelJoint = new ModelJoint() { jointType = guiJoint.jointType };
+                        ModelJoint modelJoint = new ModelJoint() { jointType = guiJoint.JointType };
                         avatar.ModelJoints.Insert(index, modelJoint);
                     }
 
                     index++;
                 }
-        }
-
-        protected override List<string> GetExcludeFields()
-        {
-            List<string> excludeList = new List<string>();
-
-            excludeList.AddRange(base.GetExcludeFields());
-            excludeList.AddRange(subExcludeFields);
-
-            return excludeList;
         }
 
         protected override void AddJoint(JointType jointType, Transform objectTransform)
@@ -60,6 +43,20 @@ namespace NuitrackSDKEditor.Avatar
 
             Dictionary<JointType, ModelJoint> jointsDict = avatar.ModelJoints.ToDictionary(k => k.jointType);
             jointsDict[jointType].bone = objectTransform;
+        }
+
+        protected override void RemoveJoint(JointType jointType)
+        {
+            NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
+
+            ref List<ModelJoint> modelJoints = ref myScript.ModelJoints;
+            Dictionary<JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
+
+            if (jointsDict.ContainsKey(jointType))
+            {
+                Undo.RecordObject(myScript, "Remove avatar joint object");
+                jointsDict[jointType].bone = null;
+            }
         }
 
         protected override void DrawSubAvatarGUI()

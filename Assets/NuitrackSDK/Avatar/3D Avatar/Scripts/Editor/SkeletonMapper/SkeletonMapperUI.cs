@@ -16,7 +16,7 @@ namespace NuitrackSDKEditor.Avatar
 
             foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
                 foreach (Styles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
-                    if (!guiJoint.optional && !jointsList.Contains(guiJoint.jointType))
+                    if (!guiJoint.Optional && !jointsList.Contains(guiJoint.JointType))
                     {
                         bodyParts.Remove(bodyPart.Key);
                         break;
@@ -27,11 +27,11 @@ namespace NuitrackSDKEditor.Avatar
 
         Rect DrawAvatarJointIcon(Rect rect, Styles.GUIJoint guiJoint, bool filled, bool selected)
         {
-            Vector2 pos = guiJoint.mapPosition;
+            Vector2 pos = guiJoint.MapPosition;
             pos.Scale(new Vector2(rect.width * 0.5f, -rect.height * 0.5f));
             pos += rect.center;
 
-            Texture dotGUI = (guiJoint.optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
+            Texture dotGUI = (guiJoint.Optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
             Vector2 position = new Vector2(pos.x - dotGUI.width * 0.5f, pos.y - dotGUI.height * 0.5f);
 
             //------------------------
@@ -81,7 +81,7 @@ namespace NuitrackSDKEditor.Avatar
 
                 foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
-                    JointType jointType = guiJoint.jointType;
+                    JointType jointType = guiJoint.JointType;
                     Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectJoint);
 
                     T newJoint = HandleDragDrop(jointPointRect);
