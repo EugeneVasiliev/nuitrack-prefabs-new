@@ -13,19 +13,7 @@ namespace NuitrackSDKEditor.Avatar
         public event DropHandler onDrop;
         public event SelectHandler onSelected;
 
-        JointType selectJointtype = JointType.None;
-
-        public virtual JointType SelectJoint 
-        { 
-            get
-            {
-                return selectJointtype;
-            }
-            set
-            {
-                selectJointtype = value;
-            }
-        }
+        public virtual JointType SelectJoint { get; set; } = JointType.None;
 
         protected void OnDropAction(T dropObject, JointType jointType)
         {
