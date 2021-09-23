@@ -6,7 +6,7 @@ Run AllModulesScene. If you see some errors then follow the on-screen instructio
 If nothing help go to https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Troubleshooting.md.
 If the problem persists and you decide to contact support, attach the Unity Editor.log from %LOCALAPPDATA%/Unity/Editor
 
-*Folders Structure*
+*Prefabs*
 In NuitracSDK you can find much useful prefabs. They are sorted by functionality and are located in the corresponding folders
 
 *Nuitrack Scripts Prefab*
@@ -28,7 +28,7 @@ Options:
 - Async init - Nuitrack starts in a separate thread. This removes a slight hang when starting work. But then you need to make sure that no scripts will try to get data from Nuitrack before initializing Nuitrack.
 Tip: You can disable the necessary prefab, and enable it after initialization by placing it in the Init Event field (you can see an example on the AllModulesScene scene)
 - Init Event - The event that is called after Nuitrack is initialized. You can put here any actions that should be called after initialization
-- use file record - insert this path of your *.oni or *.bag file and you can use the recording instead of the sensor (~3 min). If you want to stop using it, uncheck the box. (You may also need to restart the editor)
+- use file record - Insert this path of your *.oni or *.bag file and you can use the recording instead of the sensor (~3 min). If you want to stop using it, uncheck the box. (You may also need to restart the editor)
 
 [Sets values in Nuitrack\nuitrack\nuitrack\data\nuitrack.config so that you don't have to manually edit this file. 
 If you have previously edited the values in nuitrack.config, they will have a higher priority than the checkboxes on the prefab. (it is recommended not to edit nuitrack.config at all)]
@@ -40,7 +40,7 @@ Config parameters:
 
 *First scene*
 1. Open new scene
-2. Click "Prepare The Scene" in Nuitrack menu on the of Editor
+2. Click "Prepare the scene" in the Nuitrack menu item in the menu bar at the top
 3. Drag to the Scene "NuitrackSDK\Frame\Prefabs\Sensor Frame Canvas"
 4. Run the scene
 
