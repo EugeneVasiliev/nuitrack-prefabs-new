@@ -10,11 +10,26 @@ namespace NuitrackSDKEditor.Avatar
 {
     public class SkeletonMapperGUI<T> : SkeletonMapper<T> where T : Object
     {
+        public class ColorTheme
+        {
+            public Color mainColor;
+            public Color disableColor;
+        }
+
         List<JointType> jointMask = null;
 
-        public SkeletonMapperGUI(List<JointType> jointMask)
+        ColorTheme colorTheme = new ColorTheme()
+        {
+            mainColor = new Color(0.2f, 0.6f, 1f, 1f), // Color.blue;
+            disableColor = new Color(0.5f, 0.5f, 0.6f, 1f)
+        };
+
+        public SkeletonMapperGUI(List<JointType> jointMask, ColorTheme colorTheme = null)
         {
             this.jointMask = jointMask;
+            
+            if(colorTheme != null)
+                this.colorTheme = colorTheme;
         }
 
         List<AvatarMaskBodyPart> GetActiveBodyParts(List<JointType> jointsList)
@@ -73,7 +88,7 @@ namespace NuitrackSDKEditor.Avatar
 
             foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
             {
-                GUI.color = filled.Contains(bodyPart.Key) ? SkeletonMapperStyles.mainColor : SkeletonMapperStyles.disableColor;
+                GUI.color = filled.Contains(bodyPart.Key) ? colorTheme.mainColor : colorTheme.disableColor;
 
                 foreach (GUIContent guiContent in bodyPart.Value.guiContents)
                     GUI.DrawTexture(rect, guiContent.image);

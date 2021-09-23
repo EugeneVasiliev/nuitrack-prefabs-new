@@ -40,9 +40,6 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
-        public static Color mainColor = new Color(0.2f, 0.6f, 1f, 1f); // Color.blue;
-        public static Color disableColor = new Color(0.5f, 0.5f, 0.6f, 1f);
-
         public static class Dot
         {
             public static Color color = new Color(0.7f, 0.7f, 0.7f, 1);
