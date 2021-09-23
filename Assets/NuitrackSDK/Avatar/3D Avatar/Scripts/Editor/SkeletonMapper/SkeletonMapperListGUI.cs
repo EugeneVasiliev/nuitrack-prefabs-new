@@ -9,40 +9,40 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
-    public class SkeletonJointListUI<T> : SkeletonMapper<T> where T : Object
+    public class SkeletonMapperListGUI<T> : SkeletonMapper<T> where T : Object
     {
-        Dictionary<AvatarMaskBodyPart, bool> foldOpenned = Styles.BodyParts.Keys.ToDictionary(k => k, v => true);
+        Dictionary<AvatarMaskBodyPart, bool> foldOpenned = SkeletonMapperStyles.BodyParts.Keys.ToDictionary(k => k, v => true);
 
         Dictionary<JointType, int> controlsID = new Dictionary<JointType, int>();
 
-        public override JointType SelectJoint 
-        { 
-            get => base.SelectJoint; 
+        public override JointType SelectJoint
+        {
+            get => base.SelectJoint;
             set
             {
                 base.SelectJoint = value;
 
-                if(controlsID.ContainsKey(value))
+                if (controlsID.ContainsKey(value))
                     GUIUtility.keyboardControl = controlsID[value];
             }
         }
 
-        Rect DrawJointDot(Vector2 position, Styles.GUIJoint guiJoint, bool filled, bool selected)
+        Rect DrawJointDot(Vector2 position, SkeletonMapperStyles.GUIJoint guiJoint, bool filled, bool selected)
         {
-            Texture dotGUI = (guiJoint.Optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
+            Texture dotGUI = (guiJoint.Optional ? SkeletonMapperStyles.Dot.frameDotted : SkeletonMapperStyles.Dot.frame).image;
 
             Rect rect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
 
             Color oldColor = GUI.color;
-            GUI.color = Styles.Dot.color;
+            GUI.color = SkeletonMapperStyles.Dot.color;
             GUI.DrawTexture(rect, dotGUI);
             GUI.color = oldColor;
 
             if (filled)
-                GUI.DrawTexture(rect, Styles.Dot.fill.image);
+                GUI.DrawTexture(rect, SkeletonMapperStyles.Dot.fill.image);
 
             if (selected)
-                GUI.DrawTexture(rect, Styles.Dot.selection.image);
+                GUI.DrawTexture(rect, SkeletonMapperStyles.Dot.selection.image);
 
             return rect;
         }
@@ -70,10 +70,10 @@ namespace NuitrackSDKEditor.Avatar
         {
             controlsID.Clear();
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
             {
                 AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                Styles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
+                SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
 
                 foldOpenned[bodyPart] = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned[bodyPart], guiBodyPart.Lable);
 
@@ -81,7 +81,7 @@ namespace NuitrackSDKEditor.Avatar
                 {
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-                    foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
+                    foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                     {
                         JointType jointType = guiJoint.JointType;
 

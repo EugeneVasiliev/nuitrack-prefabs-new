@@ -8,14 +8,14 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
-    public class SkeletonMapperUI<T> : SkeletonMapper<T> where T : Object
+    public class SkeletonMapperGUI<T> : SkeletonMapper<T> where T : Object
     {
         List<AvatarMaskBodyPart> GetActiveBodyParts(List<JointType> jointsList)
         {
-            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(Styles.BodyParts.Keys);
+            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(SkeletonMapperStyles.BodyParts.Keys);
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
-                foreach (Styles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
+                foreach (SkeletonMapperStyles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
                     if (!guiJoint.Optional && !jointsList.Contains(guiJoint.JointType))
                     {
                         bodyParts.Remove(bodyPart.Key);
@@ -25,13 +25,13 @@ namespace NuitrackSDKEditor.Avatar
             return bodyParts;
         }
 
-        Rect DrawAvatarJointIcon(Rect rect, Styles.GUIJoint guiJoint, bool filled, bool selected)
+        Rect DrawAvatarJointIcon(Rect rect, SkeletonMapperStyles.GUIJoint guiJoint, bool filled, bool selected)
         {
             Vector2 pos = guiJoint.MapPosition;
             pos.Scale(new Vector2(rect.width * 0.5f, -rect.height * 0.5f));
             pos += rect.center;
 
-            Texture dotGUI = (guiJoint.Optional ? Styles.Dot.frameDotted : Styles.Dot.frame).image;
+            Texture dotGUI = (guiJoint.Optional ? SkeletonMapperStyles.Dot.frameDotted : SkeletonMapperStyles.Dot.frame).image;
             Vector2 position = new Vector2(pos.x - dotGUI.width * 0.5f, pos.y - dotGUI.height * 0.5f);
 
             //------------------------
@@ -39,34 +39,34 @@ namespace NuitrackSDKEditor.Avatar
             Rect jointRect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
 
             Color oldColor = GUI.color;
-            GUI.color = Styles.Dot.color;
+            GUI.color = SkeletonMapperStyles.Dot.color;
             GUI.DrawTexture(jointRect, dotGUI);
             GUI.color = oldColor;
 
             if (filled)
-                GUI.DrawTexture(jointRect, Styles.Dot.fill.image);
+                GUI.DrawTexture(jointRect, SkeletonMapperStyles.Dot.fill.image);
 
             if (selected)
-                GUI.DrawTexture(jointRect, Styles.Dot.selection.image);
+                GUI.DrawTexture(jointRect, SkeletonMapperStyles.Dot.selection.image);
 
             return jointRect;
         }
 
         public void Draw(List<JointType> activeJoints)
         {
-            Rect rect = GUILayoutUtility.GetRect(Styles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(Styles.UnityDude.image.width));
+            Rect rect = GUILayoutUtility.GetRect(SkeletonMapperStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonMapperStyles.UnityDude.image.width));
             rect.x += (EditorGUIUtility.currentViewWidth - rect.width) / 2;
 
             Color oldColor = GUI.color;
 
             GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
-            GUI.DrawTexture(rect, Styles.UnityDude.image);
+            GUI.DrawTexture(rect, SkeletonMapperStyles.UnityDude.image);
 
             List<AvatarMaskBodyPart> filled = GetActiveBodyParts(activeJoints);
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPart in Styles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
             {
-                GUI.color = filled.Contains(bodyPart.Key) ? Styles.mainColor : Styles.disableColor;
+                GUI.color = filled.Contains(bodyPart.Key) ? SkeletonMapperStyles.mainColor : SkeletonMapperStyles.disableColor;
 
                 foreach (GUIContent guiContent in bodyPart.Value.guiContents)
                     GUI.DrawTexture(rect, guiContent.image);
@@ -74,12 +74,12 @@ namespace NuitrackSDKEditor.Avatar
 
             GUI.color = oldColor;
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, Styles.GUIBodyPart> bodyPartItem in Styles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
             {
                 AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                Styles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
+                SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
 
-                foreach (Styles.GUIJoint guiJoint in guiBodyPart.guiJoint)
+                foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
                     JointType jointType = guiJoint.JointType;
                     Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectJoint);
