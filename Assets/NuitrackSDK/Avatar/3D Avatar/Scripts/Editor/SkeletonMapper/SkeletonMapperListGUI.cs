@@ -34,26 +34,6 @@ namespace NuitrackSDKEditor.Avatar
             this.jointMask = jointMask;
         }
 
-        Rect DrawJointDot(Vector2 position, SkeletonMapperStyles.GUIJoint guiJoint, bool filled, bool selected)
-        {
-            Texture dotGUI = (guiJoint.Optional ? SkeletonMapperStyles.Dot.frameDotted : SkeletonMapperStyles.Dot.frame).image;
-
-            Rect rect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
-
-            Color oldColor = GUI.color;
-            GUI.color = SkeletonMapperStyles.Dot.color;
-            GUI.DrawTexture(rect, dotGUI);
-            GUI.color = oldColor;
-
-            if (filled)
-                GUI.DrawTexture(rect, SkeletonMapperStyles.Dot.fill.image);
-
-            if (selected)
-                GUI.DrawTexture(rect, SkeletonMapperStyles.Dot.selection.image);
-
-            return rect;
-        }
-
         string GetUnityDisplayName(JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
         {
             string displayName = jointType.ToUnityBones().ToString();
@@ -99,7 +79,7 @@ namespace NuitrackSDKEditor.Avatar
                             Rect controlRect = EditorGUILayout.GetControlRect();
                             Vector2 position = new Vector2(controlRect.x, controlRect.y);
 
-                            Rect jointRect = DrawJointDot(position, guiJoint, jointItem != null, jointType == SelectJoint);
+                            Rect jointRect = SkeletonMapperStyles.Dot.Draw(position, guiJoint.Optional, jointItem != null, jointType == SelectJoint);
                             controlRect.xMin += jointRect.width;
 
                             string displayName = GetUnityDisplayName(jointType, bodyPart);

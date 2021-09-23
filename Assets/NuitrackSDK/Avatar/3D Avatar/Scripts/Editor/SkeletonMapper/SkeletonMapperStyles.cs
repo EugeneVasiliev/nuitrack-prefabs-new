@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 using System.Collections.Generic;
@@ -42,12 +42,40 @@ namespace NuitrackSDKEditor.Avatar
 
         public static class Dot
         {
-            public static Color color = new Color(0.7f, 0.7f, 0.7f, 1);
+            static Color color = new Color(0.7f, 0.7f, 0.7f, 1);
 
-            public static GUIContent fill = EditorGUIUtility.IconContent("AvatarInspector/DotFill");
-            public static GUIContent frame = EditorGUIUtility.IconContent("AvatarInspector/DotFrame");
-            public static GUIContent frameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
-            public static GUIContent selection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
+            static GUIContent fill = EditorGUIUtility.IconContent("AvatarInspector/DotFill");
+            static GUIContent frame = EditorGUIUtility.IconContent("AvatarInspector/DotFrame");
+            static GUIContent frameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
+            static GUIContent selection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
+
+            public static Rect DrawСentered(Vector2 position, bool optional, bool filled = false, bool selected = false)
+            {
+                Texture dotTexture = (optional ? frameDotted : frame).image;
+                Vector2 newPosition = new Vector2(position.x - dotTexture.width * 0.5f, position.y - dotTexture.height * 0.5f);
+
+                return Draw(newPosition, optional, filled, selected);
+            }
+
+            public static Rect Draw(Vector2 position, bool optional, bool filled = false, bool selected = false)
+            {
+                Texture dotTexture = (optional ? frameDotted : frame).image;
+
+                Rect rect = new Rect(position.x, position.y, dotTexture.width, dotTexture.height);
+
+                Color oldColor = GUI.color;
+                GUI.color = color;
+                GUI.DrawTexture(rect, dotTexture);
+                GUI.color = oldColor;
+
+                if (filled)
+                    GUI.DrawTexture(rect, fill.image);
+
+                if (selected)
+                    GUI.DrawTexture(rect, selection.image);
+
+                return rect;
+            }
         }
 
         public static GUIContent UnityDude = EditorGUIUtility.IconContent("AvatarInspector/BodySIlhouette");

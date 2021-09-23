@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 using System.Collections.Generic;
@@ -53,24 +53,7 @@ namespace NuitrackSDKEditor.Avatar
             pos.Scale(new Vector2(rect.width * 0.5f, -rect.height * 0.5f));
             pos += rect.center;
 
-            Texture dotGUI = (guiJoint.Optional ? SkeletonMapperStyles.Dot.frameDotted : SkeletonMapperStyles.Dot.frame).image;
-            Vector2 position = new Vector2(pos.x - dotGUI.width * 0.5f, pos.y - dotGUI.height * 0.5f);
-
-            //------------------------
-
-            Rect jointRect = new Rect(position.x, position.y, dotGUI.width, dotGUI.height);
-
-            Color oldColor = GUI.color;
-            GUI.color = SkeletonMapperStyles.Dot.color;
-            GUI.DrawTexture(jointRect, dotGUI);
-            GUI.color = oldColor;
-
-            if (filled)
-                GUI.DrawTexture(jointRect, SkeletonMapperStyles.Dot.fill.image);
-
-            if (selected)
-                GUI.DrawTexture(jointRect, SkeletonMapperStyles.Dot.selection.image);
-
+            Rect jointRect = SkeletonMapperStyles.Dot.DrawСentered(pos, guiJoint.Optional, filled, selected);
             return jointRect;
         }
 
