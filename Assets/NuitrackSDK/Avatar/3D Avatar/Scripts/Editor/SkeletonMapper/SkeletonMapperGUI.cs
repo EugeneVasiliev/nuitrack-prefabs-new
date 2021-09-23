@@ -24,6 +24,11 @@ namespace NuitrackSDKEditor.Avatar
             disableColor = new Color(0.5f, 0.5f, 0.6f, 1f)
         };
 
+        /// <summary>
+        /// View of a person with a map of joints.
+        /// </summary>
+        /// <param name="jointMask">The mask of the displayed joints. If null, all available joints will be drawn.</param>
+        /// <param name="colorTheme">Color theme. If null is set, the default theme will be used.</param>
         public SkeletonMapperGUI(List<JointType> jointMask, ColorTheme colorTheme = null)
         {
             this.jointMask = jointMask;
@@ -57,6 +62,10 @@ namespace NuitrackSDKEditor.Avatar
             return jointRect;
         }
 
+        /// <summary>
+        /// Draw a map of joints
+        /// </summary>
+        /// <param name="activeJoints">Active joints (will be displayed as filled dots)</param>
         public void Draw(List<JointType> activeJoints)
         {
             Rect rect = GUILayoutUtility.GetRect(SkeletonMapperStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonMapperStyles.UnityDude.image.width));
@@ -90,7 +99,7 @@ namespace NuitrackSDKEditor.Avatar
 
                     if (jointMask == null || jointMask.Contains(jointType))
                     {
-                        Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectJoint);
+                        Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectedJoint);
 
                         T newJoint = HandleDragDrop(jointPointRect);
 

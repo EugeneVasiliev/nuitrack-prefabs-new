@@ -29,7 +29,9 @@ namespace NuitrackSDKEditor.Avatar
         public class GUIJoint
         {
             public JointType JointType { get; private set; }
+
             public Vector2 MapPosition { get; private set; }
+
             public bool Optional { get; private set; } = false;
 
             public GUIJoint(JointType jointType, Vector2 mapPosition, bool optional = false)
@@ -49,6 +51,14 @@ namespace NuitrackSDKEditor.Avatar
             static GUIContent frameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
             static GUIContent selection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
 
+            /// <summary>
+            /// Draw a centered dot representing the GUI element for the joint
+            /// </summary>
+            /// <param name="position">Centered position</param>
+            /// <param name="optional">If optional, the point will be drawn as a dotted frame, otherwise it will be solid</param>
+            /// <param name="filled">If filled in, a placeholder will be added inside the point</param>
+            /// <param name="selected">If selected, a contour will be added around the dot</param>
+            /// <returns>Rectangle describing a dot</returns>
             public static Rect DrawСentered(Vector2 position, bool optional, bool filled = false, bool selected = false)
             {
                 Texture dotTexture = (optional ? frameDotted : frame).image;
@@ -57,6 +67,14 @@ namespace NuitrackSDKEditor.Avatar
                 return Draw(newPosition, optional, filled, selected);
             }
 
+            /// <summary>
+            /// Draw a dot representing the GUI element for the joint
+            /// </summary>
+            /// <param name="position">Centered position</param>
+            /// <param name="optional">If optional, the point will be drawn as a dotted frame, otherwise it will be solid</param>
+            /// <param name="filled">If filled in, a placeholder will be added inside the point</param>
+            /// <param name="selected">If selected, a contour will be added around the dot</param>
+            /// <returns>Rectangle describing a dot</returns>
             public static Rect Draw(Vector2 position, bool optional, bool filled = false, bool selected = false)
             {
                 Texture dotTexture = (optional ? frameDotted : frame).image;

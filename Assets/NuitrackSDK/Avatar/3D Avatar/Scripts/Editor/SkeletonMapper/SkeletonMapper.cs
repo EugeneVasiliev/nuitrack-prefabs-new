@@ -13,7 +13,7 @@ namespace NuitrackSDKEditor.Avatar
         public event DropHandler onDrop;
         public event SelectHandler onSelected;
 
-        public virtual JointType SelectJoint { get; set; } = JointType.None;
+        public virtual JointType SelectedJoint { get; set; } = JointType.None;
 
         protected void OnDropAction(T dropObject, JointType jointType)
         {
@@ -27,6 +27,11 @@ namespace NuitrackSDKEditor.Avatar
                 onSelected(jointType);
         }
 
+        /// <summary>
+        /// Check whether the click was in the specified <see cref="Rect"/>
+        /// </summary>
+        /// <param name="clickRect">Target rect/></param>
+        /// <returns>True if there was a click, otherwise false</returns>
         protected bool HandleClick(Rect clickRect)
         {
             Event evt = Event.current;

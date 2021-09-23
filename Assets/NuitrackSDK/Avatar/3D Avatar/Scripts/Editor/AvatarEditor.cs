@@ -84,8 +84,8 @@ namespace NuitrackSDKEditor.Avatar
                 EditorGUIUtility.PingObject(newJoint);
                 SelectJoint = jointType;
 
-                skeletonMapper.SelectJoint = SelectJoint;
-                skeletonJointListUI.SelectJoint = SelectJoint;
+                skeletonMapper.SelectedJoint = SelectJoint;
+                skeletonJointListUI.SelectedJoint = SelectJoint;
             }
         }
 
@@ -94,8 +94,8 @@ namespace NuitrackSDKEditor.Avatar
             NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
             SelectJoint = jointType;
-            skeletonMapper.SelectJoint = SelectJoint;
-            skeletonJointListUI.SelectJoint = SelectJoint;
+            skeletonMapper.SelectedJoint = SelectJoint;
+            skeletonJointListUI.SelectedJoint = SelectJoint;
 
             Transform selectTransform = GetTransformFromField(jointType);
 
@@ -110,7 +110,7 @@ namespace NuitrackSDKEditor.Avatar
             serializedObject.ApplyModifiedProperties();
         }
 
-        protected override void DrawSubAvatarGUI()
+        protected override void DrawAvatarGUI()
         {
             EditorGUILayout.Space();
 

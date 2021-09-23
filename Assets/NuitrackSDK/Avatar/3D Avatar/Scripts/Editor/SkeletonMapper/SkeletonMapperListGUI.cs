@@ -15,12 +15,12 @@ namespace NuitrackSDKEditor.Avatar
 
         Dictionary<JointType, int> controlsID = new Dictionary<JointType, int>();
 
-        public override JointType SelectJoint
+        public override JointType SelectedJoint
         {
-            get => base.SelectJoint;
+            get => base.SelectedJoint;
             set
             {
-                base.SelectJoint = value;
+                base.SelectedJoint = value;
 
                 if (controlsID.ContainsKey(value))
                     GUIUtility.keyboardControl = controlsID[value];
@@ -29,6 +29,10 @@ namespace NuitrackSDKEditor.Avatar
 
         List<JointType> jointMask = null;
 
+        /// <summary>
+        /// View of the list of joints.
+        /// </summary>
+        /// <param name="jointMask">The mask of the displayed joints. If null, all available joints will be drawn.</param>
         public SkeletonMapperListGUI(List<JointType> jointMask)
         {
             this.jointMask = jointMask;
@@ -53,6 +57,10 @@ namespace NuitrackSDKEditor.Avatar
             return (int)field.GetValue(null);
         }
 
+        /// <summary>
+        /// Draw a list of joints
+        /// </summary>
+        /// <param name="jointsDict">Dictionary of joints and joint targets</param>
         public void Draw(Dictionary<JointType, T> jointsDict)
         {
             controlsID.Clear();
@@ -79,7 +87,7 @@ namespace NuitrackSDKEditor.Avatar
                             Rect controlRect = EditorGUILayout.GetControlRect();
                             Vector2 position = new Vector2(controlRect.x, controlRect.y);
 
-                            Rect jointRect = SkeletonMapperStyles.Dot.Draw(position, guiJoint.Optional, jointItem != null, jointType == SelectJoint);
+                            Rect jointRect = SkeletonMapperStyles.Dot.Draw(position, guiJoint.Optional, jointItem != null, jointType == SelectedJoint);
                             controlRect.xMin += jointRect.width;
 
                             string displayName = GetUnityDisplayName(jointType, bodyPart);

@@ -16,7 +16,7 @@ namespace NuitrackSDKEditor.Avatar
             DrawSkeletonSettings();
             DrawDefaultInspector();
 
-            DrawSubAvatarGUI();
+            DrawAvatarGUI();
         }
 
         protected void DrawSkeletonSettings()
@@ -42,7 +42,7 @@ namespace NuitrackSDKEditor.Avatar
             serializedObject.ApplyModifiedProperties();
         }
 
-        protected virtual void DrawSubAvatarGUI()
+        protected virtual void DrawAvatarGUI()
         {
 
         }      
