@@ -27,6 +27,13 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
+        List<JointType> jointMask = null;
+
+        public SkeletonMapperListGUI(List<JointType> jointMask)
+        {
+            this.jointMask = jointMask;
+        }
+
         Rect DrawJointDot(Vector2 position, SkeletonMapperStyles.GUIJoint guiJoint, bool filled, bool selected)
         {
             Texture dotGUI = (guiJoint.Optional ? SkeletonMapperStyles.Dot.frameDotted : SkeletonMapperStyles.Dot.frame).image;
@@ -85,24 +92,27 @@ namespace NuitrackSDKEditor.Avatar
                     {
                         JointType jointType = guiJoint.JointType;
 
-                        T jointItem = jointsDict.ContainsKey(jointType) ? jointsDict[jointType] : null;
+                        if (jointMask.Contains(jointType))
+                        {
+                            T jointItem = jointsDict.ContainsKey(jointType) ? jointsDict[jointType] : null;
 
-                        Rect controlRect = EditorGUILayout.GetControlRect();
-                        Vector2 position = new Vector2(controlRect.x, controlRect.y);
+                            Rect controlRect = EditorGUILayout.GetControlRect();
+                            Vector2 position = new Vector2(controlRect.x, controlRect.y);
 
-                        Rect jointRect = DrawJointDot(position, guiJoint, jointItem != null, jointType == SelectJoint);
-                        controlRect.xMin += jointRect.width;
+                            Rect jointRect = DrawJointDot(position, guiJoint, jointItem != null, jointType == SelectJoint);
+                            controlRect.xMin += jointRect.width;
 
-                        string displayName = GetUnityDisplayName(jointType, bodyPart);
+                            string displayName = GetUnityDisplayName(jointType, bodyPart);
 
-                        T newJointObject = EditorGUI.ObjectField(controlRect, displayName, jointItem, typeof(T), true) as T;
-                        controlsID.Add(jointType, GetLastControllID());
+                            T newJointObject = EditorGUI.ObjectField(controlRect, displayName, jointItem, typeof(T), true) as T;
+                            controlsID.Add(jointType, GetLastControllID());
 
-                        if (newJointObject != jointItem)
-                            OnDropAction(newJointObject, jointType);
+                            if (newJointObject != jointItem)
+                                OnDropAction(newJointObject, jointType);
 
-                        if (HandleClick(controlRect))
-                            OnSelectedAction(jointType);
+                            if (HandleClick(controlRect))
+                                OnSelectedAction(jointType);
+                        }
                     }
 
                     EditorGUILayout.EndVertical();

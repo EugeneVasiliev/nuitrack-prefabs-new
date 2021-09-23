@@ -10,13 +10,20 @@ namespace NuitrackSDKEditor.Avatar
 {
     public class SkeletonMapperGUI<T> : SkeletonMapper<T> where T : Object
     {
+        List<JointType> jointMask = null;
+
+        public SkeletonMapperGUI(List<JointType> jointMask)
+        {
+            this.jointMask = jointMask;
+        }
+
         List<AvatarMaskBodyPart> GetActiveBodyParts(List<JointType> jointsList)
         {
             List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(SkeletonMapperStyles.BodyParts.Keys);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
                 foreach (SkeletonMapperStyles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
-                    if (!guiJoint.Optional && !jointsList.Contains(guiJoint.JointType))
+                    if (!guiJoint.Optional && !jointsList.Contains(guiJoint.JointType) && (jointMask == null || jointMask.Contains(guiJoint.JointType)))
                     {
                         bodyParts.Remove(bodyPart.Key);
                         break;
@@ -82,15 +89,19 @@ namespace NuitrackSDKEditor.Avatar
                 foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
                     JointType jointType = guiJoint.JointType;
-                    Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectJoint);
 
-                    T newJoint = HandleDragDrop(jointPointRect);
+                    if (jointMask == null || jointMask.Contains(jointType))
+                    {
+                        Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectJoint);
 
-                    if (newJoint != null)
-                        OnDropAction(newJoint, jointType);
+                        T newJoint = HandleDragDrop(jointPointRect);
 
-                    if (HandleClick(jointPointRect))
-                        OnSelectedAction(jointType);
+                        if (newJoint != null)
+                            OnDropAction(newJoint, jointType);
+
+                        if (HandleClick(jointPointRect))
+                            OnSelectedAction(jointType);
+                    }
                 }
             }
         }

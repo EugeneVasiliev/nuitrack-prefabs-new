@@ -15,33 +15,53 @@ namespace NuitrackSDKEditor.Avatar
         SkeletonMapperGUI<Transform> skeletonMapper = null;
         SkeletonMapperListGUI<Transform> skeletonJointListUI = null;
 
+        Dictionary<JointType, string> jointFieldMap = new Dictionary<JointType, string>()
+        {
+            { JointType.Waist, "waist" },
+            { JointType.Torso, "torso" },
+            { JointType.LeftCollar, "collar" },
+            { JointType.RightCollar, "collar" },
+            {  JointType.Neck, "neck" },
+            { JointType.Head , "head" },
+
+            { JointType.LeftShoulder, "leftShoulder" },
+            { JointType.LeftElbow, "leftElbow" },
+            { JointType.LeftWrist, "leftWrist" },
+
+            { JointType.RightShoulder, "rightShoulder" },
+            { JointType.RightElbow, "rightElbow" },
+            { JointType.RightWrist, "rightWrist" },
+
+            { JointType.LeftHip, "leftHip" },
+            { JointType.LeftKnee, "leftKnee" },
+            { JointType.LeftAnkle, "leftAnkle" },
+
+            { JointType.RightHip, "rightHip" },
+            { JointType.RightKnee, "rightKnee" },
+            { JointType.RightAnkle, "rightAnkle" }
+        };
+
+        Transform GetTransformFromField(JointType jointType)
+        {
+            return GetJointProperty(jointType).objectReferenceValue as Transform;
+        }
+
+        SerializedProperty GetJointProperty(JointType jointType)
+        {
+            return serializedObject.FindProperty(jointFieldMap[jointType]);
+        }
+
         protected virtual void OnEnable()
         {
-            skeletonMapper = new SkeletonMapperGUI<Transform>();
+            List<JointType> jointMask = jointFieldMap.Keys.ToList();
+
+            skeletonMapper = new SkeletonMapperGUI<Transform>(jointMask);
             skeletonMapper.onDrop += SkeletonMapper_onDrop;
             skeletonMapper.onSelected += SkeletonMapper_onSelected;
 
-            skeletonJointListUI = new SkeletonMapperListGUI<Transform>();
+            skeletonJointListUI = new SkeletonMapperListGUI<Transform>(jointMask);
             skeletonJointListUI.onDrop += SkeletonMapper_onDrop;
             skeletonJointListUI.onSelected += SkeletonMapper_onSelected;
-
-            NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
-
-            List<JointType> avatarJoints = avatar.ModelJoints.Select(k => k.jointType).ToList();
-  
-            int index = 0;
-
-            foreach (SkeletonMapperStyles.GUIBodyPart guiBodyPart in SkeletonMapperStyles.BodyParts.Values)
-                foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
-                {
-                    if (!avatarJoints.Contains(guiJoint.JointType))
-                    {
-                        ModelJoint modelJoint = new ModelJoint() { jointType = guiJoint.JointType };
-                        avatar.ModelJoints.Insert(index, modelJoint);
-                    }
-
-                    index++;
-                }
         }
 
         protected virtual void OnDisable()
@@ -57,18 +77,16 @@ namespace NuitrackSDKEditor.Avatar
 
         void SkeletonMapper_onDrop(Transform newJoint, JointType jointType)
         {
+            EditJoint(jointType, newJoint);
+
             if (newJoint != null)
             {
-                AddJoint(jointType, newJoint);
-
                 EditorGUIUtility.PingObject(newJoint);
                 SelectJoint = jointType;
 
                 skeletonMapper.SelectJoint = SelectJoint;
                 skeletonJointListUI.SelectJoint = SelectJoint;
             }
-            else
-                RemoveJoint(jointType);
         }
 
         void SkeletonMapper_onSelected(JointType jointType)
@@ -79,34 +97,17 @@ namespace NuitrackSDKEditor.Avatar
             skeletonMapper.SelectJoint = SelectJoint;
             skeletonJointListUI.SelectJoint = SelectJoint;
 
-            Dictionary<JointType, ModelJoint> jointsDict = avatar.ModelJoints.ToDictionary(k => k.jointType);
+            Transform selectTransform = GetTransformFromField(jointType);
 
-            if (jointsDict[jointType].bone != null)
-                EditorGUIUtility.PingObject(jointsDict[jointType].bone);
+            if(selectTransform != null)
+                EditorGUIUtility.PingObject(selectTransform);
         }
 
-        protected virtual void AddJoint(JointType jointType, Transform objectTransform)
+        void EditJoint(JointType jointType, Transform objectTransform)
         {
-            NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
-
-            Undo.RecordObject(avatar, "Avatar mapping modified");
-
-            Dictionary<JointType, ModelJoint> jointsDict = avatar.ModelJoints.ToDictionary(k => k.jointType);
-            jointsDict[jointType].bone = objectTransform;
-        }
-
-        protected virtual void RemoveJoint(JointType jointType)
-        {
-            NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
-
-            ref List<ModelJoint> modelJoints = ref myScript.ModelJoints;
-            Dictionary<JointType, ModelJoint> jointsDict = modelJoints.ToDictionary(k => k.jointType);
-
-            if (jointsDict.ContainsKey(jointType))
-            {
-                Undo.RecordObject(myScript, "Remove avatar joint object");
-                jointsDict[jointType].bone = null;
-            }
+            SerializedProperty jointProperty = GetJointProperty(jointType);
+            jointProperty.objectReferenceValue = objectTransform;
+            serializedObject.ApplyModifiedProperties();
         }
 
         protected override void DrawSubAvatarGUI()
@@ -117,7 +118,7 @@ namespace NuitrackSDKEditor.Avatar
             vrModeProperty.boolValue = EditorGUILayout.Toggle("VR mode", vrModeProperty.boolValue);
             serializedObject.ApplyModifiedProperties();
 
-            if(vrModeProperty.boolValue)
+            if (vrModeProperty.boolValue)
             {
                 SerializedProperty vrHeadProperty = serializedObject.FindProperty("vrHead");
                 EditorGUILayout.ObjectField(vrHeadProperty, typeof(GameObject));
@@ -138,13 +139,14 @@ namespace NuitrackSDKEditor.Avatar
 
             if (skeletonMapper != null)
             {
-                List<JointType> activeJoints = myScript.ModelJoints.Where(j => j.bone != null).Select(j => j.jointType).ToList();
+                List<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToList();
                 skeletonMapper.Draw(activeJoints);
             }
 
             if (skeletonJointListUI != null)
             {
-                Dictionary<JointType, Transform> jointDict = myScript.ModelJoints.Where(v => v.bone != null).ToDictionary(k => k.jointType, v => v.bone);
+                Dictionary<JointType, Transform> jointDict = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToDictionary(k => k, v => GetTransformFromField(v));
+                    
                 skeletonJointListUI.Draw(jointDict);
             }
         }

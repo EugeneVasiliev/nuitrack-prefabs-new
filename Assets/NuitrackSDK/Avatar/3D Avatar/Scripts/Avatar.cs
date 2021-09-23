@@ -7,6 +7,35 @@ namespace NuitrackSDK.Avatar
 {
     public class Avatar : BaseAvatar
     {
+        [Header("Body")]
+        [SerializeField, NuitrackSDKInspector] Transform waist;
+        [SerializeField, NuitrackSDKInspector] Transform torso;
+        [SerializeField, NuitrackSDKInspector] Transform collar;
+        [SerializeField, NuitrackSDKInspector] Transform neck;
+        [SerializeField, NuitrackSDKInspector] Transform head;
+
+        [Header("Left hand")]
+        [SerializeField, NuitrackSDKInspector] Transform leftShoulder;
+        [SerializeField, NuitrackSDKInspector] Transform leftElbow;
+        [SerializeField, NuitrackSDKInspector] Transform leftWrist;
+
+        [Header("Right hand")]
+        [SerializeField, NuitrackSDKInspector] Transform rightShoulder;
+        [SerializeField, NuitrackSDKInspector] Transform rightElbow;
+        [SerializeField, NuitrackSDKInspector] Transform rightWrist;
+
+        [Header("Left leg")]
+        [SerializeField, NuitrackSDKInspector] Transform leftHip;
+        [SerializeField, NuitrackSDKInspector] Transform leftKnee;
+        [SerializeField, NuitrackSDKInspector] Transform leftAnkle;
+
+        [Header("Right leg")]
+        [SerializeField, NuitrackSDKInspector] Transform rightHip;
+        [SerializeField, NuitrackSDKInspector] Transform rightKnee;
+        [SerializeField, NuitrackSDKInspector] Transform rightAnkle;
+
+        List<ModelJoint> modelJoints = new List<ModelJoint>();
+
         [Header ("Options")]
         [Tooltip ("(optional) Specify the transform, which represents the sensor " +
             "coordinate system, to display the Avatar in front of the sensor." +
@@ -32,10 +61,6 @@ namespace NuitrackSDK.Avatar
         Vector3 basePivotOffset = Vector3.zero;
         Vector3 startPoint; //Root joint model bone position on start
 
-
-        [Header("Joints")]
-        [SerializeField, NuitrackSDKInspector]
-        protected List<ModelJoint> modelJoints;
         /// <summary> Model bones </summary> Dictionary with joints
         Dictionary<JointType, ModelJoint> jointsRigged = new Dictionary<JointType, ModelJoint>();
 
@@ -43,6 +68,17 @@ namespace NuitrackSDK.Avatar
         {
             tPoseCalibration = FindObjectOfType<TPoseCalibration>();
             tPoseCalibration.onSuccess += OnSuccessCalib;
+        }
+
+        void SetJoint(Transform tr, JointType jointType)
+        {
+            ModelJoint modelJoint = new ModelJoint()
+            {
+                bone = tr,
+                jointType = jointType
+            };
+
+            modelJoints.Add(modelJoint);
         }
 
         bool IsTransformSpace
@@ -61,16 +97,31 @@ namespace NuitrackSDK.Avatar
             }
         }
 
-        public ref List<ModelJoint> ModelJoints
-        {
-            get
-            {
-                return ref modelJoints;
-            }
-        }
-
         void Start()
         {
+            SetJoint(waist, JointType.Waist);
+            SetJoint(torso, JointType.Torso);
+            SetJoint(collar, JointType.LeftCollar);
+            SetJoint(collar, JointType.RightCollar);
+            SetJoint(neck, JointType.Neck);
+            SetJoint(head, JointType.Head);
+
+            SetJoint(leftShoulder, JointType.LeftShoulder);
+            SetJoint(leftElbow, JointType.LeftElbow);
+            SetJoint(leftWrist, JointType.LeftWrist);
+
+            SetJoint(rightShoulder, JointType.RightShoulder);
+            SetJoint(rightElbow, JointType.RightElbow);
+            SetJoint(rightWrist, JointType.RightWrist);
+
+            SetJoint(leftHip, JointType.LeftHip);
+            SetJoint(leftKnee, JointType.LeftKnee);
+            SetJoint(leftAnkle, JointType.LeftAnkle);
+
+            SetJoint(rightHip, JointType.RightHip);
+            SetJoint(rightKnee, JointType.RightKnee);
+            SetJoint(rightAnkle, JointType.RightAnkle);
+
             //Adding model bones and JointType keys
             //Adding rotation offsets of model bones and JointType keys
 
