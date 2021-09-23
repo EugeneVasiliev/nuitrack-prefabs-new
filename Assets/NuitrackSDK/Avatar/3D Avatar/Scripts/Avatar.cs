@@ -21,9 +21,9 @@ namespace NuitrackSDK.Avatar
         [SerializeField] JointType rootJoint = JointType.Waist;
 
         [Header("VR settings")]
-        [SerializeField, HideInNuitrackSDKInspector] bool vrMode = false;
-        [SerializeField, HideInNuitrackSDKInspector] GameObject vrHead;
-        [SerializeField, HideInNuitrackSDKInspector] Transform headTransform;
+        [SerializeField, NuitrackSDKInspector] bool vrMode = false;
+        [SerializeField, NuitrackSDKInspector] GameObject vrHead;
+        [SerializeField, NuitrackSDKInspector] Transform headTransform;
         Transform spawnedHead;
 
         [Header("Calibration")]
@@ -32,6 +32,10 @@ namespace NuitrackSDK.Avatar
         Vector3 basePivotOffset = Vector3.zero;
         Vector3 startPoint; //Root joint model bone position on start
 
+
+        [Header("Joints")]
+        [SerializeField, NuitrackSDKInspector]
+        protected List<ModelJoint> modelJoints;
         /// <summary> Model bones </summary> Dictionary with joints
         Dictionary<JointType, ModelJoint> jointsRigged = new Dictionary<JointType, ModelJoint>();
 
@@ -54,6 +58,14 @@ namespace NuitrackSDK.Avatar
             get
             {
                 return IsTransformSpace ? transform : sensorSpace;
+            }
+        }
+
+        public ref List<ModelJoint> ModelJoints
+        {
+            get
+            {
+                return ref modelJoints;
             }
         }
 

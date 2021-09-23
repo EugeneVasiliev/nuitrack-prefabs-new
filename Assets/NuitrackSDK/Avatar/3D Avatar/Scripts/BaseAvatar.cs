@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 
 
 namespace NuitrackSDK.Avatar
@@ -7,6 +6,12 @@ namespace NuitrackSDK.Avatar
     public class JointTransform
     {
         nuitrack.Joint joint;
+
+        public JointTransform(bool isActive, nuitrack.Joint joint)
+        {
+            this.joint = joint;
+            IsActive = isActive;
+        }
 
         public bool IsActive
         {
@@ -53,28 +58,19 @@ namespace NuitrackSDK.Avatar
                 return new Vector2(Mathf.Clamp01(joint.Proj.X), Mathf.Clamp01(joint.Proj.Y));
             }
         }
-
-        public JointTransform(bool isActive, nuitrack.Joint joint)
-        {
-            this.joint = joint;
-            IsActive = isActive;
-        }
     }
 
     public abstract class BaseAvatar : MonoBehaviour
     {
         [Header("Options")]
-        [SerializeField, HideInNuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector] 
         bool useCurrentUserTracker = true;
         
-        [SerializeField, HideInNuitrackSDKInspector]
+        [SerializeField, NuitrackSDKInspector]
         int skeletonID = 1;
 
-        [SerializeField, HideInNuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector] 
         float jointConfidence = 0.1f;
-
-        [SerializeField, HideInNuitrackSDKInspector] 
-        protected List<ModelJoint> modelJoints;
 
         protected ulong lastTimeStamp = 0;
 
@@ -156,14 +152,6 @@ namespace NuitrackSDK.Avatar
                     return CurrentUserTracker.CurrentSkeleton;
                 else
                     return NuitrackManager.SkeletonData != null ? NuitrackManager.SkeletonData.GetSkeletonByID(skeletonID) : null;
-            }
-        }
-
-        public ref List<ModelJoint> ModelJoints
-        {
-            get
-            {
-                return ref modelJoints;
             }
         }
 
