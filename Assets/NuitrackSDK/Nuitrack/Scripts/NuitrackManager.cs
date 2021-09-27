@@ -43,6 +43,10 @@ public class NuitrackManager : MonoBehaviour
     [SerializeField] bool runInBackground = false;
     [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
     [SerializeField] bool asyncInit = false;
+    [SerializeField] InitEvent initEvent;
+    [Header("You can use *.oni or *.bag file instead of a sensor")]
+    [SerializeField] bool useFileRecord;
+    [SerializeField] string pathToFileRecord;
 
     [Header("Config stats")]
     [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
@@ -79,7 +83,6 @@ public class NuitrackManager : MonoBehaviour
 
     static NuitrackManager instance;
     NuitrackInitState initState = NuitrackInitState.INIT_NUITRACK_MANAGER_NOT_INSTALLED;
-    [SerializeField] InitEvent initEvent;
 
     bool prevSkel = false;
     bool prevHand = false;
@@ -93,10 +96,6 @@ public class NuitrackManager : MonoBehaviour
     [HideInInspector] public bool nuitrackInitialized = false;
 
     [HideInInspector] public System.Exception initException;
-
-    [Header("You can use *.oni or *.bag file instead of a sensor")]
-    [SerializeField] bool useFileRecord;
-    [SerializeField] string pathToFileRecord;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
