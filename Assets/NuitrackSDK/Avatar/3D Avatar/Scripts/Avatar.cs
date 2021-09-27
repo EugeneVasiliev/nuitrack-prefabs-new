@@ -45,7 +45,7 @@ namespace NuitrackSDK.Avatar
 
         [Tooltip("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
            "ensuring that the model's size best matches the user's size.")]
-        [SerializeField] bool alignmentBoneLength = true;
+        [SerializeField] bool alignmentBoneLength = false;
 
         [SerializeField] JointType rootJoint = JointType.Waist;
 

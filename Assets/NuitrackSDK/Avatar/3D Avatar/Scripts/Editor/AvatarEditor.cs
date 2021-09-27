@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 using nuitrack;
 
-using Reflection = System.Reflection;
 
 namespace NuitrackSDKEditor.Avatar
 {
@@ -15,6 +14,7 @@ namespace NuitrackSDKEditor.Avatar
     {
         SkeletonMapperGUI<Transform> skeletonMapper = null;
         SkeletonMapperListGUI<Transform> skeletonJointListUI = null;
+        SkeletonBonesView skeletonBonesView = null;
 
         Dictionary<JointType, string> jointFieldMap = new Dictionary<JointType, string>()
         {
@@ -52,6 +52,18 @@ namespace NuitrackSDKEditor.Avatar
             return serializedObject.FindProperty(jointFieldMap[jointType]);
         }
 
+        bool ShowSkeletonView
+        {
+            get
+            {
+                return EditorPrefs.GetBool(target.GetType().FullName + "showSkeletonView", true);
+            }
+            set
+            {
+                EditorPrefs.SetBool(target.GetType().FullName + "showSkeletonView", value);
+            }
+        }
+
         protected virtual void OnEnable()
         {
             List<JointType> jointMask = jointFieldMap.Keys.ToList();
@@ -63,6 +75,8 @@ namespace NuitrackSDKEditor.Avatar
             skeletonJointListUI = new SkeletonMapperListGUI<Transform>(jointMask);
             skeletonJointListUI.onDrop += SkeletonMapper_onDrop;
             skeletonJointListUI.onSelected += SkeletonMapper_onSelected;
+
+            skeletonBonesView = new SkeletonBonesView();
         }
 
         protected virtual void OnDisable()
@@ -74,6 +88,8 @@ namespace NuitrackSDKEditor.Avatar
             skeletonJointListUI.onDrop -= SkeletonMapper_onDrop;
             skeletonJointListUI.onSelected -= SkeletonMapper_onSelected;
             skeletonJointListUI = null;
+
+            skeletonBonesView = null;
         }
 
         void SkeletonMapper_onDrop(Transform newJoint, JointType jointType)
@@ -131,6 +147,17 @@ namespace NuitrackSDKEditor.Avatar
             DrawSkeletonMap();
         }
 
+        void OnSceneGUI()
+        {
+            if (ShowSkeletonView)
+            {
+                NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+
+                List<Transform> jointDict = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).Select(v => GetTransformFromField(v)).ToList();
+                skeletonBonesView.DrawSkeleton(avatar.transform, jointDict);
+            }
+        }
+
         protected void DrawSkeletonMap()
         {
             NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
@@ -142,6 +169,14 @@ namespace NuitrackSDKEditor.Avatar
             {
                 List<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToList();
                 skeletonMapper.Draw(activeJoints);
+            }
+
+            bool newVal = EditorGUILayout.Toggle("Show unused bone", ShowSkeletonView);
+
+            if(newVal != ShowSkeletonView)
+            {
+                ShowSkeletonView = newVal;
+                SceneView.RepaintAll();
             }
 
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
@@ -166,7 +201,6 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
-
         #region AutoMapping
 
         List<JointType> excludeAutoFillJoints = new List<JointType>()
@@ -175,37 +209,19 @@ namespace NuitrackSDKEditor.Avatar
             JointType.RightCollar
         };
 
-        Dictionary<int, Transform> MapBones()
+        void AutoMapping()
         {
             NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
 
-            System.Type avatarSetupType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool");
-            Reflection.MethodInfo avatarSetuMethodInfo = avatarSetupType.GetMethod("GetModelBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
+            Dictionary<HumanBodyBones, Transform> outData = SkeletonUtils.MapBones(avatar.transform);
 
-            Dictionary<Transform, bool> validBones = avatarSetuMethodInfo.Invoke(null, new object[] { avatar.transform, false, null }) as Dictionary<Transform, bool>;
-
-            if (validBones == null)
-                return null;
-
-            System.Type toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarAutoMapper");
-            Reflection.MethodInfo methodInfo = toolbarType.GetMethod("MapBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
-
-            Dictionary<int, Transform> outData = methodInfo.Invoke(null, new object[] { avatar.transform, validBones }) as Dictionary<int, Transform>;
-
-            return outData;
-        }
-
-        void AutoMapping()
-        {
-            Dictionary<int, Transform> outData = MapBones();
-
-            if (outData == null)
+            if (outData == null || outData.Count == 0)
                 Debug.LogError("It is not possible to automatically fill in the skeleton map. Check the correctness of your model.");
             else
             {
-                foreach (KeyValuePair<int, Transform> boneData in outData)
+                foreach (KeyValuePair<HumanBodyBones, Transform> boneData in outData)
                 {
-                    JointType jointType = ((HumanBodyBones)boneData.Key).ToNuitrackJoint();
+                    JointType jointType = boneData.Key.ToNuitrackJoint();
 
                     if (jointFieldMap.ContainsKey(jointType) && !excludeAutoFillJoints.Contains(jointType))
                     {
@@ -225,5 +241,6 @@ namespace NuitrackSDKEditor.Avatar
         }
 
         #endregion
+
     }
 }
