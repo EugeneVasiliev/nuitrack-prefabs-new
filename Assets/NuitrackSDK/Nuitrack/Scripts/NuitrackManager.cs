@@ -146,6 +146,12 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
+        if(instance)
+        {
+            DestroyImmediate(instance.gameObject);
+            instance = this;
+        }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
         StartCoroutine(AndroidStart());
 #else
