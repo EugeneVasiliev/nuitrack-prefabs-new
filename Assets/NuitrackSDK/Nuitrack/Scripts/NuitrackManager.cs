@@ -107,7 +107,7 @@ public class NuitrackManager : MonoBehaviour
     }
 #endif
 
-    void ThreadedWork()
+    void WorkingThread()
     {
         _threadRunning = true;
 
@@ -167,7 +167,7 @@ public class NuitrackManager : MonoBehaviour
             StartCoroutine(InitEventStart());
             if (!_threadRunning)
             {
-                _thread = new Thread(ThreadedWork);
+                _thread = new Thread(WorkingThread);
                 _thread.Start();
             }
         }
@@ -531,7 +531,7 @@ public class NuitrackManager : MonoBehaviour
         {
             if (!_threadRunning)
             {
-                _thread = new Thread(ThreadedWork);
+                _thread = new Thread(WorkingThread);
                 _thread.Start();
             }
         }
