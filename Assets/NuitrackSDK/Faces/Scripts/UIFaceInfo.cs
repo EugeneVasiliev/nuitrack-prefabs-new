@@ -46,6 +46,9 @@ public class UIFaceInfo : MonoBehaviour
         if (jsonInfo == null)
             return;
 
+        if (!NuitrackManager.Instance.useFaceTracking)
+            Debug.Log("Attention: Face tracking disabled! Enable it on the Nuitrack Manager component");
+
         instances = jsonInfo.Instances;
         for (int i = 0; i < instances.Length; i++)
         {
