@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace NuitrackSDK.NuitrackDemos
 {
@@ -50,6 +51,11 @@ namespace NuitrackSDK.NuitrackDemos
             skeletonsOverlay.SetActive(showSkeletonsOverlay);
             facesToggle.isOn = showFacesOverlay;
             facesOverlay.SetActive(showFacesOverlay);
+
+            if (FindObjectOfType<EventSystem>() == null)
+            {
+                var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
+            }
         }
 
         void SelectFrame(FrameType frameType)
