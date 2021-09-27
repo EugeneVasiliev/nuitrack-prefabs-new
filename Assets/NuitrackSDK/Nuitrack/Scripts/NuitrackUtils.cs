@@ -89,6 +89,52 @@ public static class NuitrackUtils
             return HumanBodyBones.LastBone;
     }
 
+    static readonly Dictionary<HumanBodyBones, JointType> unityToNuitrack = new Dictionary<HumanBodyBones, JointType>()
+    {
+        {HumanBodyBones.Head, JointType.Head},
+        {HumanBodyBones.Neck, JointType.Neck},
+        {HumanBodyBones.LeftShoulder, JointType.LeftCollar},
+        {HumanBodyBones.RightShoulder, JointType.RightCollar},
+        {HumanBodyBones.Spine, JointType.Torso},
+        {HumanBodyBones.Hips, JointType.Waist},
+
+        {HumanBodyBones.LeftMiddleDistal, JointType.LeftFingertip},
+        {HumanBodyBones.LeftMiddleProximal, JointType.LeftHand},
+        {HumanBodyBones.LeftHand, JointType.LeftWrist},
+        {HumanBodyBones.LeftLowerArm, JointType.LeftElbow},
+        {HumanBodyBones.LeftUpperArm, JointType.LeftShoulder},
+
+        {HumanBodyBones.RightMiddleDistal, JointType.RightFingertip},
+        {HumanBodyBones.RightMiddleProximal, JointType.RightHand},
+        {HumanBodyBones.RightHand, JointType.RightWrist},
+        {HumanBodyBones.RightLowerArm, JointType.RightElbow},
+        {HumanBodyBones.RightUpperArm, JointType.RightShoulder},
+
+        {HumanBodyBones.LeftToes, JointType.LeftFoot},
+        {HumanBodyBones.LeftFoot, JointType.LeftAnkle},
+        {HumanBodyBones.LeftLowerLeg, JointType.LeftKnee},
+        {HumanBodyBones.LeftUpperLeg, JointType.LeftHip},
+
+        {HumanBodyBones.RightToes, JointType.RightFoot},
+        {HumanBodyBones.RightFoot, JointType.RightAnkle},
+        {HumanBodyBones.RightLowerLeg, JointType.RightKnee},
+        {HumanBodyBones.RightUpperLeg, JointType.RightHip},
+    };
+
+    /// <summary>
+    /// Returns the appropriate HumanBodyBones  for nuitrack.JointType
+    /// </summary>
+    /// <param name="nuitrackJoint">nuitrack.JointType</param>
+    /// <returns>HumanBodyBones</returns>
+    public static JointType ToNuitrackJoint(this HumanBodyBones unityBone)
+    {
+        if (unityToNuitrack.ContainsKey(unityBone))
+            return unityToNuitrack[unityBone];
+        else
+            return JointType.None;
+    }
+
+
     static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
         {JointType.LeftShoulder, JointType.RightShoulder},
         {JointType.RightShoulder, JointType.LeftShoulder},

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using nuitrack;
 
+using Reflection = System.Reflection;
 
 namespace NuitrackSDKEditor.Avatar
 {
@@ -135,13 +136,27 @@ namespace NuitrackSDKEditor.Avatar
             NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Avatar map", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Avatar map", EditorStyles.boldLabel); 
 
             if (skeletonMapper != null)
             {
                 List<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToList();
                 skeletonMapper.Draw(activeJoints);
             }
+
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+            if (GUILayout.Button("Automap"))
+                AutoMapping();
+
+            if (GUILayout.Button("Clear"))
+            {
+                if (EditorUtility.DisplayDialog("Skeleton map", "Do you really want to clear the skeleton map?", "Yes", "No"))
+                    Clear();
+            }
+
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
 
             if (skeletonJointListUI != null)
             {
@@ -150,5 +165,65 @@ namespace NuitrackSDKEditor.Avatar
                 skeletonJointListUI.Draw(jointDict);
             }
         }
+
+
+        #region AutoMapping
+
+        List<JointType> excludeAutoFillJoints = new List<JointType>()
+        {
+            JointType.LeftCollar,
+            JointType.RightCollar
+        };
+
+        Dictionary<int, Transform> MapBones()
+        {
+            NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+
+            System.Type avatarSetupType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool");
+            Reflection.MethodInfo avatarSetuMethodInfo = avatarSetupType.GetMethod("GetModelBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
+
+            Dictionary<Transform, bool> validBones = avatarSetuMethodInfo.Invoke(null, new object[] { avatar.transform, false, null }) as Dictionary<Transform, bool>;
+
+            if (validBones == null)
+                return null;
+
+            System.Type toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarAutoMapper");
+            Reflection.MethodInfo methodInfo = toolbarType.GetMethod("MapBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
+
+            Dictionary<int, Transform> outData = methodInfo.Invoke(null, new object[] { avatar.transform, validBones }) as Dictionary<int, Transform>;
+
+            return outData;
+        }
+
+        void AutoMapping()
+        {
+            Dictionary<int, Transform> outData = MapBones();
+
+            if (outData == null)
+                Debug.LogError("It is not possible to automatically fill in the skeleton map. Check the correctness of your model.");
+            else
+            {
+                foreach (KeyValuePair<int, Transform> boneData in outData)
+                {
+                    JointType jointType = ((HumanBodyBones)boneData.Key).ToNuitrackJoint();
+
+                    if (jointFieldMap.ContainsKey(jointType) && !excludeAutoFillJoints.Contains(jointType))
+                    {
+                        SerializedProperty jointProperty = GetJointProperty(jointType);
+
+                        if (jointProperty.objectReferenceValue == null)
+                            EditJoint(jointType, boneData.Value);
+                    }
+                }
+            }
+        }
+
+        void Clear()
+        {
+            foreach (JointType jointType in jointFieldMap.Keys)
+                EditJoint(jointType, null);
+        }
+
+        #endregion
     }
 }
