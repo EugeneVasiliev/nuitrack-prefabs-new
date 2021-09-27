@@ -3,7 +3,7 @@ using UnityEditor;
 using System.IO;
 using System;
 
-public class ProgramStarter : MonoBehaviour
+public class ProgramStarter
 {
     public static void Run(string appPath, string workingDirectory, bool blockEditor = false)
     {
