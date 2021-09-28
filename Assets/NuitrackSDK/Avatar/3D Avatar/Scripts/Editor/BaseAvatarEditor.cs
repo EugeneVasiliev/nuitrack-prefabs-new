@@ -9,7 +9,7 @@ namespace NuitrackSDKEditor.Avatar
     [CustomEditor(typeof(BaseAvatar))]
     public abstract class BaseAvatarEditor : NuitrackSDKEditorGUI
     {
-        protected JointType SelectJoint { get; set; } = JointType.None;
+        protected virtual JointType SelectJoint { get; set; } = JointType.None;
 
         public override void OnInspectorGUI()
         {

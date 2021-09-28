@@ -20,7 +20,7 @@ namespace NuitrackSDKEditor.Avatar
             return validBones;
         }
 
-        public static Dictionary<HumanBodyBones, Transform> MapBones(Transform root)
+        public static Dictionary<HumanBodyBones, Transform> GetBonesMap(Transform root)
         {
             Dictionary<Transform, bool> validBones = GetValidBones(root);
 
@@ -30,11 +30,10 @@ namespace NuitrackSDKEditor.Avatar
             System.Type toolbarType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarAutoMapper");
             Reflection.MethodInfo methodInfo = toolbarType.GetMethod("MapBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
 
-            Dictionary<int, Transform> outData = methodInfo.Invoke(null, new object[] { root, validBones }) as Dictionary<int, Transform>;
+            Dictionary<int, Transform> boneIDMap = methodInfo.Invoke(null, new object[] { root, validBones }) as Dictionary<int, Transform>;
+            Dictionary<HumanBodyBones, Transform> boneTransformMap = boneIDMap.ToDictionary(k => (HumanBodyBones)k.Key, v => v.Value);
 
-            Dictionary<HumanBodyBones, Transform> boneTransform = outData.ToDictionary(k => (HumanBodyBones)k.Key, v => v.Value);
-
-            return boneTransform;
+            return boneTransformMap;
         }
     }
 }

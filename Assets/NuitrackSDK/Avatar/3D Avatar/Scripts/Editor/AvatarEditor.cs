@@ -52,7 +52,7 @@ namespace NuitrackSDKEditor.Avatar
             return serializedObject.FindProperty(jointFieldMap[jointType]);
         }
 
-        bool ShowSkeletonView
+        bool ShowUnusedBone
         {
             get
             {
@@ -61,6 +61,24 @@ namespace NuitrackSDKEditor.Avatar
             set
             {
                 EditorPrefs.SetBool(target.GetType().FullName + "showSkeletonView", value);
+            }
+        }
+
+        protected override JointType SelectJoint 
+        {
+            get 
+            {
+                return base.SelectJoint;
+            }
+            set
+            {
+                base.SelectJoint = value;
+
+                if(skeletonMapper != null)
+                    skeletonMapper.SelectedJoint = SelectJoint;
+
+                if (skeletonJointListUI != null)
+                    skeletonJointListUI.SelectedJoint = SelectJoint;
             }
         }
 
@@ -94,25 +112,24 @@ namespace NuitrackSDKEditor.Avatar
 
         void SkeletonMapper_onDrop(Transform newJoint, JointType jointType)
         {
+            if (!jointFieldMap.ContainsKey(jointType))
+                return;
+
             EditJoint(jointType, newJoint);
 
             if (newJoint != null)
             {
                 EditorGUIUtility.PingObject(newJoint);
                 SelectJoint = jointType;
-
-                skeletonMapper.SelectedJoint = SelectJoint;
-                skeletonJointListUI.SelectedJoint = SelectJoint;
             }
         }
 
         void SkeletonMapper_onSelected(JointType jointType)
         {
-            NuitrackSDK.Avatar.Avatar avatar = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
+            if (!jointFieldMap.ContainsKey(jointType))
+                return;
 
             SelectJoint = jointType;
-            skeletonMapper.SelectedJoint = SelectJoint;
-            skeletonJointListUI.SelectedJoint = SelectJoint;
 
             Transform selectTransform = GetTransformFromField(jointType);
 
@@ -149,7 +166,7 @@ namespace NuitrackSDKEditor.Avatar
 
         void OnSceneGUI()
         {
-            if (ShowSkeletonView)
+            if (ShowUnusedBone)
             {
                 NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
 
@@ -163,19 +180,18 @@ namespace NuitrackSDKEditor.Avatar
             NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Avatar map", EditorStyles.boldLabel); 
+            EditorGUILayout.LabelField("Avatar map", EditorStyles.boldLabel);
+
+            IEnumerable<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null);
 
             if (skeletonMapper != null)
-            {
-                List<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToList();
-                skeletonMapper.Draw(activeJoints);
-            }
+                skeletonMapper.Draw(activeJoints.ToList());
 
-            bool newVal = EditorGUILayout.Toggle("Show unused bone", ShowSkeletonView);
+            bool newUnusedBoneVal = EditorGUILayout.Toggle("Show unused bone", ShowUnusedBone);
 
-            if(newVal != ShowSkeletonView)
+            if(newUnusedBoneVal != ShowUnusedBone)
             {
-                ShowSkeletonView = newVal;
+                ShowUnusedBone = newUnusedBoneVal;
                 SceneView.RepaintAll();
             }
 
@@ -184,19 +200,23 @@ namespace NuitrackSDKEditor.Avatar
             if (GUILayout.Button("Automap"))
                 AutoMapping();
 
+            bool disableClearbutton = activeJoints.Count() == 0;
+
+            EditorGUI.BeginDisabledGroup(disableClearbutton);
             if (GUILayout.Button("Clear"))
             {
                 if (EditorUtility.DisplayDialog("Skeleton map", "Do you really want to clear the skeleton map?", "Yes", "No"))
                     Clear();
             }
+            EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.EndHorizontal();
+
             EditorGUILayout.Space();
 
             if (skeletonJointListUI != null)
             {
-                Dictionary<JointType, Transform> jointDict = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null).ToDictionary(k => k, v => GetTransformFromField(v));
-                    
+                Dictionary<JointType, Transform> jointDict = activeJoints.ToDictionary(k => k, v => GetTransformFromField(v));           
                 skeletonJointListUI.Draw(jointDict);
             }
         }
@@ -213,22 +233,25 @@ namespace NuitrackSDKEditor.Avatar
         {
             NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
 
-            Dictionary<HumanBodyBones, Transform> outData = SkeletonUtils.MapBones(avatar.transform);
+            Dictionary<HumanBodyBones, Transform> skeletonBonesMap = SkeletonUtils.GetBonesMap(avatar.transform);
 
-            if (outData == null || outData.Count == 0)
+            if (skeletonBonesMap == null || skeletonBonesMap.Count == 0)
                 Debug.LogError("It is not possible to automatically fill in the skeleton map. Check the correctness of your model.");
             else
             {
-                foreach (KeyValuePair<HumanBodyBones, Transform> boneData in outData)
+                foreach (KeyValuePair<HumanBodyBones, Transform> boneData in skeletonBonesMap)
                 {
                     JointType jointType = boneData.Key.ToNuitrackJoint();
 
-                    if (jointFieldMap.ContainsKey(jointType) && !excludeAutoFillJoints.Contains(jointType))
+                    if (jointFieldMap.ContainsKey(jointType))
                     {
-                        SerializedProperty jointProperty = GetJointProperty(jointType);
-
-                        if (jointProperty.objectReferenceValue == null)
-                            EditJoint(jointType, boneData.Value);
+                        if (!excludeAutoFillJoints.Contains(jointType))
+                        {
+                            if (GetTransformFromField(jointType) == null)
+                                EditJoint(jointType, boneData.Value);
+                        }
+                        else
+                            Debug.Log(string.Format("For joint <color=orange><b>{0}</b></color>, you must manually set the transform", jointType));
                     }
                 }
             }
