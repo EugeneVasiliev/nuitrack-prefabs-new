@@ -195,7 +195,13 @@ namespace NuitrackSDKEditor.Avatar
                 SceneView.RepaintAll();
             }
 
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+            GUIContent gUIContent = EditorGUIUtility.IconContent("console.infoicon.sml");
+            gUIContent.text = "For the best mapping result, put the avatar in T-pose";
+            EditorGUILayout.LabelField(gUIContent);
+
+            EditorGUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Automap"))
                 AutoMapping();
@@ -211,6 +217,8 @@ namespace NuitrackSDKEditor.Avatar
             EditorGUI.EndDisabledGroup();
 
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.EndVertical();
 
             EditorGUILayout.Space();
 
