@@ -19,6 +19,9 @@ namespace NuitrackSDKEditor.Avatar
             DrawAvatarGUI();
         }
 
+        /// <summary>
+        /// Draw basic avatar settings
+        /// </summary>
         protected void DrawSkeletonSettings()
         {
             BaseAvatar myScript = serializedObject.targetObject as BaseAvatar;
@@ -42,9 +45,9 @@ namespace NuitrackSDKEditor.Avatar
             serializedObject.ApplyModifiedProperties();
         }
 
-        protected virtual void DrawAvatarGUI()
-        {
-
-        }      
+        /// <summary>
+        /// Override this method to add your own settings and parameters in the Inspector.
+        /// </summary>
+        protected virtual void DrawAvatarGUI() { }      
     }
 }

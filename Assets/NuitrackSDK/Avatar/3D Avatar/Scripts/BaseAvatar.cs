@@ -3,6 +3,9 @@
 
 namespace NuitrackSDK.Avatar
 {
+    /// <summary>
+    /// Wrapper for Nuitrack Joint <see cref="nuitrack.Joint"/>
+    /// </summary>
     public class JointTransform
     {
         nuitrack.Joint joint;
@@ -13,12 +16,18 @@ namespace NuitrackSDK.Avatar
             IsActive = isActive;
         }
 
+        /// <summary>
+        /// Is this joint active
+        /// </summary>
         public bool IsActive
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The corresponding type of Unity bone
+        /// </summary>
         public HumanBodyBones HumanBodyBone
         {
             get
@@ -27,6 +36,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Joint position in meters
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -35,6 +47,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Joint orientation
+        /// </summary>
         public Quaternion Rotation
         {
             get
@@ -43,6 +58,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Mirrored orientation of the joint
+        /// </summary>
         public Quaternion RotationMirrored
         {
             get
@@ -51,6 +69,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Projection and normalized joint coordinates
+        /// </summary>
         public Vector2 Proj
         {
             get
@@ -60,6 +81,9 @@ namespace NuitrackSDK.Avatar
         }
     }
 
+    /// <summary>
+    /// The base class of the avatar. Use it to create your own avatars.
+    /// </summary>
     public abstract class BaseAvatar : MonoBehaviour
     {
         [Header("Options")]
@@ -74,6 +98,9 @@ namespace NuitrackSDK.Avatar
 
         protected ulong lastTimeStamp = 0;
 
+        /// <summary>
+        /// If True, the current user tracker is used, otherwise the user specified by ID is used <see cref="SkeletonID"/>
+        /// </summary>
         public bool UseCurrentUserTracker
         {
             get
@@ -86,11 +113,19 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// ID of the current user
+        /// For the case when current user tracker <see cref="UseCurrentUserTracker"/> of is used, the ID of the active user will be returned
+        /// If current user tracker is used and a new ID is set, tracking of the current user will stop
+        /// </summary>
         public int SkeletonID
         {
             get
             {
-                return skeletonID;
+                if(UseCurrentUserTracker)
+                    return CurrentUserTracker.CurrentSkeleton != null ? CurrentUserTracker.CurrentSkeleton.ID : 0;
+                else
+                    return skeletonID;
             }
             set
             {
@@ -108,6 +143,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Minimum allowed ID
+        /// </summary>
         public int MinSkeletonID
         {
             get
@@ -116,6 +154,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Maximum allowed ID
+        /// </summary>
         public int MaxSkeletonID
         {
             get
@@ -124,6 +165,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Confidence threshold for detected joints
+        /// </summary>
         public float JointConfidence
         {
             get
@@ -136,6 +180,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// True if there is a control skeleton.
+        /// </summary>
         public bool IsActive
         {
             get
@@ -144,6 +191,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// The controler skeleton. Maybe null
+        /// </summary>
         public nuitrack.Skeleton ControllerSkeleton
         {
             get
@@ -155,6 +205,11 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+        /// <summary>
+        /// Get a shell object for the specified joint
+        /// </summary>
+        /// <param name="jointType">Joint type</param>
+        /// <returns>Shell object <see cref="JointTransform"/></returns>
         public JointTransform GetJointTransform(nuitrack.JointType jointType)
         {
             if (!IsActive)
@@ -178,6 +233,10 @@ namespace NuitrackSDK.Avatar
                 ProcessSkeleton(skeleton);
         }
 
+        /// <summary>
+        /// Redefine this method to implement skeleton processing
+        /// </summary>
+        /// <param name="skeleton">Skeleton <see cref="nuitrack.Skeleton/>"/></param>
         protected abstract void ProcessSkeleton(nuitrack.Skeleton skeleton);
     }
 }

@@ -239,7 +239,7 @@ namespace NuitrackSDK.Avatar
             StartCoroutine(CalculateOffset());
         }
 
-        public IEnumerator CalculateOffset()
+        IEnumerator CalculateOffset()
         {
             if (!recenterOnSuccess || !IsTransformSpace) 
                 yield break;

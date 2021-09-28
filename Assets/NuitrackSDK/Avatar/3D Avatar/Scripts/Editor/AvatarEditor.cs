@@ -175,7 +175,7 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
-        protected void DrawSkeletonMap()
+        void DrawSkeletonMap()
         {
             NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
 
