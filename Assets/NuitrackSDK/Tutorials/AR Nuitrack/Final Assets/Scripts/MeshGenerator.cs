@@ -20,6 +20,14 @@ public class MeshGenerator : MonoBehaviour
         }
     }
 
+    public Mesh Mesh
+    {
+        get
+        {
+            return mesh;
+        }
+    }
+
     public void Generate(int width, int height)
     {
         mesh = new Mesh();
