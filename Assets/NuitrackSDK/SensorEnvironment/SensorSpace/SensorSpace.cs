@@ -12,6 +12,8 @@ namespace NuitrackSDK.Frame
         new Camera camera;
         RectTransform canvasRect;
 
+        ulong lastTimeStamp = 0;
+
         public Camera Camera
         {
             get
@@ -34,14 +36,14 @@ namespace NuitrackSDK.Frame
             }
         }
 
-        void OnEnable()
+        void Update()
         {
-            NuitrackManager.onColorUpdate += NuitrackManager_onColorUpdate;
-        }
+            if (NuitrackManager.ColorFrame == null || NuitrackManager.ColorFrame.Timestamp == lastTimeStamp)
+                return;
 
-        void OnDisable()
-        {
-            NuitrackManager.onColorUpdate -= NuitrackManager_onColorUpdate;
+            lastTimeStamp = NuitrackManager.ColorFrame.Timestamp;
+
+            NuitrackManager_onColorUpdate(NuitrackManager.ColorFrame);
         }
 
         float ViewWidth
