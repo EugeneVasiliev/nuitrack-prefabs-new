@@ -46,10 +46,10 @@ namespace NuitrackSDKEditor.Avatar
         {
             static Color color = new Color(0.7f, 0.7f, 0.7f, 1);
 
-            static GUIContent fill = EditorGUIUtility.IconContent("AvatarInspector/DotFill");
-            static GUIContent frame = EditorGUIUtility.IconContent("AvatarInspector/DotFrame");
-            static GUIContent frameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
-            static GUIContent selection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
+            static readonly GUIContent fill = EditorGUIUtility.IconContent("AvatarInspector/DotFill");
+            static readonly GUIContent frame = EditorGUIUtility.IconContent("AvatarInspector/DotFrame");
+            static readonly GUIContent frameDotted = EditorGUIUtility.IconContent("AvatarInspector/DotFrameDotted");
+            static readonly GUIContent selection = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
 
             /// <summary>
             /// Draw a centered dot representing the GUI element for the joint
@@ -96,9 +96,9 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
-        public static GUIContent UnityDude = EditorGUIUtility.IconContent("AvatarInspector/BodySIlhouette");
+        public static readonly GUIContent UnityDude = EditorGUIUtility.IconContent("AvatarInspector/BodySIlhouette");
 
-        public static Dictionary<AvatarMaskBodyPart, GUIBodyPart> BodyParts = new Dictionary<AvatarMaskBodyPart, GUIBodyPart>()
+        public static readonly Dictionary<AvatarMaskBodyPart, GUIBodyPart> BodyParts = new Dictionary<AvatarMaskBodyPart, GUIBodyPart>()
             {
                 {
                     AvatarMaskBodyPart.Body, new GUIBodyPart()

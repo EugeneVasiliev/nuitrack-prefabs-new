@@ -151,7 +151,7 @@ namespace NuitrackSDK.Avatar
                 if (useCurrentUserTracker)
                     return CurrentUserTracker.CurrentSkeleton;
                 else
-                    return NuitrackManager.SkeletonData != null ? NuitrackManager.SkeletonData.GetSkeletonByID(skeletonID) : null;
+                    return NuitrackManager.SkeletonData?.GetSkeletonByID(skeletonID);
             }
         }
 

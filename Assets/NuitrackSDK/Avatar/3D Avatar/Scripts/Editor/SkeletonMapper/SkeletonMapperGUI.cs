@@ -16,9 +16,9 @@ namespace NuitrackSDKEditor.Avatar
             public Color disableColor;
         }
 
-        List<JointType> jointMask = null;
+        readonly List<JointType> jointMask = null;
 
-        ColorTheme colorTheme = new ColorTheme()
+        readonly ColorTheme colorTheme = new ColorTheme()
         {
             mainColor = new Color(0.2f, 0.6f, 1f, 1f), // Color.blue;
             disableColor = new Color(0.5f, 0.5f, 0.6f, 1f)
@@ -117,7 +117,7 @@ namespace NuitrackSDKEditor.Avatar
         {
             EventType eventType = Event.current.type;
 
-            T dropObject = default(T);
+            T dropObject = default;
 
             if ((eventType == EventType.DragPerform || eventType == EventType.DragUpdated) &&
                 dropRect.Contains(Event.current.mousePosition) && GUI.enabled)
@@ -146,14 +146,14 @@ namespace NuitrackSDKEditor.Avatar
         T GetValidType(Object validatedObject)
         {
             if (EditorUtility.IsPersistent(validatedObject))
-                return default(T);
+                return default;
 
-            if (validatedObject is T)
-                return (T)validatedObject;
-            else if (validatedObject is GameObject)
-                return (validatedObject as GameObject).GetComponent<T>();
+            if (validatedObject is T t)
+                return t;
+            else if (validatedObject is GameObject go)
+                return go.GetComponent<T>();
 
-            return default(T);
+            return default;
         }
     }
 }

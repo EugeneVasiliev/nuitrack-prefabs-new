@@ -10,11 +10,11 @@ namespace NuitrackSDKEditor.Avatar
 {
     public class SkeletonBonesView
     {
-        object skeletonDrawer = null;
+        readonly object skeletonDrawer = null;
 
-        Type boneHandleType = typeof(Editor).Assembly.GetType("UnityEditor.Handles").GetNestedType("BoneRenderer", BindingFlags.NonPublic);
-        Type skeletonDrawerType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSkeletonDrawer");
-        MethodInfo drawSkeletonMethod = null;
+        readonly Type boneHandleType = typeof(Editor).Assembly.GetType("UnityEditor.Handles").GetNestedType("BoneRenderer", BindingFlags.NonPublic);
+        readonly Type skeletonDrawerType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSkeletonDrawer");
+        readonly MethodInfo drawSkeletonMethod = null;
 
         public SkeletonBonesView()
         {

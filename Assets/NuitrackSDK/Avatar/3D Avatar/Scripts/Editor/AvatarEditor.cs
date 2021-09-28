@@ -16,7 +16,7 @@ namespace NuitrackSDKEditor.Avatar
         SkeletonMapperListGUI<Transform> skeletonJointListUI = null;
         SkeletonBonesView skeletonBonesView = null;
 
-        Dictionary<JointType, string> jointFieldMap = new Dictionary<JointType, string>()
+        readonly Dictionary<JointType, string> jointFieldMap = new Dictionary<JointType, string>()
         {
             { JointType.Waist, "waist" },
             { JointType.Torso, "torso" },
@@ -87,24 +87,24 @@ namespace NuitrackSDKEditor.Avatar
             List<JointType> jointMask = jointFieldMap.Keys.ToList();
 
             skeletonMapper = new SkeletonMapperGUI<Transform>(jointMask);
-            skeletonMapper.onDrop += SkeletonMapper_onDrop;
-            skeletonMapper.onSelected += SkeletonMapper_onSelected;
+            skeletonMapper.OnDrop += SkeletonMapper_onDrop;
+            skeletonMapper.OnSelected += SkeletonMapper_onSelected;
 
             skeletonJointListUI = new SkeletonMapperListGUI<Transform>(jointMask);
-            skeletonJointListUI.onDrop += SkeletonMapper_onDrop;
-            skeletonJointListUI.onSelected += SkeletonMapper_onSelected;
+            skeletonJointListUI.OnDrop += SkeletonMapper_onDrop;
+            skeletonJointListUI.OnSelected += SkeletonMapper_onSelected;
 
             skeletonBonesView = new SkeletonBonesView();
         }
 
         protected virtual void OnDisable()
         {
-            skeletonMapper.onDrop -= SkeletonMapper_onDrop;
-            skeletonMapper.onSelected -= SkeletonMapper_onSelected;
+            skeletonMapper.OnDrop -= SkeletonMapper_onDrop;
+            skeletonMapper.OnSelected -= SkeletonMapper_onSelected;
             skeletonMapper = null;
 
-            skeletonJointListUI.onDrop -= SkeletonMapper_onDrop;
-            skeletonJointListUI.onSelected -= SkeletonMapper_onSelected;
+            skeletonJointListUI.OnDrop -= SkeletonMapper_onDrop;
+            skeletonJointListUI.OnSelected -= SkeletonMapper_onSelected;
             skeletonJointListUI = null;
 
             skeletonBonesView = null;
@@ -223,7 +223,7 @@ namespace NuitrackSDKEditor.Avatar
 
         #region AutoMapping
 
-        List<JointType> excludeAutoFillJoints = new List<JointType>()
+        readonly List<JointType> excludeAutoFillJoints = new List<JointType>()
         {
             JointType.LeftCollar,
             JointType.RightCollar
@@ -236,25 +236,28 @@ namespace NuitrackSDKEditor.Avatar
             Dictionary<HumanBodyBones, Transform> skeletonBonesMap = SkeletonUtils.GetBonesMap(avatar.transform);
 
             if (skeletonBonesMap == null || skeletonBonesMap.Count == 0)
-                Debug.LogError("It is not possible to automatically fill in the skeleton map. Check the correctness of your model.");
-            else
             {
-                foreach (KeyValuePair<HumanBodyBones, Transform> boneData in skeletonBonesMap)
-                {
-                    JointType jointType = boneData.Key.ToNuitrackJoint();
+                Debug.LogError("It is not possible to automatically fill in the skeleton map. Check the correctness of your model.");
+                return;
+            }
 
-                    if (jointFieldMap.ContainsKey(jointType))
-                    {
-                        if (!excludeAutoFillJoints.Contains(jointType))
-                        {
-                            if (GetTransformFromField(jointType) == null)
-                                EditJoint(jointType, boneData.Value);
-                        }
-                        else
-                            Debug.Log(string.Format("For joint <color=orange><b>{0}</b></color>, you must manually set the transform", jointType));
-                    }
+            List<HumanBodyBones> failFoundBones = new List<HumanBodyBones>();
+
+            foreach (JointType jointType in jointFieldMap.Keys)
+            {
+                HumanBodyBones humanBodyBones = jointType.ToUnityBones();
+
+                if (GetTransformFromField(jointType) == null)
+                {
+                    if (excludeAutoFillJoints.Contains(jointType) || !skeletonBonesMap.ContainsKey(humanBodyBones))
+                        failFoundBones.Add(humanBodyBones);
+                    else
+                        EditJoint(jointType, skeletonBonesMap[humanBodyBones]);
                 }
             }
+
+            if (failFoundBones.Count > 0)
+                Debug.Log(string.Format("For bones: <color=orange><b>{0}</b></color>, could not be found object Transforms", string.Join(", ", failFoundBones)));
         }
 
         void Clear()

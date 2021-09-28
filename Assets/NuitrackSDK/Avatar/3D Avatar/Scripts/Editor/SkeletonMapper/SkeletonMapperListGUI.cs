@@ -11,9 +11,8 @@ namespace NuitrackSDKEditor.Avatar
 {
     public class SkeletonMapperListGUI<T> : SkeletonMapper<T> where T : Object
     {
-        Dictionary<AvatarMaskBodyPart, bool> foldOpenned = SkeletonMapperStyles.BodyParts.Keys.ToDictionary(k => k, v => true);
-
-        Dictionary<JointType, int> controlsID = new Dictionary<JointType, int>();
+        readonly Dictionary<AvatarMaskBodyPart, bool> foldOpenned = SkeletonMapperStyles.BodyParts.Keys.ToDictionary(k => k, v => true);
+        readonly Dictionary<JointType, int> controlsID = new Dictionary<JointType, int>();
 
         public override JointType SelectedJoint
         {
@@ -27,7 +26,7 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
-        List<JointType> jointMask = null;
+        readonly List<JointType> jointMask = null;
 
         /// <summary>
         /// View of the list of joints.

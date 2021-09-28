@@ -10,21 +10,19 @@ namespace NuitrackSDKEditor.Avatar
         public delegate void DropHandler(T dropObject, JointType jointType);
         public delegate void SelectHandler(JointType jointType);
 
-        public event DropHandler onDrop;
-        public event SelectHandler onSelected;
+        public event DropHandler OnDrop;
+        public event SelectHandler OnSelected;
 
         public virtual JointType SelectedJoint { get; set; } = JointType.None;
 
         protected void OnDropAction(T dropObject, JointType jointType)
         {
-            if (onDrop != null)
-                onDrop(dropObject, jointType);
+            OnDrop?.Invoke(dropObject, jointType);
         }
 
         protected void OnSelectedAction(JointType jointType)
         {
-            if (onSelected != null)
-                onSelected(jointType);
+            OnSelected?.Invoke(jointType);
         }
 
         /// <summary>
