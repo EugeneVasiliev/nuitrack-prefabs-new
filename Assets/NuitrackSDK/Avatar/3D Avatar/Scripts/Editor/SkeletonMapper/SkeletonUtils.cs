@@ -10,6 +10,11 @@ namespace NuitrackSDKEditor.Avatar
 {
     public static class SkeletonUtils
     {
+        /// <summary>
+        /// Get a list of valid bones for the specified skeleton
+        /// </summary>
+        /// <param name="root">Root transform of the skeleton object</param>
+        /// <returns>Dictionary of found Transform and validity value</returns>
         public static Dictionary<Transform, bool> GetValidBones(Transform root)
         {
             System.Type avatarSetupType = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool");
@@ -20,6 +25,11 @@ namespace NuitrackSDKEditor.Avatar
             return validBones;
         }
 
+        /// <summary>
+        /// Get a bone map for the specified skeleton
+        /// </summary>
+        /// <param name="root">Root transform of the skeleton object</param>
+        /// <returns>Dictionary of bone type and found Transform</returns>
         public static Dictionary<HumanBodyBones, Transform> GetBonesMap(Transform root)
         {
             Dictionary<Transform, bool> validBones = GetValidBones(root);

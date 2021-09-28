@@ -9,6 +9,10 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
+    /// <summary>
+    /// Skeleton mapper bones list, similar to the map in Avatar Configuration
+    /// </summary>
+    /// <typeparam name="T">Type of bone object (usually used by Transform)</typeparam>
     public class SkeletonMapperListGUI<T> : SkeletonMapper<T> where T : Object
     {
         readonly Dictionary<AvatarMaskBodyPart, bool> foldOpenned = SkeletonMapperStyles.BodyParts.Keys.ToDictionary(k => k, v => true);

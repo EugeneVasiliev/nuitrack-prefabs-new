@@ -25,11 +25,17 @@ namespace NuitrackSDKEditor.Avatar
                 null, new Type[] { typeof(Transform), typeof(Dictionary<Transform, bool>), boneHandleType }, null);
         }
 
-        public void DrawSkeleton(Transform root, List<Transform> mappedBoneTransforms)
+        /// <summary>
+        /// Draw the skeleton of the avatar in the Scene View.
+        /// Use this in method OnSceneGUI of your custom editors.
+        /// </summary>
+        /// <param name="root">Root transform of the skeleton object</param>
+        /// <param name="excludeBoneTransforms">List of bones to hide</param>
+        public void DrawSkeleton(Transform root, List<Transform> excludeBoneTransforms)
         {
             Dictionary<Transform, bool> validBones = SkeletonUtils.GetValidBones(root);
 
-            foreach (Transform joint in mappedBoneTransforms)
+            foreach (Transform joint in excludeBoneTransforms)
                 if (validBones.ContainsKey(joint))
                     validBones[joint] = false;
 

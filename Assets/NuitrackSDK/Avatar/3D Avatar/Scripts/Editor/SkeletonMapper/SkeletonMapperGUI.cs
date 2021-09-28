@@ -8,6 +8,10 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
+    /// <summary>
+    /// Skeleton bones mapper, similar to the map in Avatar Configuration
+    /// </summary>
+    /// <typeparam name="T">Type of bone object (usually used by Transform)</typeparam>
     public class SkeletonMapperGUI<T> : SkeletonMapper<T> where T : Object
     {
         public class ColorTheme
@@ -25,7 +29,7 @@ namespace NuitrackSDKEditor.Avatar
         };
 
         /// <summary>
-        /// View of a person with a map of joints.
+        /// View of a avatar with a map of joints.
         /// </summary>
         /// <param name="jointMask">The mask of the displayed joints. If null, all available joints will be drawn.</param>
         /// <param name="colorTheme">Color theme. If null is set, the default theme will be used.</param>

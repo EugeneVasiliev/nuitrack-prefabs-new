@@ -15,11 +15,20 @@ namespace NuitrackSDKEditor.Avatar
 
         public virtual JointType SelectedJoint { get; set; } = JointType.None;
 
+        /// <summary>
+        /// Trigger the drag-and-drop end event
+        /// </summary>
+        /// <param name="dropObject">The object being dragged</param>
+        /// <param name="jointType">Joint type</param>
         protected void OnDropAction(T dropObject, JointType jointType)
         {
             OnDrop?.Invoke(dropObject, jointType);
         }
 
+        /// <summary>
+        /// Trigger a joint select event
+        /// </summary>
+        /// <param name="jointType">Joint type</param>
         protected void OnSelectedAction(JointType jointType)
         {
             OnSelected?.Invoke(jointType);
