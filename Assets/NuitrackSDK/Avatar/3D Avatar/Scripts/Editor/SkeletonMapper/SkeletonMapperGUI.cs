@@ -105,19 +105,34 @@ namespace NuitrackSDKEditor.Avatar
                     {
                         Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectedJoint);
 
-                        T newJoint = HandleDragDrop(jointPointRect);
+                        int keyboardID = GUIUtility.GetControlID(FocusType.Keyboard, jointPointRect);
+
+                        T newJoint = HandleDragDrop(keyboardID, jointPointRect);
 
                         if (newJoint != null)
                             OnDropAction(newJoint, jointType);
 
-                        if (HandleClick(jointPointRect))
+                        if (HandleClick(keyboardID, jointPointRect))
                             OnSelectedAction(jointType);
+
+                        if (HandleDelete(keyboardID))
+                            OnDropAction(default, jointType);
                     }
                 }
             }
+
+            GUIContent gUIContent = EditorGUIUtility.IconContent("AvatarInspector/DotSelection");
+            gUIContent.text = "Deselect";
+
+            EditorGUI.BeginDisabledGroup(SelectedJoint == JointType.None);
+
+            if (GUILayout.Button(gUIContent))
+                OnSelectedAction(JointType.None);
+
+            EditorGUI.EndDisabledGroup();
         }
 
-        T HandleDragDrop(Rect dropRect)
+        T HandleDragDrop(int controlID, Rect dropRect)
         {
             EventType eventType = Event.current.type;
 
@@ -136,8 +151,10 @@ namespace NuitrackSDKEditor.Avatar
                     DragAndDrop.visualMode = DragAndDropVisualMode.Generic;
 
                     if (eventType == EventType.DragPerform)
+                    {
                         dropObject = validObj;
-
+                        GUIUtility.keyboardControl = controlID;
+                    }
                     GUI.changed = true;
                     DragAndDrop.AcceptDrag();
                     DragAndDrop.activeControlID = 0;

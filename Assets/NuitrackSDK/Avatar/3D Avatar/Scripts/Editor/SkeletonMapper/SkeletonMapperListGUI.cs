@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 
-using System.Linq;
 using System.Collections.Generic;
 
 using nuitrack;
@@ -15,7 +14,7 @@ namespace NuitrackSDKEditor.Avatar
     /// <typeparam name="T">Type of bone object (usually used by Transform)</typeparam>
     public class SkeletonMapperListGUI<T> : SkeletonMapper<T> where T : Object
     {
-        readonly Dictionary<AvatarMaskBodyPart, bool> foldOpenned = SkeletonMapperStyles.BodyParts.Keys.ToDictionary(k => k, v => true);
+        bool foldOpenned = false;
         readonly Dictionary<JointType, int> controlsID = new Dictionary<JointType, int>();
 
         public override JointType SelectedJoint
@@ -53,13 +52,6 @@ namespace NuitrackSDKEditor.Avatar
             return ObjectNames.NicifyVariableName(displayName);
         }
 
-        int GetLastControllID()
-        {
-            System.Type type = typeof(EditorGUIUtility);
-            System.Reflection.FieldInfo field = type.GetField("s_LastControlID", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            return (int)field.GetValue(null);
-        }
-
         /// <summary>
         /// Draw a list of joints
         /// </summary>
@@ -68,15 +60,17 @@ namespace NuitrackSDKEditor.Avatar
         {
             controlsID.Clear();
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
+            foldOpenned = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned, "Avatar bones list");
+
+            if (foldOpenned)
             {
-                AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
-
-                foldOpenned[bodyPart] = EditorGUILayout.BeginFoldoutHeaderGroup(foldOpenned[bodyPart], guiBodyPart.Lable);
-
-                if (foldOpenned[bodyPart])
+                foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
                 {
+                    AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
+                    SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
+
+                    EditorGUILayout.LabelField(guiBodyPart.Lable, EditorStyles.boldLabel);
+
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
                     foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
@@ -96,21 +90,25 @@ namespace NuitrackSDKEditor.Avatar
                             string displayName = GetUnityDisplayName(jointType, bodyPart);
 
                             T newJointObject = EditorGUI.ObjectField(controlRect, displayName, jointItem, typeof(T), true) as T;
-                            controlsID.Add(jointType, GetLastControllID());
+
+                            int keyboardID = GUIUtility.GetControlID(FocusType.Keyboard, controlRect);
+                            controlsID.Add(jointType, keyboardID);
 
                             if (newJointObject != jointItem)
                                 OnDropAction(newJointObject, jointType);
 
-                            if (HandleClick(controlRect))
+                            if (HandleClick(keyboardID, controlRect))
                                 OnSelectedAction(jointType);
+
+                            if (HandleDelete(keyboardID))
+                                OnDropAction(default, jointType);
                         }
                     }
-
                     EditorGUILayout.EndVertical();
                 }
-
-                EditorGUILayout.EndFoldoutHeaderGroup();
             }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
     }
 }
