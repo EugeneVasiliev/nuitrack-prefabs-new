@@ -22,10 +22,13 @@ namespace NuitrackSDK.VicoVRCalibration
 
         void OnEnable()
         {
-            TPoseCalibration.Instance.onStart += ShowCalibrationScreen;
-            TPoseCalibration.Instance.onSuccess += HideCalibrationScreen;
-            TPoseCalibration.Instance.onProgress += ChangeProgress;
-            TPoseCalibration.Instance.onFail += OnCalibrationFail;
+            if (TPoseCalibration.Instance != null)
+            {
+                TPoseCalibration.Instance.onStart += ShowCalibrationScreen;
+                TPoseCalibration.Instance.onSuccess += HideCalibrationScreen;
+                TPoseCalibration.Instance.onProgress += ChangeProgress;
+                TPoseCalibration.Instance.onFail += OnCalibrationFail;
+            }
 
             SensorDisconnectChecker.SensorConnectionTimeOut += ShowConnectionProblem;
             SensorDisconnectChecker.SensorReconnected += HideConnectionProblem;
@@ -114,10 +117,13 @@ namespace NuitrackSDK.VicoVRCalibration
         {
             HideCalibrationScreen(Quaternion.identity);
 
-            TPoseCalibration.Instance.onStart -= ShowCalibrationScreen;
-            TPoseCalibration.Instance.onSuccess -= HideCalibrationScreen;
-            TPoseCalibration.Instance.onProgress -= ChangeProgress;
-            TPoseCalibration.Instance.onFail -= OnCalibrationFail;
+            if (TPoseCalibration.Instance != null)
+            {
+                TPoseCalibration.Instance.onStart -= ShowCalibrationScreen;
+                TPoseCalibration.Instance.onSuccess -= HideCalibrationScreen;
+                TPoseCalibration.Instance.onProgress -= ChangeProgress;
+                TPoseCalibration.Instance.onFail -= OnCalibrationFail;
+            }
 
             SensorDisconnectChecker.SensorConnectionTimeOut -= ShowConnectionProblem;
             SensorDisconnectChecker.SensorReconnected -= HideConnectionProblem;
