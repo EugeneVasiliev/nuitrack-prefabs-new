@@ -10,14 +10,16 @@ public class RigidbodySkeletonManager : MonoBehaviour
 
     Dictionary<int, RigidbodySkeletonController> skeletons = new Dictionary<int, RigidbodySkeletonController>();
 
-    void Start()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
-    }
+    ulong lastTimeStamp = 0;
 
-    void OnDestroy()
+    void Update()
     {
-        NuitrackManager.onSkeletonTrackerUpdate -= NuitrackManager_onSkeletonTrackerUpdate;
+        if (NuitrackManager.SkeletonData == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
+            return;
+
+        lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
+
+        NuitrackManager_onSkeletonTrackerUpdate(NuitrackManager.SkeletonData);
     }
 
     void NuitrackManager_onSkeletonTrackerUpdate(nuitrack.SkeletonData skeletonData)

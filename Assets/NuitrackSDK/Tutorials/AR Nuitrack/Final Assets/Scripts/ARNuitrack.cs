@@ -39,9 +39,13 @@ public class ARNuitrack : MonoBehaviour
 
         frameTimestamp = depthFrame.Timestamp;
  
+        if(meshGenerator.Mesh == null)
+            meshGenerator.Generate(depthFrame.Cols, depthFrame.Rows);
+
         UpdateRGB(colorFrame);
         UpdateHieghtMap(depthFrame);
- 
+        FitMeshIntoFrame(depthFrame);
+
         UpdateFloor(userFrame);
     }
 
@@ -49,19 +53,15 @@ public class ARNuitrack : MonoBehaviour
     {
         if (rgbTexture2D == null)
         {
-            meshGenerator.Generate(frame.Cols, frame.Rows);
-
             rgbTexture2D = new Texture2D(frame.Cols, frame.Rows, TextureFormat.RGB24, false);
             meshGenerator.Material.SetTexture("_MainTex", rgbTexture2D);
         }
 
         rgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
         rgbTexture2D.Apply(); 
-
-        FitMeshIntoFrame(frame);
     }
 
-    void FitMeshIntoFrame(nuitrack.ColorFrame frame)
+    void FitMeshIntoFrame(nuitrack.DepthFrame frame)
     {        
         float frameAspectRatio = (float)frame.Cols / frame.Rows;
         float targetAspectRatio = camera.aspect < frameAspectRatio ? camera.aspect : frameAspectRatio;
@@ -74,11 +74,6 @@ public class ARNuitrack : MonoBehaviour
 
     void UpdateHieghtMap(nuitrack.DepthFrame frame)
     {
-        nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
-
-        float vFOV = mode.HFOV * ((float)frame.Rows / frame.Cols);
-        camera.fieldOfView = vFOV * Mathf.Rad2Deg;
-
         if (depthDataBuffer == null)
         {
             //We put the source data in the buffer, but the buffer does not support types
