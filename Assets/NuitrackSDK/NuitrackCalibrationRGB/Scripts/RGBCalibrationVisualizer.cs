@@ -1,65 +1,39 @@
 ﻿using System.Collections;
 using UnityEngine;
-using NuitrackSDK.Pointer;
+using UnityEngine.UI;
 
 namespace NuitrackSDK.VicoVRCalibration
 {
     public class RGBCalibrationVisualizer : MonoBehaviour
     {
-        [SerializeField] MeshRenderer sprt;
-        [SerializeField] MeshRenderer sprtColor;
+        [SerializeField] GameObject background;
+        [SerializeField] GameObject connectionLostItems;
+        [SerializeField] GameObject visualiserItems;
 
-        [SerializeField] GameObject BackGround;
-        [SerializeField] GameObject ConnectionLostItems;
-        [SerializeField] GameObject VisualiserItems;
+        [SerializeField] Slider progressBar;
 
-        [SerializeField] Transform headAnchor;
-
-        [SerializeField] TextMesh progressText;
-
-        [Header("Controller Calibration")]
-        [Tooltip("VicoVR controller")]
-        [SerializeField] bool needController;
-        [SerializeField] GameObject controllerCalibrationUI;
-        [SerializeField] UnityEngine.UI.Image controllerProgressbar;
-
-        [SerializeField] bool autoFindGvrHead = false;
-
-        Transform stackPoint;
-
-        bool streamingEnabled = false;
+        bool calibrationInProgress = false;
 
         bool calibratedOnce = false;
 
         bool firstCalibrationEvent = true;
 
-        nuitrack.PublicNativeImporter.ControllerCalibrationCallback controllerCalibrationCallback;
+        float calibrationTimeOut = 0;
 
         void OnEnable()
         {
-            //if (NuitrackLoader.initState != NuitrackInitState.INIT_OK && Application.platform != RuntimePlatform.IPhonePlayer)
-            //{
-            //    gameObject.SetActive(false);
-            //    return;
-            //}
-
-            if (autoFindGvrHead)
+            if (TPoseCalibration.Instance != null)
             {
-                progressText.GetComponent<MeshRenderer>().enabled = false;
-
-                stackPoint = transform.GetChild(0);
+                TPoseCalibration.Instance.onStart += ShowCalibrationScreen;
+                TPoseCalibration.Instance.onSuccess += HideCalibrationScreen;
+                TPoseCalibration.Instance.onProgress += ChangeProgress;
+                TPoseCalibration.Instance.onFail += OnCalibrationFail;
             }
-            BackTextureCreator.newTextureEvent += UpdateTexture;
-            TPoseCalibration.Instance.onStart += StartStream;
-            TPoseCalibration.Instance.onSuccess += CloseStream;
-            TPoseCalibration.Instance.onProgress += ChangeProgress;
-            TPoseCalibration.Instance.onFail += OnCalibrationFail;
 
             SensorDisconnectChecker.SensorConnectionTimeOut += ShowConnectionProblem;
             SensorDisconnectChecker.SensorReconnected += HideConnectionProblem;
 
-            StartCoroutine(StartStreamingC());
-            PointerPassing.OnCalibration += ControllerCalibration;
+            StartCoroutine(FIrstStart());
         }
 
         private void OnCalibrationFail()
@@ -70,94 +44,49 @@ namespace NuitrackSDK.VicoVRCalibration
             }
         }
 
-        void ControllerCalibration(int handID, float progress)
-        {
-            if (handID == -1) //Controller not found
-            {
-                controllerCalibrationUI.SetActive(false);
-                needController = false;
-            }
-
-            if (handID < 0 || progress < 0.001f)
-            {
-                return;
-            }
-
-            controllerProgressbar.fillAmount = progress / 100;
-            controllerCalibrationUI.SetActive(true);
-
-            if (progress > 99.999f)
-            {
-                controllerCalibrationUI.SetActive(false);
-            }
-        }
-
         void ShowConnectionProblem()
         {
-            BackGround.SetActive(true);
-            ConnectionLostItems.SetActive(true);
-            VisualiserItems.SetActive(false);
+            background.SetActive(true);
+            connectionLostItems.SetActive(true);
+            visualiserItems.SetActive(false);
         }
 
         void HideConnectionProblem()
         {
-            ConnectionLostItems.SetActive(false);
-            if (streamingEnabled)
-            {
-                BackGround.SetActive(true);
-                VisualiserItems.SetActive(true);
-            }
-            else
-            {
-                BackGround.SetActive(false);
-                VisualiserItems.SetActive(false);
-            }
+            connectionLostItems.SetActive(false);
+
+            background.SetActive(calibrationInProgress);
+            visualiserItems.SetActive(calibrationInProgress);
         }
 
         void ChangeProgress(float progress)
         {
-            progressText.text = "CALIBRATION  " + (100 * progress).ToString("0") + "%";
+            progressBar.value = progress;
 
-            if (100 * progress > 1)
+            if (progress > 0.1f)
             {
                 calibrationTimeOut = 0;
-                StartStream();
+                ShowCalibrationScreen();
             }
         }
 
-        void UpdateTexture(Texture txtr, Texture txtrColor)
-        {
-            sprt.material.mainTexture = txtr;
-            sprtColor.material.mainTexture = txtrColor;
-        }
-
-        IEnumerator StartStreamingC()
+        IEnumerator FIrstStart()
         {
             yield return new WaitForSeconds(0.1f);
-            StartStream();
+            ShowCalibrationScreen();
             firstCalibrationEvent = true;
         }
 
-        public void StartStream()
+        public void ShowCalibrationScreen()
         {
             firstCalibrationEvent = false;
+            calibrationInProgress = true;
 
-            NuitrackManager.Instance.DepthModuleStart();
-            sprt.enabled = true;
-            sprtColor.enabled = true;
-            streamingEnabled = true;
-            if (autoFindGvrHead)
-            {
-                stackPoint.SetParent(headAnchor);
-                stackPoint.transform.localRotation = Quaternion.identity;
-                stackPoint.transform.localPosition = Vector3.zero;
-            }
-            BackGround.SetActive(true);
-            ConnectionLostItems.SetActive(false);
-            VisualiserItems.SetActive(true);
+            background.SetActive(true);
+            connectionLostItems.SetActive(false);
+            visualiserItems.SetActive(true);
         }
 
-        float calibrationTimeOut = 0;
         void Update()
         {
             if (!firstCalibrationEvent)
@@ -165,7 +94,7 @@ namespace NuitrackSDK.VicoVRCalibration
                 calibrationTimeOut += Time.deltaTime;
                 if (calibrationTimeOut > 0.5f && calibratedOnce)
                 {
-                    CloseStream(Quaternion.identity);
+                    HideCalibrationScreen(Quaternion.identity);
                     calibrationTimeOut = 0;
                     firstCalibrationEvent = true;
                 }
@@ -173,35 +102,28 @@ namespace NuitrackSDK.VicoVRCalibration
 
         }
 
-        public void CloseStream(Quaternion a)
+        public void HideCalibrationScreen(Quaternion a)
         {
-            Debug.Log("closeStream: start");
-            NuitrackManager.Instance.DepthModuleClose();
-            sprt.enabled = false;
-            sprtColor.enabled = false;
-            streamingEnabled = false;
+            calibrationInProgress = false;
 
-            BackGround.SetActive(false);
-            ConnectionLostItems.SetActive(false);
-            VisualiserItems.SetActive(false);
-            ConnectionLostItems.SetActive(false);
+            background.SetActive(false);
+            connectionLostItems.SetActive(false);
+            visualiserItems.SetActive(false);
+            connectionLostItems.SetActive(false);
             calibratedOnce = true;
-
-            if (!calibratedOnce && needController)
-            {
-                controllerCalibrationUI.SetActive(true);
-            }
-            Debug.Log("closeStream: end");
         }
+
         void OnDisable()
         {
-            CloseStream(Quaternion.identity);
-            BackTextureCreator.newTextureEvent -= UpdateTexture;
+            HideCalibrationScreen(Quaternion.identity);
 
-            TPoseCalibration.Instance.onStart -= StartStream;
-            TPoseCalibration.Instance.onSuccess -= CloseStream;
-            TPoseCalibration.Instance.onProgress -= ChangeProgress;
-            TPoseCalibration.Instance.onFail -= OnCalibrationFail;
+            if (TPoseCalibration.Instance != null)
+            {
+                TPoseCalibration.Instance.onStart -= ShowCalibrationScreen;
+                TPoseCalibration.Instance.onSuccess -= HideCalibrationScreen;
+                TPoseCalibration.Instance.onProgress -= ChangeProgress;
+                TPoseCalibration.Instance.onFail -= OnCalibrationFail;
+            }
 
             SensorDisconnectChecker.SensorConnectionTimeOut -= ShowConnectionProblem;
             SensorDisconnectChecker.SensorReconnected -= HideConnectionProblem;
