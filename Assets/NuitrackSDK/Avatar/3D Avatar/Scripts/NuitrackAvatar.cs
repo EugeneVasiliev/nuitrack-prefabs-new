@@ -5,7 +5,7 @@ using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.Avatar
 {
-    public class Avatar : BaseAvatar
+    public class NuitrackAvatar : BaseAvatar
     {
         [Header("Body")]
         [SerializeField, NuitrackSDKInspector] Transform waist;

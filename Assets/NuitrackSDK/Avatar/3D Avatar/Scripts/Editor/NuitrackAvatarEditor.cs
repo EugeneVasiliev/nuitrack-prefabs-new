@@ -5,12 +5,13 @@ using System.Linq;
 using System.Collections.Generic;
 
 using nuitrack;
+using NuitrackSDK.Avatar;
 
 
 namespace NuitrackSDKEditor.Avatar
 {
-    [CustomEditor(typeof(NuitrackSDK.Avatar.Avatar), true)]
-    public class AvatarEditor : BaseAvatarEditor
+    [CustomEditor(typeof(NuitrackAvatar), true)]
+    public class NuitrackAvatarEditor : BaseAvatarEditor
     {
         SkeletonMapperGUI<Transform> skeletonMapper = null;
         SkeletonMapperListGUI<Transform> skeletonJointListUI = null;
@@ -101,7 +102,7 @@ namespace NuitrackSDKEditor.Avatar
 
         protected virtual void OnEnable()
         {
-            NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+            NuitrackAvatar avatar = target as NuitrackAvatar;
 
             List<JointType> jointMask = jointFieldMap.Keys.ToList();
 
@@ -240,7 +241,7 @@ namespace NuitrackSDKEditor.Avatar
 
         void DrawSkeletonMap()
         {
-            NuitrackSDK.Avatar.Avatar myScript = serializedObject.targetObject as NuitrackSDK.Avatar.Avatar;
+            NuitrackAvatar myScript = serializedObject.targetObject as NuitrackAvatar;
             IEnumerable<JointType> activeJoints = jointFieldMap.Keys.Where(k => GetTransformFromField(k) != null);
 
             EditorGUILayout.Space();
@@ -312,7 +313,7 @@ namespace NuitrackSDKEditor.Avatar
 
         void AutoMapping()
         {
-            NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+            NuitrackAvatar avatar = target as NuitrackAvatar;
 
             Dictionary<HumanBodyBones, Transform> skeletonBonesMap = SkeletonUtils.GetBonesMap(avatar.transform);
 
@@ -355,7 +356,7 @@ namespace NuitrackSDKEditor.Avatar
                   Where(k => GetTransformFromField(k) != null).
                   ToDictionary(k => k.ToUnityBones(), v => GetTransformFromField(v));
 
-            NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+            NuitrackAvatar avatar = target as NuitrackAvatar;
 
             SkeletonUtils.SetToTPose(avatar.transform, includeJoints);
         }
