@@ -189,7 +189,7 @@ namespace NuitrackSDK.Avatar
         {
             if (!alignmentBoneLength)
             {
-                Vector3 rootPosition = SpaceTransform.rotation * GetJointTransform(rootJoint).Position + basePivotOffset;
+                Vector3 rootPosition = SpaceTransform.rotation * GetJoint(rootJoint).Position + basePivotOffset;
                 jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
             }
 
@@ -197,7 +197,7 @@ namespace NuitrackSDK.Avatar
             {
                 //Get joint from the Nuitrack
                 //nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                JointTransform jointTransform = GetJointTransform(riggedJoint.Key);
+                JointTransform jointTransform = GetJoint(riggedJoint.Key);
                 if (jointTransform.IsActive)
                 {
                     //Get modelJoint

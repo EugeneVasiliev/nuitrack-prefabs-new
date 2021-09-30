@@ -210,7 +210,7 @@ namespace NuitrackSDK.Avatar
         /// </summary>
         /// <param name="jointType">Joint type</param>
         /// <returns>Shell object <see cref="JointTransform"/></returns>
-        public JointTransform GetJointTransform(nuitrack.JointType jointType)
+        public JointTransform GetJoint(nuitrack.JointType jointType)
         {
             if (!IsActive)
                 return null;
