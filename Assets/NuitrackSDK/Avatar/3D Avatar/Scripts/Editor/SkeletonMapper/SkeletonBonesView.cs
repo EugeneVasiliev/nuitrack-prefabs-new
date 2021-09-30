@@ -17,7 +17,7 @@ namespace NuitrackSDKEditor.Avatar
             None
         }
 
-        public delegate void BoneHandler(nuitrack.JointType jointType, Transform boneTransform);
+        public delegate void BoneHandler(ViewMode viewMode, nuitrack.JointType jointType, Transform boneTransform);
 
         public event BoneHandler OnRemoveBone;
         public event BoneHandler OnBoneSelected;
@@ -31,6 +31,8 @@ namespace NuitrackSDKEditor.Avatar
         readonly Color mainColor = new Color(0.1f, 0.5f, 0.9f, 1f);
         readonly Color unusedColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
+        readonly Color waitModelBoneSelect = Color.yellow;
+
         const float jointSphereMult = 0.3f;
         const float minSizeAssignBoneMark = 0.1f;
         const float minSizeModelBoneMark = 0.05f;
@@ -40,15 +42,36 @@ namespace NuitrackSDKEditor.Avatar
         readonly Transform root = null;
         readonly Dictionary<Transform, bool> validBones = null;
 
+        readonly GUIContent[] skeletonModeGuiContent = null;
+
+        ViewMode currentViewMode = ViewMode.ModelBones;
+
+        readonly GUIContent infoIconGUIContent = EditorGUIUtility.IconContent("console.infoicon.sml");
+
         public virtual nuitrack.JointType SelectedJoint { get; set; } = nuitrack.JointType.None;
 
         public ViewMode CurrentViewMode
         {
-            get;
-            set;
-        } = ViewMode.ModelBones;
+            get
+            {
+                return currentViewMode;
+            }
+            set
+            {
+                currentViewMode = value;
+                SceneView.RepaintAll();
+            }
+        }
 
-        public SkeletonBonesView(Transform root, ViewMode viewMode)
+        bool ModelBonesSelectionMode
+        {
+            get
+            {
+                return CurrentViewMode == ViewMode.ModelBones && SelectedJoint != nuitrack.JointType.None;
+            }
+        }
+
+        public SkeletonBonesView(Transform root, ViewMode viewMode = ViewMode.AssignedBones)
         {
             CurrentViewMode = viewMode;
             this.root = root;
@@ -71,6 +94,18 @@ namespace NuitrackSDKEditor.Avatar
                     childsList[parent].Add(jointType);
                 }
             }
+
+            // UI elements
+
+            GUIContent modelBonesContent = EditorGUIUtility.IconContent("scenepicking_pickable-mixed_hover");
+            modelBonesContent.text = "Model bones";
+
+            GUIContent assignBonesContent = EditorGUIUtility.IconContent("AvatarSelector");
+            assignBonesContent.text = "Assigned bones";
+
+            GUIContent noneContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleoff");
+
+            skeletonModeGuiContent = new GUIContent[] { modelBonesContent, assignBonesContent, noneContent };
         }
 
         void DrawBone(Vector3 start, Vector3 end)
@@ -84,30 +119,76 @@ namespace NuitrackSDKEditor.Avatar
         /// Use this in method OnSceneGUI of your custom editors.
         /// </summary>
         /// <param name="root">Root transform of the skeleton object</param>
-        /// <param name="excludeBoneTransforms">List of bones to hide</param>
-        public void DrawSkeleton(Dictionary<nuitrack.JointType, Transform> excludeBoneTransforms)
+        /// <param name="includeBones">List of bones to hide</param>
+        public void DrawSceneGUI(Dictionary<nuitrack.JointType, Transform> includeBones)
         {
             switch (CurrentViewMode)
             {
                 case ViewMode.ModelBones:
-                    DrawBonesRecursive(root, excludeBoneTransforms);
+                    DrawBonesRecursive(root, includeBones);
                     break;
 
                 case ViewMode.AssignedBones:
-                    DrawCurrentSkeleton(excludeBoneTransforms);
+                    DrawCurrentSkeleton(includeBones);
                     break;
             }
         }
 
-        void DrawBonesRecursive(Transform transform, Dictionary<nuitrack.JointType, Transform> excludeBoneTransforms)
+        /// <summary>
+        /// Draw a GUI in the inspector.
+        /// Use this in method OnInspectorGUI of your custom editors.
+        /// </summary>
+        public void DrawInspectorGUI()
+        {
+            EditorGUILayout.LabelField("Skeleton display mode", EditorStyles.boldLabel);
+
+            if (CurrentViewMode != ViewMode.None)
+            {
+                Color oldColor = GUI.color;
+
+                if (ModelBonesSelectionMode)
+                    GUI.color = waitModelBoneSelect;
+
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                GUI.color = oldColor;
+            }
+
+            switch (CurrentViewMode)
+            {
+                case ViewMode.ModelBones:
+                    infoIconGUIContent.text = SelectedJoint == nuitrack.JointType.None ?
+                        "Select the joint on the avatar, and then specify the joint on the model in order to set the match." :
+                        "Specify the joint on the model in order to set the match. \nClick \"Deselect\" for cancels selection.";
+
+                    EditorGUILayout.LabelField(infoIconGUIContent, EditorStyles.wordWrappedLabel);
+                    break;
+
+                case ViewMode.AssignedBones:
+                    infoIconGUIContent.text = "The mode displays the specified joints of the skeleton. You can blow out the joints on the model.";
+                    EditorGUILayout.LabelField(infoIconGUIContent, EditorStyles.wordWrappedLabel);
+                    break;
+            }
+
+            CurrentViewMode = (ViewMode)GUILayout.Toolbar((int)CurrentViewMode, skeletonModeGuiContent);
+
+            if (CurrentViewMode != ViewMode.None)
+                EditorGUILayout.EndVertical();
+        }
+
+        void DrawBonesRecursive(Transform transform, Dictionary<nuitrack.JointType, Transform> includeBones)
         {
             if (validBones.ContainsKey(transform) && validBones[transform])
             {
-                float dist = validBones.ContainsKey(transform.parent) ? Vector3.Distance(transform.position, transform.parent.position) : 0;
-                int countJoints = validBones.ContainsKey(transform.parent) ? transform.childCount + 2 : transform.childCount + 1;
+                bool hasParent = transform.parent != null && validBones.ContainsKey(transform.parent);
+
+                float dist = hasParent ? Vector3.Distance(transform.position, transform.parent.position) : 0;
+                int countJoints = hasParent ? transform.childCount + 2 : transform.childCount + 1;
 
                 Color oldColor = Handles.color;
-                Handles.color = excludeBoneTransforms.ContainsValue(transform) ? Color.green : unusedColor;
+                Handles.color = includeBones.ContainsValue(transform) ? Color.green : unusedColor;
+
+                // Add select bones color
 
                 foreach (Transform child in transform)
                     if (validBones.ContainsKey(child))
@@ -125,19 +206,19 @@ namespace NuitrackSDKEditor.Avatar
             }
 
             foreach (Transform child in transform)
-                DrawBonesRecursive(child, excludeBoneTransforms);
+                DrawBonesRecursive(child, includeBones);
         }
 
-        void DrawCurrentSkeleton(Dictionary<nuitrack.JointType, Transform> excludeBoneTransforms)
+        void DrawCurrentSkeleton(Dictionary<nuitrack.JointType, Transform> includeBones)
         {
-            foreach (KeyValuePair<nuitrack.JointType, Transform> jointTransform in excludeBoneTransforms)
+            foreach (KeyValuePair<nuitrack.JointType, Transform> jointTransform in includeBones)
             {
                 nuitrack.JointType joint = jointTransform.Key;
                 nuitrack.JointType parent = joint.GetParent();
                 Transform transform = jointTransform.Value;
 
-                float dist = excludeBoneTransforms.ContainsKey(parent) ? Vector3.Distance(transform.position, excludeBoneTransforms[parent].position) : 0;
-                int countJoints = excludeBoneTransforms.ContainsKey(parent) ? 2 : 1;
+                float dist = includeBones.ContainsKey(parent) ? Vector3.Distance(transform.position, includeBones[parent].position) : 0;
+                int countJoints = includeBones.ContainsKey(parent) ? 2 : 1;
 
                 Handles.color = SelectedJoint == joint ? Color.Lerp(mainColor, select, 0.5f) : mainColor;
 
@@ -145,9 +226,9 @@ namespace NuitrackSDKEditor.Avatar
                 {
                     foreach (nuitrack.JointType childJoint in childsList[joint])
                     {
-                        if (excludeBoneTransforms.ContainsKey(childJoint))
+                        if (includeBones.ContainsKey(childJoint))
                         {
-                            Transform childTransform = excludeBoneTransforms[childJoint];
+                            Transform childTransform = includeBones[childJoint];
 
                             dist += Vector3.Distance(transform.position, childTransform.position);
                             countJoints++;
@@ -193,30 +274,25 @@ namespace NuitrackSDKEditor.Avatar
                         GUIUtility.hotControl = 0;
                         e.Use();
 
-                        OnBoneSelected?.Invoke(jointType, boneTransform);
+                        OnBoneSelected?.Invoke(CurrentViewMode, jointType, boneTransform);
                     }
                     break;
 
                 case EventType.Repaint:
-
                     if (GUIUtility.hotControl == 0 && HandleUtility.nearestControl == controllerID)
                         Handles.color = Color.Lerp(Handles.color, hoverColor, 0.5f);
                     break;
 
                 case EventType.KeyDown:
-                    if (GUIUtility.keyboardControl == controllerID)
+                    if ((e.keyCode == KeyCode.Backspace || e.keyCode == KeyCode.Delete) && GUIUtility.keyboardControl == controllerID)
                     {
-                        if (e.keyCode == KeyCode.Backspace || e.keyCode == KeyCode.Delete)
-                        {
-                            GUIUtility.keyboardControl = 0;
-                            e.Use();
+                        GUIUtility.keyboardControl = 0;
+                        e.Use();
 
-                            OnRemoveBone?.Invoke(jointType, boneTransform);
-                        }
+                        OnRemoveBone?.Invoke(CurrentViewMode, jointType, boneTransform);
                     }
                     break;
             }
-
 
             Handles.SphereHandleCap(controllerID, boneTransform.position, boneTransform.rotation, size, EventType.Repaint);
             Handles.color = oldColor;

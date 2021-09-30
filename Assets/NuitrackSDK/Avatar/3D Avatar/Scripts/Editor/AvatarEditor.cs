@@ -42,8 +42,6 @@ namespace NuitrackSDKEditor.Avatar
             { JointType.RightAnkle, "rightAnkle" }
         };
 
-        GUIContent[] skeletonModeGuiContent = null;
-
         Transform GetTransformFromField(JointType jointType)
         {
             return GetJointProperty(jointType).objectReferenceValue as Transform;
@@ -52,24 +50,6 @@ namespace NuitrackSDKEditor.Avatar
         SerializedProperty GetJointProperty(JointType jointType)
         {
             return serializedObject.FindProperty(jointFieldMap[jointType]);
-        }
-
-        SkeletonBonesView.ViewMode ViewMode
-        {
-            get
-            {
-                return (SkeletonBonesView.ViewMode)EditorPrefs.GetInt(target.GetType().FullName + "SkeletonViewMode", 1);
-            }
-            set
-            {
-                EditorPrefs.SetInt(target.GetType().FullName + "SkeletonViewMode", (int)value);
-
-                if (skeletonBonesView != null)
-                {
-                    skeletonBonesView.CurrentViewMode = value;
-                    SceneView.RepaintAll();
-                }
-            }
         }
 
         protected override JointType SelectJoint 
@@ -95,6 +75,18 @@ namespace NuitrackSDKEditor.Avatar
             }
         }
 
+        SkeletonBonesView.ViewMode ViewMode
+        {
+            get
+            {
+                return (SkeletonBonesView.ViewMode)EditorPrefs.GetInt(target.GetType().FullName + "SkeletonViewMode", 1);
+            }
+            set
+            {
+                EditorPrefs.SetInt(target.GetType().FullName + "SkeletonViewMode", (int)value);
+            }
+        }
+
         protected virtual void OnEnable()
         {
             NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
@@ -112,44 +104,6 @@ namespace NuitrackSDKEditor.Avatar
             skeletonBonesView = new SkeletonBonesView(avatar.transform, ViewMode);
             skeletonBonesView.OnBoneSelected += SkeletonBonesView_OnBoneSelected;
             skeletonBonesView.OnRemoveBone += SkeletonBonesView_OnRemoveBone;
-
-            GUIContent modelBonesContent = EditorGUIUtility.IconContent("scenepicking_pickable-mixed_hover");
-            modelBonesContent.text = "Model bones";
-
-            GUIContent assignBonesContent = EditorGUIUtility.IconContent("AvatarSelector");
-            assignBonesContent.text = "Assigned bones";
-
-            GUIContent noneContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleoff");
-
-            skeletonModeGuiContent = new GUIContent[] { modelBonesContent, assignBonesContent, noneContent };
-        }
-
-        void SkeletonBonesView_OnBoneSelected(JointType jointType, Transform boneTransform)
-        {
-            switch (skeletonBonesView.CurrentViewMode)
-            {
-                case SkeletonBonesView.ViewMode.ModelBones:
-                    if (SelectJoint != JointType.None)
-                    {
-                        SkeletonMapper_onDrop(boneTransform, SelectJoint);
-                        SkeletonMapper_onSelected(JointType.None);
-                    }
-                    break;
-
-                case SkeletonBonesView.ViewMode.AssignedBones:
-                    SkeletonMapper_onSelected(jointType);
-                    break;
-            }
-        }
-
-        void SkeletonBonesView_OnRemoveBone(JointType jointType, Transform boneTransform)
-        {
-            switch (skeletonBonesView.CurrentViewMode)
-            {
-                case SkeletonBonesView.ViewMode.AssignedBones:
-                    SkeletonMapper_onDrop(null, jointType);
-                    break;
-            }
         }
 
         protected virtual void OnDisable()
@@ -162,8 +116,14 @@ namespace NuitrackSDKEditor.Avatar
             skeletonJointListUI.OnSelected -= SkeletonMapper_onSelected;
             skeletonJointListUI = null;
 
+            ViewMode = skeletonBonesView.CurrentViewMode;
+
+            skeletonBonesView.OnBoneSelected -= SkeletonBonesView_OnBoneSelected;
+            skeletonBonesView.OnRemoveBone -= SkeletonBonesView_OnRemoveBone;
             skeletonBonesView = null;
         }
+
+        #region Skeleton Mapper events
 
         void SkeletonMapper_onDrop(Transform newJoint, JointType jointType)
         {
@@ -192,11 +152,49 @@ namespace NuitrackSDKEditor.Avatar
                 EditorGUIUtility.PingObject(selectTransform);
         }
 
+        #endregion
+
+        #region Skeleton Viewer events
+
+        void SkeletonBonesView_OnBoneSelected(SkeletonBonesView.ViewMode viewMode, JointType jointType, Transform boneTransform)
+        {
+            switch (viewMode)
+            {
+                case SkeletonBonesView.ViewMode.ModelBones:
+                    if (SelectJoint != JointType.None)
+                    {
+                        SkeletonMapper_onDrop(boneTransform, SelectJoint);
+                        SkeletonMapper_onSelected(JointType.None);
+                    }
+                    break;
+
+                case SkeletonBonesView.ViewMode.AssignedBones:
+                    SkeletonMapper_onSelected(jointType);
+                    break;
+            }
+        }
+
+        void SkeletonBonesView_OnRemoveBone(SkeletonBonesView.ViewMode viewMode, JointType jointType, Transform boneTransform)
+        {
+            switch (viewMode)
+            {
+                case SkeletonBonesView.ViewMode.AssignedBones:
+                    SkeletonMapper_onDrop(null, jointType);
+                    break;
+            }
+        }
+
+        #endregion
+
         void EditJoint(JointType jointType, Transform objectTransform)
         {
             SerializedProperty jointProperty = GetJointProperty(jointType);
-            jointProperty.objectReferenceValue = objectTransform;
-            serializedObject.ApplyModifiedProperties();
+
+            if (jointProperty != null)
+            {
+                jointProperty.objectReferenceValue = objectTransform;
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         protected override void DrawAvatarGUI()
@@ -221,13 +219,13 @@ namespace NuitrackSDKEditor.Avatar
 
         void OnSceneGUI()
         {
-            if (ViewMode != SkeletonBonesView.ViewMode.None)
+            if (skeletonBonesView.CurrentViewMode != SkeletonBonesView.ViewMode.None)
             {
                 Dictionary<JointType, Transform> includeJoints = jointFieldMap.Keys.
                     Where(k => GetTransformFromField(k) != null).
                     ToDictionary(k => k, v => GetTransformFromField(v));
 
-                skeletonBonesView.DrawSkeleton(includeJoints);
+                skeletonBonesView.DrawSceneGUI(includeJoints);
             }
         }
 
@@ -242,54 +240,19 @@ namespace NuitrackSDKEditor.Avatar
             if (skeletonMapper != null)
                 skeletonMapper.Draw(activeJoints.ToList());
 
-            DrawSkeletonDisplayMode();
+            if (skeletonBonesView != null)
+                skeletonBonesView.DrawInspectorGUI();
+
+            EditorGUILayout.Space();
 
             if (skeletonJointListUI != null)
-            {
-                EditorGUILayout.Space();
+            { 
                 Dictionary<JointType, Transform> jointDict = activeJoints.ToDictionary(k => k, v => GetTransformFromField(v));
-                skeletonJointListUI.Draw(jointDict);
-                EditorGUILayout.Space();
+                skeletonJointListUI.Draw(jointDict);  
             }
 
+            EditorGUILayout.Space();
             DrawAutomapTools(activeJoints);
-        }
-
-        GUIContent GetInfoGuiContent(string message)
-        {
-            GUIContent gUIContent = EditorGUIUtility.IconContent("console.infoicon.sml");
-            gUIContent.text = message;
-
-            return gUIContent;
-        }
-
-        void DrawSkeletonDisplayMode()
-        {
-            EditorGUILayout.LabelField("Skeleton display mode", EditorStyles.boldLabel);
-
-            if (ViewMode != SkeletonBonesView.ViewMode.None)
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-            switch (ViewMode)
-            {
-                case SkeletonBonesView.ViewMode.ModelBones:
-                    string message = SelectJoint == JointType.None ?
-                        "Select the joint on the avatar, and then specify the joint on the model in order to set the match." :
-                        "Specify the joint on the model in order to set the match.";
-
-                    EditorGUILayout.LabelField(GetInfoGuiContent(message), EditorStyles.wordWrappedLabel);
-                    break;
-
-                case SkeletonBonesView.ViewMode.AssignedBones:
-                    string assignMessage = "The mode displays the specified joints of the skeleton. You can blow out the joints on the model.";
-                    EditorGUILayout.LabelField(GetInfoGuiContent(assignMessage), EditorStyles.wordWrappedLabel);
-                    break;
-            }
-
-            ViewMode = (SkeletonBonesView.ViewMode)GUILayout.Toolbar((int)ViewMode, skeletonModeGuiContent);
-
-            if (ViewMode != SkeletonBonesView.ViewMode.None)
-                EditorGUILayout.EndVertical();
         }
 
         void DrawAutomapTools(IEnumerable<JointType> activeJoints)

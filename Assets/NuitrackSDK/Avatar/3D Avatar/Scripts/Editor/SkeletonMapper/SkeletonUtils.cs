@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 using Reflection = System.Reflection;
 
+
 namespace NuitrackSDKEditor.Avatar
 {
     public static class SkeletonUtils
