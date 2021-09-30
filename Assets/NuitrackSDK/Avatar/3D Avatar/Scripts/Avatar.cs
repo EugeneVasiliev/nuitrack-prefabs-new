@@ -57,7 +57,7 @@ namespace NuitrackSDK.Avatar
 
         [Header("Calibration")]
         [SerializeField] bool recenterOnSuccess;
-        TPoseCalibration tPoseCalibration;
+
         Vector3 basePivotOffset = Vector3.zero;
         Vector3 startPoint; //Root joint model bone position on start
 
@@ -66,8 +66,8 @@ namespace NuitrackSDK.Avatar
 
         void OnEnable()
         {
-            tPoseCalibration = FindObjectOfType<TPoseCalibration>();
-            tPoseCalibration.onSuccess += OnSuccessCalib;
+            if(TPoseCalibration.Instance != null)
+                TPoseCalibration.Instance.onSuccess += OnSuccessCalib;
         }
 
         void SetJoint(Transform tr, JointType jointType)
@@ -261,7 +261,8 @@ namespace NuitrackSDK.Avatar
 
         void OnDisable()
         {
-            tPoseCalibration.onSuccess -= OnSuccessCalib;
+            if(TPoseCalibration.Instance != null)
+                TPoseCalibration.Instance.onSuccess  -= OnSuccessCalib;
         }
     }
 }
