@@ -51,7 +51,7 @@ public class NuitrackChecker
             if (ex.ToString().Contains("TBB"))
                 TBBReplacer.ShowMessage();
 
-            Debug.LogWarning("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
+            Debug.Log("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
                 "<color=red><b>It is recommended to test on AllModulesScene</b></color>\n" + backendMessage);
         }
 
