@@ -95,7 +95,7 @@ namespace NuitrackSDKEditor.Avatar
                 }
             }
 
-            // UI elements
+            // UI toolbar elements
 
             GUIContent modelBonesContent = EditorGUIUtility.IconContent("scenepicking_pickable-mixed_hover");
             modelBonesContent.text = "Model bones";
@@ -125,11 +125,11 @@ namespace NuitrackSDKEditor.Avatar
             switch (CurrentViewMode)
             {
                 case ViewMode.ModelBones:
-                    DrawBonesRecursive(root, includeBones);
+                    DrawModelBones(includeBones);
                     break;
 
                 case ViewMode.AssignedBones:
-                    DrawCurrentSkeleton(includeBones);
+                    DrawAssignedBones(includeBones);
                     break;
             }
         }
@@ -176,40 +176,40 @@ namespace NuitrackSDKEditor.Avatar
                 EditorGUILayout.EndVertical();
         }
 
-        void DrawBonesRecursive(Transform transform, Dictionary<nuitrack.JointType, Transform> includeBones)
+        void DrawModelBones(Dictionary<nuitrack.JointType, Transform> includeBones)
         {
-            if (validBones.ContainsKey(transform) && validBones[transform])
-            {
-                bool hasParent = transform.parent != null && validBones.ContainsKey(transform.parent);
+            foreach (KeyValuePair<Transform, bool> validBone in validBones)
+                if (validBone.Value)
+                {
+                    Transform transform = validBone.Key;
 
-                float dist = hasParent ? Vector3.Distance(transform.position, transform.parent.position) : 0;
-                int countJoints = hasParent ? transform.childCount + 2 : transform.childCount + 1;
+                    bool hasParent = transform.parent != null && validBones.ContainsKey(transform.parent) && validBones[transform.parent];
 
-                Color oldColor = Handles.color;
-                Handles.color = includeBones.ContainsValue(transform) ? Color.green : unusedColor;
+                    float dist = hasParent ? Vector3.Distance(transform.position, transform.parent.position) : 0;
+                    int countJoints = hasParent ? transform.childCount + 2 : transform.childCount + 1;
 
-                // Add select bones color
+                    Color oldColor = Handles.color;
+                    Handles.color = includeBones.ContainsValue(transform) ? Color.green : unusedColor;
 
-                foreach (Transform child in transform)
-                    if (validBones.ContainsKey(child))
-                    {
-                        dist += Vector3.Distance(transform.position, child.position);
-                        DrawBone(transform.position, child.position);
-                    }
+                    List<Transform> childs = new List<Transform>();
 
-                dist = Math.Max(minSizeModelBoneMark, dist / countJoints);
+                    foreach (Transform child in transform)
+                        if (validBones.ContainsKey(child))
+                        {
+                            dist += Vector3.Distance(transform.position, child.position);
+                            childs.Add(child);
+                        }
 
-                int controlID = GUIUtility.GetControlID(root.name.GetHashCode(), FocusType.Passive);
-                DrawBoneController(controlID, transform, nuitrack.JointType.None, dist * jointSphereMult);
+                    dist = Math.Max(minSizeModelBoneMark, dist / countJoints);
 
-                Handles.color = oldColor;
-            }
+                    int controlID = GUIUtility.GetControlID(root.name.GetHashCode(), FocusType.Passive);
+                    DrawBoneController(controlID, transform, childs, nuitrack.JointType.None, dist * jointSphereMult);
 
-            foreach (Transform child in transform)
-                DrawBonesRecursive(child, includeBones);
+                    Handles.color = oldColor;
+                }
         }
 
-        void DrawCurrentSkeleton(Dictionary<nuitrack.JointType, Transform> includeBones)
+        void DrawAssignedBones(Dictionary<nuitrack.JointType, Transform> includeBones)
         {
             foreach (KeyValuePair<nuitrack.JointType, Transform> jointTransform in includeBones)
             {
@@ -218,35 +218,35 @@ namespace NuitrackSDKEditor.Avatar
                 Transform transform = jointTransform.Value;
 
                 float dist = includeBones.ContainsKey(parent) ? Vector3.Distance(transform.position, includeBones[parent].position) : 0;
-                int countJoints = includeBones.ContainsKey(parent) ? 2 : 1;
+                List<Transform> childs = new List<Transform>();
 
                 Handles.color = SelectedJoint == joint ? Color.Lerp(mainColor, select, 0.5f) : mainColor;
 
                 if (childsList.ContainsKey(joint))
                 {
                     foreach (nuitrack.JointType childJoint in childsList[joint])
-                    {
                         if (includeBones.ContainsKey(childJoint))
                         {
                             Transform childTransform = includeBones[childJoint];
-
                             dist += Vector3.Distance(transform.position, childTransform.position);
-                            countJoints++;
 
-                            DrawBone(transform.position, childTransform.position);
+                            childs.Add(childTransform);
                         }
-                    }
                 }
 
+                int countJoints = childs.Count + (includeBones.ContainsKey(parent) ? 2 : 1);
                 dist = Math.Max(minSizeAssignBoneMark, dist / countJoints);
+
                 int controlID = GUIUtility.GetControlID(root.name.GetHashCode(), FocusType.Passive);
 
-                DrawBoneController(controlID, transform, joint, dist * jointSphereMult);
+                DrawBoneController(controlID, transform, childs, joint, dist * jointSphereMult);
             }
         }
 
-        void DrawBoneController(int controllerID, Transform boneTransform, nuitrack.JointType jointType, float size)
+        void DrawBoneController(int controllerID, Transform boneTransform, List<Transform> childs, nuitrack.JointType jointType, float size)
         {
+            childs ??= new List<Transform>();
+
             Event e = Event.current;
 
             //We divide the size by 2, since strange behavior is detected when an element falls into the selection.
@@ -293,6 +293,9 @@ namespace NuitrackSDKEditor.Avatar
                     }
                     break;
             }
+
+            foreach (Transform child in childs)
+                DrawBone(boneTransform.position, child.position);
 
             Handles.SphereHandleCap(controllerID, boneTransform.position, boneTransform.rotation, size, EventType.Repaint);
             Handles.color = oldColor;
