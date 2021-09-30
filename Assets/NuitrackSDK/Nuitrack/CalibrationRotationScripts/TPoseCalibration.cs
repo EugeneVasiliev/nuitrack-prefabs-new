@@ -245,35 +245,35 @@ public class TPoseCalibration : MonoBehaviour
         switch (calibrationType)
         {
             case CalibrationType.TPose: // t-pose
-                {
-                    float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[4] - currentPositions[7]).z, (currentPositions[4] - currentPositions[7]).x);
-                    float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
+            {
+                float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[4] - currentPositions[7]).z, (currentPositions[4] - currentPositions[7]).x);
+                float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
 
-                    Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
-                    Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
-                    Vector3 diff = neck - torso;
+                Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
+                Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
+                Vector3 diff = neck - torso;
 
-                    sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
+                sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
 
-                    //Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
+                //Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
 
-                    return Quaternion.Euler(angleX, angleY, 0f);
-                }
+                return Quaternion.Euler(angleX, angleY, 0f);
+            }
             default: // right hand's shoulder horizontal, elbow - vertical
-                {
-                    float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[2] - currentPositions[3]).z, (currentPositions[2] - currentPositions[3]).x);
-                    float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
+            {
+                float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[2] - currentPositions[3]).z, (currentPositions[2] - currentPositions[3]).x);
+                float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
 
-                    Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
-                    Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
-                    Vector3 diff = neck - torso;
+                Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
+                Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
+                Vector3 diff = neck - torso;
 
-                    sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
+                sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
 
-                    Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
+                Debug.Log("Gravity vector: " + Input.gyro.gravity.ToString("0.000") + "; AngleX: " + angleX.ToString("0") + "; AngleY: " + angleY.ToString("0"));
 
-                    return Quaternion.Euler(angleX, angleY, 0f);
-                }
+                return Quaternion.Euler(angleX, angleY, 0f);
+            }
         }
     }
 }

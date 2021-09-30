@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-
 using nuitrack;
 
 namespace NuitrackSDK.VicoVRCalibration
@@ -11,30 +10,29 @@ namespace NuitrackSDK.VicoVRCalibration
         static public event ConnectionStatusChange SensorReconnected;
 
         bool connection = true;
+        bool connectionProblem = false;
 
         void OnEnable()
         {
-            NuitrackManager.onSkeletonTrackerUpdate += ClearTimer;
-            nuitrack.Nuitrack.onIssueUpdateEvent += NoConnectionIssue;
-            BackTextureCreator.newTextureEvent += UpdateTexture;
+            NuitrackManager.onSkeletonTrackerUpdate += SkeletonUpdate;
+            Nuitrack.onIssueUpdateEvent += NoConnectionIssue;
         }
 
-        void OnDestroy()
+        void SkeletonUpdate(SkeletonData skeletonData)
         {
-            NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
-        }
-
-        void ClearTimer(nuitrack.SkeletonData sd)
-        {
-            if (!connection)
+            if (connection)
+            {
+                if (connectionProblem && SensorReconnected != null)
+                    SensorReconnected();
+                connectionProblem = false;
+            }
+            else
             {
                 connection = true;
-                if (SensorReconnected != null)
-                    SensorReconnected();
+                SensorReconnected?.Invoke();
             }
         }
 
-        bool connectionProblem = false;
         void NoConnectionIssue(nuitrack.issues.IssuesData issData)
         {
             if (issData.GetIssue<nuitrack.issues.SensorIssue>() != null)
@@ -53,16 +51,13 @@ namespace NuitrackSDK.VicoVRCalibration
 
         void OnDisable()
         {
-            NuitrackManager.onSkeletonTrackerUpdate -= ClearTimer;
+            NuitrackManager.onSkeletonTrackerUpdate -= SkeletonUpdate;
             Nuitrack.onIssueUpdateEvent -= NoConnectionIssue;
-            BackTextureCreator.newTextureEvent -= UpdateTexture;
         }
 
-        private void UpdateTexture(Texture txtr, Texture userTxtr)
+        void OnDestroy()
         {
-            if (connectionProblem && SensorReconnected != null)
-                SensorReconnected();
-            connectionProblem = false;
+            NuitrackManager.onSkeletonTrackerUpdate -= SkeletonUpdate;
         }
     }
 }
