@@ -135,9 +135,6 @@ namespace NuitrackSDK.NuitrackDemos
         #region Mesh generation and mesh update methods
         void InitMeshes(int cols, int rows, float hfov)
         {
-            DebugDepth.depthMat.mainTexture = depthTexture;
-            DebugDepth.segmentationMat.mainTexture = rgbTexture;
-
             int numPoints = cols * rows;
 
             vertsPerMesh = sampleMesh.vertices.Length;
@@ -345,9 +342,6 @@ namespace NuitrackSDK.NuitrackDemos
 
             if (textureCache.texture2D != null)
                 Destroy(textureCache.texture2D);
-
-            DebugDepth.depthMat.mainTexture = null;
-            DebugDepth.segmentationMat.mainTexture = null;
 
             if (visualizationParts != null)
             {
