@@ -21,6 +21,7 @@ namespace NuitrackSDKEditor.Avatar
         }
 
         readonly List<JointType> jointMask = null;
+        readonly List<JointType> optionalJoints = null;
 
         readonly ColorTheme colorTheme = new ColorTheme()
         {
@@ -33,21 +34,20 @@ namespace NuitrackSDKEditor.Avatar
         /// </summary>
         /// <param name="jointMask">The mask of the displayed joints. If null, all available joints will be drawn.</param>
         /// <param name="colorTheme">Color theme. If null is set, the default theme will be used.</param>
-        public SkeletonMapperGUI(List<JointType> jointMask, ColorTheme colorTheme = null)
+        public SkeletonMapperGUI(List<JointType> jointMask, List<JointType> optionalJoints = null, ColorTheme colorTheme = null)
         {
-            this.jointMask = jointMask;
-            
-            if(colorTheme != null)
-                this.colorTheme = colorTheme;
+            this.jointMask = jointMask ?? new List<JointType>();
+            this.optionalJoints = optionalJoints ?? new List<JointType>();
+            this.colorTheme = colorTheme ?? this.colorTheme;
         }
 
         List<AvatarMaskBodyPart> GetActiveBodyParts(List<JointType> jointsList)
         {
-            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(SkeletonMapperStyles.BodyParts.Keys);
+            List<AvatarMaskBodyPart> bodyParts = new List<AvatarMaskBodyPart>(SkeletonStyles.BodyParts.Keys);
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
-                foreach (SkeletonMapperStyles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
-                    if (!guiJoint.Optional && !jointsList.Contains(guiJoint.JointType) && (jointMask == null || jointMask.Contains(guiJoint.JointType)))
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPart in SkeletonStyles.BodyParts)
+                foreach (SkeletonStyles.GUIJoint guiJoint in bodyPart.Value.guiJoint)
+                    if (!optionalJoints.Contains(guiJoint.JointType) && !jointsList.Contains(guiJoint.JointType) && jointMask.Contains(guiJoint.JointType))
                     {
                         bodyParts.Remove(bodyPart.Key);
                         break;
@@ -56,13 +56,13 @@ namespace NuitrackSDKEditor.Avatar
             return bodyParts;
         }
 
-        Rect DrawAvatarJointIcon(Rect rect, SkeletonMapperStyles.GUIJoint guiJoint, bool filled, bool selected)
+        Rect DrawAvatarJointIcon(Rect mainRect, SkeletonStyles.GUIJoint guiJoint, bool filled, bool selected)
         {
             Vector2 pos = guiJoint.MapPosition;
-            pos.Scale(new Vector2(rect.width * 0.5f, -rect.height * 0.5f));
-            pos += rect.center;
+            pos.Scale(new Vector2(mainRect.width * 0.5f, -mainRect.height * 0.5f));
+            pos += mainRect.center;
 
-            Rect jointRect = SkeletonMapperStyles.Dot.DrawСentered(pos, guiJoint.Optional, filled, selected);
+            Rect jointRect = SkeletonStyles.Dot.DrawСentered(pos, optionalJoints.Contains(guiJoint.JointType), filled, selected);
             return jointRect;
         }
 
@@ -72,17 +72,17 @@ namespace NuitrackSDKEditor.Avatar
         /// <param name="activeJoints">Active joints (will be displayed as filled dots)</param>
         public void Draw(List<JointType> activeJoints)
         {
-            Rect rect = GUILayoutUtility.GetRect(SkeletonMapperStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonMapperStyles.UnityDude.image.width));
+            Rect rect = GUILayoutUtility.GetRect(SkeletonStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonStyles.UnityDude.image.width));
             rect.x += (EditorGUIUtility.currentViewWidth - rect.width) / 2;
 
             Color oldColor = GUI.color;
 
             GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
-            GUI.DrawTexture(rect, SkeletonMapperStyles.UnityDude.image);
+            GUI.DrawTexture(rect, SkeletonStyles.UnityDude.image);
 
             List<AvatarMaskBodyPart> filled = GetActiveBodyParts(activeJoints);
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPart in SkeletonMapperStyles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPart in SkeletonStyles.BodyParts)
             {
                 GUI.color = filled.Contains(bodyPart.Key) ? colorTheme.mainColor : colorTheme.disableColor;
 
@@ -92,16 +92,16 @@ namespace NuitrackSDKEditor.Avatar
 
             GUI.color = oldColor;
 
-            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
+            foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPartItem in SkeletonStyles.BodyParts)
             {
                 AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
+                SkeletonStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
 
-                foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
+                foreach (SkeletonStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                 {
                     JointType jointType = guiJoint.JointType;
 
-                    if (jointMask == null || jointMask.Contains(jointType))
+                    if (jointMask.Contains(jointType))
                     {
                         Rect jointPointRect = DrawAvatarJointIcon(rect, guiJoint, activeJoints.Contains(jointType), jointType == SelectedJoint);
 

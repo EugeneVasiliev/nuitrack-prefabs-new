@@ -42,6 +42,12 @@ namespace NuitrackSDKEditor.Avatar
             { JointType.RightAnkle, "rightAnkle" }
         };
 
+        readonly List<JointType> optionalJoints = new List<JointType>()
+        {
+            JointType.Head,
+            JointType.Neck
+        };
+
         Transform GetTransformFromField(JointType jointType)
         {
             return GetJointProperty(jointType).objectReferenceValue as Transform;
@@ -93,11 +99,11 @@ namespace NuitrackSDKEditor.Avatar
 
             List<JointType> jointMask = jointFieldMap.Keys.ToList();
 
-            skeletonMapper = new SkeletonMapperGUI<Transform>(jointMask);
+            skeletonMapper = new SkeletonMapperGUI<Transform>(jointMask, optionalJoints);
             skeletonMapper.OnDrop += SkeletonMapper_onDrop;
             skeletonMapper.OnSelected += SkeletonMapper_onSelected;
 
-            skeletonJointListUI = new SkeletonMapperListGUI<Transform>(jointMask);
+            skeletonJointListUI = new SkeletonMapperListGUI<Transform>(jointMask, optionalJoints);
             skeletonJointListUI.OnDrop += SkeletonMapper_onDrop;
             skeletonJointListUI.OnSelected += SkeletonMapper_onSelected;
 
@@ -133,10 +139,7 @@ namespace NuitrackSDKEditor.Avatar
             EditJoint(jointType, newJoint);
 
             if (newJoint != null)
-            {
                 EditorGUIUtility.PingObject(newJoint);
-                SelectJoint = jointType;
-            }
         }
 
         void SkeletonMapper_onSelected(JointType jointType)

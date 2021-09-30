@@ -30,14 +30,16 @@ namespace NuitrackSDKEditor.Avatar
         }
 
         readonly List<JointType> jointMask = null;
+        readonly List<JointType> optionalJoints = null;
 
         /// <summary>
         /// View of the list of joints.
         /// </summary>
         /// <param name="jointMask">The mask of the displayed joints. If null, all available joints will be drawn.</param>
-        public SkeletonMapperListGUI(List<JointType> jointMask)
+        public SkeletonMapperListGUI(List<JointType> jointMask, List<JointType> optionalJoints = null)
         {
-            this.jointMask = jointMask;
+            this.jointMask = jointMask ?? new List<JointType>();
+            this.optionalJoints = optionalJoints ?? new List<JointType>();
         }
 
         string GetUnityDisplayName(JointType jointType, AvatarMaskBodyPart bodyPart = AvatarMaskBodyPart.Root)
@@ -64,16 +66,16 @@ namespace NuitrackSDKEditor.Avatar
 
             if (foldOpenned)
             {
-                foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonMapperStyles.GUIBodyPart> bodyPartItem in SkeletonMapperStyles.BodyParts)
+                foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPartItem in SkeletonStyles.BodyParts)
                 {
                     AvatarMaskBodyPart bodyPart = bodyPartItem.Key;
-                    SkeletonMapperStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
+                    SkeletonStyles.GUIBodyPart guiBodyPart = bodyPartItem.Value;
 
                     EditorGUILayout.LabelField(guiBodyPart.Lable, EditorStyles.boldLabel);
 
                     EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-                    foreach (SkeletonMapperStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
+                    foreach (SkeletonStyles.GUIJoint guiJoint in guiBodyPart.guiJoint)
                     {
                         JointType jointType = guiJoint.JointType;
 
@@ -84,7 +86,7 @@ namespace NuitrackSDKEditor.Avatar
                             Rect controlRect = EditorGUILayout.GetControlRect();
                             Vector2 position = new Vector2(controlRect.x, controlRect.y);
 
-                            Rect jointRect = SkeletonMapperStyles.Dot.Draw(position, guiJoint.Optional, jointItem != null, jointType == SelectedJoint);
+                            Rect jointRect = SkeletonStyles.Dot.Draw(position, optionalJoints.Contains(guiJoint.JointType), jointItem != null, jointType == SelectedJoint);
                             controlRect.xMin += jointRect.width;
 
                             string displayName = GetUnityDisplayName(jointType, bodyPart);

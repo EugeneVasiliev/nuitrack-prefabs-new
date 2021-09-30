@@ -8,7 +8,7 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
-    public static class SkeletonMapperStyles
+    public static class SkeletonStyles
     {
         public class GUIBodyPart
         {
@@ -32,13 +32,10 @@ namespace NuitrackSDKEditor.Avatar
 
             public Vector2 MapPosition { get; private set; }
 
-            public bool Optional { get; private set; } = false;
-
-            public GUIJoint(JointType jointType, Vector2 mapPosition, bool optional = false)
+            public GUIJoint(JointType jointType, Vector2 mapPosition)
             {
                 JointType = jointType;
                 MapPosition = mapPosition;
-                Optional = optional;
             }
         }
 
@@ -109,6 +106,9 @@ namespace NuitrackSDKEditor.Avatar
                         {
                             new GUIJoint(JointType.Waist, new Vector2(0.00f, 0.08f)),
                             new GUIJoint(JointType.Torso, new Vector2(0.00f, 0.35f)),
+
+                            new GUIJoint(JointType.LeftCollar, new Vector2(-0.12f, 0.60f)),
+                            new GUIJoint(JointType.RightCollar, new Vector2(0.12f, 0.60f)),
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Torso") }
@@ -125,8 +125,8 @@ namespace NuitrackSDKEditor.Avatar
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.Neck, new Vector2(0.00f, 0.7f), true),
-                            new GUIJoint(JointType.Head, new Vector2(0.00f, 0.80f), true)
+                            new GUIJoint(JointType.Neck, new Vector2(0.00f, 0.7f)),
+                            new GUIJoint(JointType.Head, new Vector2(0.00f, 0.80f))
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/Head") }
@@ -143,7 +143,7 @@ namespace NuitrackSDKEditor.Avatar
                             new GUIJoint(JointType.LeftHip, new Vector2(-0.16f, 0.01f)),
                             new GUIJoint(JointType.LeftKnee, new Vector2(-0.21f, -0.40f)),
                             new GUIJoint(JointType.LeftAnkle, new Vector2(-0.23f, -0.80f)),
-                            //new GUIJoint(JointType.LeftFoot, new Vector2(0.25f, -0.89f), true),
+                            //new GUIJoint(JointType.LeftFoot, new Vector2(0.25f, -0.89f)),
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/RightLeg") }
@@ -161,7 +161,7 @@ namespace NuitrackSDKEditor.Avatar
                             new GUIJoint(JointType.RightHip, new Vector2(0.16f, 0.01f)),
                             new GUIJoint(JointType.RightKnee,  new Vector2(0.21f, -0.40f)),
                             new GUIJoint(JointType.RightAnkle, new Vector2(0.23f, -0.80f)),
-                            //new GUIJoint(JointType.RightFoot, new Vector2(-0.25f, -0.89f), true)
+                            //new GUIJoint(JointType.RightFoot, new Vector2(-0.25f, -0.89f))
                         },
 
                         guiContents = new List<GUIContent>() { EditorGUIUtility.IconContent("AvatarInspector/LeftLeg") }
@@ -175,7 +175,6 @@ namespace NuitrackSDKEditor.Avatar
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.LeftCollar, new Vector2(-0.12f, 0.60f), true),
                             new GUIJoint(JointType.LeftShoulder, new Vector2(-0.30f, 0.57f)),
                             new GUIJoint(JointType.LeftElbow, new Vector2(-0.48f, 0.30f)),
                             new GUIJoint(JointType.LeftWrist, new Vector2(-0.66f, 0.03f))
@@ -196,7 +195,6 @@ namespace NuitrackSDKEditor.Avatar
 
                         guiJoint = new List<GUIJoint>()
                         {
-                            new GUIJoint(JointType.RightCollar, new Vector2(0.12f, 0.60f), true),
                             new GUIJoint(JointType.RightShoulder, new Vector2(0.30f, 0.57f)),
                             new GUIJoint(JointType.RightElbow, new Vector2(0.48f, 0.30f)),
                             new GUIJoint(JointType.RightWrist, new Vector2(0.66f, 0.03f))
