@@ -146,9 +146,9 @@ public class NuitrackManager : MonoBehaviour
 
     void Awake()
     {
-        if(instance)
+        if (Instance.gameObject != gameObject)
         {
-            DestroyImmediate(instance.gameObject);
+            DestroyImmediate(Instance.gameObject);
             instance = this;
         }
 
