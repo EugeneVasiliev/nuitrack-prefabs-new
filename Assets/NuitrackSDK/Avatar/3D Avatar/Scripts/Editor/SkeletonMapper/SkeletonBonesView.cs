@@ -144,14 +144,8 @@ namespace NuitrackSDKEditor.Avatar
 
             if (CurrentViewMode != ViewMode.None)
             {
-                Color oldColor = GUI.color;
-
-                if (ModelBonesSelectionMode)
-                    GUI.color = waitModelBoneSelect;
-
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
-                GUI.color = oldColor;
+                using (new GUIColor(ModelBonesSelectionMode ? waitModelBoneSelect : GUI.color))
+                    EditorGUILayout.BeginVertical(EditorStyles.helpBox);;
             }
 
             switch (CurrentViewMode)
@@ -188,13 +182,10 @@ namespace NuitrackSDKEditor.Avatar
                     float dist = hasParent ? Vector3.Distance(transform.position, transform.parent.position) : 0;
                     int countJoints = hasParent ? transform.childCount + 2 : transform.childCount + 1;
 
-                    Color oldColor = Handles.color;
-                    Handles.color = includeBones.ContainsValue(transform) ? Color.green : unusedColor;
-
                     List<Transform> childs = new List<Transform>();
 
                     foreach (Transform child in transform)
-                        if (validBones.ContainsKey(child))
+                        if (validBones.ContainsKey(child) && validBones[child])
                         {
                             dist += Vector3.Distance(transform.position, child.position);
                             childs.Add(child);
@@ -203,9 +194,9 @@ namespace NuitrackSDKEditor.Avatar
                     dist = Math.Max(minSizeModelBoneMark, dist / countJoints);
 
                     int controlID = GUIUtility.GetControlID(root.name.GetHashCode(), FocusType.Passive);
-                    DrawBoneController(controlID, transform, childs, nuitrack.JointType.None, dist * jointSphereMult);
 
-                    Handles.color = oldColor;
+                    using (new HandlesColor(includeBones.ContainsValue(transform) ? Color.green : unusedColor))
+                        DrawBoneController(controlID, transform, childs, nuitrack.JointType.None, dist * jointSphereMult);
                 }
         }
 
@@ -253,8 +244,6 @@ namespace NuitrackSDKEditor.Avatar
             //The size of the visual element is set by the diameter, and the selection area by the radius.
             Handles.SphereHandleCap(controllerID, boneTransform.position, boneTransform.rotation, size / 2, EventType.Layout);
 
-            Color oldColor = Handles.color;
-
             switch (e.GetTypeForControl(controllerID))
             {
                 case EventType.MouseDown:
@@ -279,8 +268,18 @@ namespace NuitrackSDKEditor.Avatar
                     break;
 
                 case EventType.Repaint:
+                    Color withHoverColor = Handles.color;
+
                     if (GUIUtility.hotControl == 0 && HandleUtility.nearestControl == controllerID)
-                        Handles.color = Color.Lerp(Handles.color, hoverColor, 0.5f);
+                        withHoverColor = Color.Lerp(Handles.color, hoverColor, 0.5f);
+
+                    using (new HandlesColor(withHoverColor))
+                    {
+                        Handles.SphereHandleCap(controllerID, boneTransform.position, boneTransform.rotation, size, EventType.Repaint);
+
+                        foreach (Transform child in childs)
+                            DrawBone(boneTransform.position, child.position);
+                    }
                     break;
 
                 case EventType.KeyDown:
@@ -293,12 +292,6 @@ namespace NuitrackSDKEditor.Avatar
                     }
                     break;
             }
-
-            foreach (Transform child in childs)
-                DrawBone(boneTransform.position, child.position);
-
-            Handles.SphereHandleCap(controllerID, boneTransform.position, boneTransform.rotation, size, EventType.Repaint);
-            Handles.color = oldColor;
         }
     }
 }

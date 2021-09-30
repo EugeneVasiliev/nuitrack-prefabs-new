@@ -75,22 +75,23 @@ namespace NuitrackSDKEditor.Avatar
             Rect rect = GUILayoutUtility.GetRect(SkeletonStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonStyles.UnityDude.image.width));
             rect.x += (EditorGUIUtility.currentViewWidth - rect.width) / 2;
 
-            Color oldColor = GUI.color;
+            Color grayColor = new Color(0.2f, 0.2f, 0.2f, 1.0f);
 
-            GUI.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
-            GUI.DrawTexture(rect, SkeletonStyles.UnityDude.image);
+            using (new GUIColor(grayColor))
+                GUI.DrawTexture(rect, SkeletonStyles.UnityDude.image);
 
             List<AvatarMaskBodyPart> filled = GetActiveBodyParts(activeJoints);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPart in SkeletonStyles.BodyParts)
             {
-                GUI.color = filled.Contains(bodyPart.Key) ? colorTheme.mainColor : colorTheme.disableColor;
+                Color partColor = filled.Contains(bodyPart.Key) ? colorTheme.mainColor : colorTheme.disableColor;
 
-                foreach (GUIContent guiContent in bodyPart.Value.guiContents)
-                    GUI.DrawTexture(rect, guiContent.image);
+                using (new GUIColor(partColor))
+                {
+                    foreach (GUIContent guiContent in bodyPart.Value.guiContents)
+                        GUI.DrawTexture(rect, guiContent.image);
+                }
             }
-
-            GUI.color = oldColor;
 
             foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPartItem in SkeletonStyles.BodyParts)
             {

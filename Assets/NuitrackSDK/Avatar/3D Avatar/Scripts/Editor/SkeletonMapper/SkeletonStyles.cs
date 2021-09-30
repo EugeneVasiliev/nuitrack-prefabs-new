@@ -78,10 +78,8 @@ namespace NuitrackSDKEditor.Avatar
 
                 Rect rect = new Rect(position.x, position.y, dotTexture.width, dotTexture.height);
 
-                Color oldColor = GUI.color;
-                GUI.color = color;
-                GUI.DrawTexture(rect, dotTexture);
-                GUI.color = oldColor;
+                using (new GUIColor(color))
+                    GUI.DrawTexture(rect, dotTexture);
 
                 if (filled)
                     GUI.DrawTexture(rect, fill.image);

@@ -16,6 +16,10 @@ namespace NuitrackSDKEditor.Avatar
         SkeletonMapperListGUI<Transform> skeletonJointListUI = null;
         SkeletonBonesView skeletonBonesView = null;
 
+        readonly GUIContent autoMapping = EditorGUIUtility.TrTextContent("Automap");
+        readonly GUIContent enforceTPose = EditorGUIUtility.TrTextContent("Enforce T-Pose");
+        readonly GUIContent clearMapping = EditorGUIUtility.TrTextContent("Clear");
+
         readonly Dictionary<JointType, string> jointFieldMap = new Dictionary<JointType, string>()
         {
             { JointType.Waist, "waist" },
@@ -47,6 +51,8 @@ namespace NuitrackSDKEditor.Avatar
             JointType.Head,
             JointType.Neck
         };
+
+        readonly Color firstAutomapColor = new Color(0.5f, 1f, 0.5f, 1);
 
         Transform GetTransformFromField(JointType jointType)
         {
@@ -260,21 +266,31 @@ namespace NuitrackSDKEditor.Avatar
 
         void DrawAutomapTools(IEnumerable<JointType> activeJoints)
         {
+            bool disableClearbutton = activeJoints.Count() == 0;
+
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
             GUIContent gUIContent = EditorGUIUtility.IconContent("console.infoicon.sml");
-            gUIContent.text = "For the best mapping result, put the avatar in T-pose";
-            EditorGUILayout.LabelField(gUIContent);
+            gUIContent.text = disableClearbutton ?
+                "Click \"Automap\" to quickly configure the avatar" :
+                "To make the avatar exactly repeat your movements, put the avatar in the T-pose";
+
+            EditorGUILayout.LabelField(gUIContent, EditorStyles.wordWrappedLabel);
 
             EditorGUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("Automap"))
-                AutoMapping();
-
-            bool disableClearbutton = activeJoints.Count() == 0;
+            using (new GUIColor(disableClearbutton ? firstAutomapColor : GUI.color))
+            {
+                if (GUILayout.Button(autoMapping))
+                    AutoMapping();
+            }
 
             EditorGUI.BeginDisabledGroup(disableClearbutton);
-            if (GUILayout.Button("Clear"))
+
+            if (GUILayout.Button(enforceTPose))
+                SetToTPose();
+
+            if (GUILayout.Button(clearMapping))
             {
                 if (EditorUtility.DisplayDialog("Skeleton map", "Do you really want to clear the skeleton map?", "Yes", "No"))
                     Clear();
@@ -333,5 +349,15 @@ namespace NuitrackSDKEditor.Avatar
 
         #endregion
 
+        void SetToTPose()
+        {
+            Dictionary<HumanBodyBones, Transform> includeJoints = jointFieldMap.Keys.
+                  Where(k => GetTransformFromField(k) != null).
+                  ToDictionary(k => k.ToUnityBones(), v => GetTransformFromField(v));
+
+            NuitrackSDK.Avatar.Avatar avatar = target as NuitrackSDK.Avatar.Avatar;
+
+            SkeletonUtils.SetToTPose(avatar.transform, includeJoints);
+        }
     }
 }
