@@ -176,6 +176,9 @@ namespace NuitrackSDKEditor.Avatar
                         SkeletonMapper_onDrop(boneTransform, SelectJoint);
                         SkeletonMapper_onSelected(JointType.None);
                     }
+
+                    if(boneTransform != null)
+                        EditorGUIUtility.PingObject(boneTransform);
                     break;
 
                 case SkeletonBonesView.ViewMode.AssignedBones:
