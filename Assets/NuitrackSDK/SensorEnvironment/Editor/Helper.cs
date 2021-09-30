@@ -28,11 +28,8 @@ namespace NuitrackSDKEditor
         {
             EditorGUILayout.Space();
 
-            Color oldColor = GUI.color;
-
-            GUI.color = messageColors[messageType];
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-            GUI.color = oldColor;
+            using (new GUIColor(messageColors[messageType]))
+                GUILayout.BeginVertical(EditorStyles.helpBox);
 
             EditorGUILayout.LabelField(message, EditorStyles.wordWrappedLabel);
 
