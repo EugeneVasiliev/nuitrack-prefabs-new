@@ -80,6 +80,23 @@ namespace NuitrackSDKEditor.Avatar
             using (new GUIColor(grayColor))
                 GUI.DrawTexture(rect, SkeletonStyles.UnityDude.image);
 
+            GUIStyle centeredStyle = new GUIStyle(GUI.skin.GetStyle("Label"))
+            {
+                alignment = TextAnchor.UpperCenter,
+                fontStyle = FontStyle.Bold
+            };
+
+            foreach (KeyValuePair<GUIContent, Vector2> labelData in SkeletonStyles.Labels)
+            {
+                Rect labelRect = GUILayoutUtility.GetRect(labelData.Key, centeredStyle);
+
+                Vector2 position = labelData.Value;           
+                position.Scale(rect.size);
+                labelRect.position = rect.center + position - labelRect.size * 0.5f;
+
+                GUI.Label(labelRect, labelData.Key, centeredStyle);
+            }
+
             List<AvatarMaskBodyPart> filled = GetActiveBodyParts(activeJoints);
 
             foreach (KeyValuePair<AvatarMaskBodyPart, SkeletonStyles.GUIBodyPart> bodyPart in SkeletonStyles.BodyParts)
