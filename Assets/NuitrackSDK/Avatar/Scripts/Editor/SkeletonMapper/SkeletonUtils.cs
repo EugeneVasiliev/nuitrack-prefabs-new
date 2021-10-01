@@ -143,11 +143,16 @@ namespace NuitrackSDKEditor.Avatar
             Vector3 waistPosition = hipsTransform != null ? includeBones[HumanBodyBones.Hips].position : Vector3.zero;
             Quaternion waistRotation = hipsTransform != null ? includeBones[HumanBodyBones.Hips].rotation : Quaternion.identity;
 
+            Quaternion rootRotation = root.rotation;
+            root.rotation = Quaternion.identity;
+
             Dictionary<string, string> existingMappings = includeBones.ToDictionary(k => k.Key.ToString(), v => v.Value.name);
 
             object[] boneWrapper = GetHumanBones.Invoke(null, new object[] { existingMappings, validBones }) as object[];
 
             MakePoseValid.Invoke(null, new object[] { boneWrapper });
+
+            root.rotation = rootRotation;
 
             if (hipsTransform != null)
             {
