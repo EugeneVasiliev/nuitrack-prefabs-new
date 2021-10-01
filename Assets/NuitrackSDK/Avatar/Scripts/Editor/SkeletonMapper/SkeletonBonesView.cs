@@ -22,8 +22,16 @@ namespace NuitrackSDKEditor.Avatar
         public event BoneHandler OnRemoveBone;
         public event BoneHandler OnBoneSelected;
 
-        readonly Type boneHandleType = typeof(Editor).Assembly.GetType("UnityEditor.Handles").GetNestedType("BoneRenderer", BindingFlags.NonPublic);
-        readonly MethodInfo boneVerticesMethod = null;
+        /// <summary>
+        /// See the Unity source code
+        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/EditorHandles/BoneHandle.cs#L191">
+        /// UnityEditor.Handles.BoneRenderer.GetBoneWireVertices
+        /// </see>
+        /// </summary>
+        readonly MethodInfo boneVerticesMethod = typeof(Editor).
+            Assembly.GetType("UnityEditor.Handles").
+            GetNestedType("BoneRenderer", BindingFlags.NonPublic).
+            GetMethod("GetBoneWireVertices", BindingFlags.Public | BindingFlags.Static);
 
         readonly Color select = Color.white;
         readonly Color hoverColor = Color.black;
@@ -77,8 +85,6 @@ namespace NuitrackSDKEditor.Avatar
             this.root = root;
 
             validBones = SkeletonUtils.GetValidBones(root);
-
-            boneVerticesMethod = boneHandleType.GetMethod("GetBoneWireVertices", BindingFlags.Public | BindingFlags.Static);
 
             childsList = new Dictionary<nuitrack.JointType, List<nuitrack.JointType>>();
 
