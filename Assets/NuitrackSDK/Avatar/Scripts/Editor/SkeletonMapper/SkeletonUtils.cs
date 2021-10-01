@@ -11,63 +11,96 @@ namespace NuitrackSDKEditor.Avatar
 {
     public static class SkeletonUtils
     {
+        #region Reflection methods
+        
         /// <summary>
         /// See the Unity source code
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs">
-        /// UnityEditor.AvatarSetupTool
+        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L352">
+        /// UnityEditor.AvatarSetupTool.GetModelBones
         /// </see>
         /// </summary>
-        static System.Type AvatarSetupToolType
+        static Reflection.MethodInfo GetModelBones
         {
             get
             {
-                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool");
+                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool").
+                    GetMethod("GetModelBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
             }
         }
 
         /// <summary>
         /// See the Unity source code
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarAutoMapper.cs"> 
-        /// UnityEditor.AvatarAutoMapper
+        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarAutoMapper.cs#L273">
+        /// UnityEditor.AvatarAutoMapper.MapBones
         /// </see>
         /// </summary>
-        static System.Type AvatarAutoMapperType
+        static Reflection.MethodInfo MapBones
         {
             get
             {
-                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarAutoMapper");
+                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarAutoMapper").GetMethod("MapBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
             }
         }
+
+        /// <summary>
+        /// See the Unity source code
+        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L522">
+        /// UnityEditor.AvatarSetupTool.GetHumanBones
+        /// </see> 
+        /// </summary>
+        static Reflection.MethodInfo GetHumanBones
+        {
+            get
+            {
+                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool").
+                    GetMethod(
+                    "GetHumanBones", 
+                    Reflection.BindingFlags.Public | Reflection.BindingFlags.Static, 
+                    null, 
+                    new System.Type[] { typeof(Dictionary<string, string>), typeof(Dictionary<Transform, bool>) }, 
+                    null);
+            }
+        }
+
+        /// <summary>
+        /// See the Unity source code
+        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L1077">
+        /// UnityEditor.AvatarSetupTool.MakePoseValid
+        /// </see>
+        /// </summary>
+        static Reflection.MethodInfo MakePoseValid
+        {
+            get
+            {
+                return typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool").
+                    GetMethod("MakePoseValid", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
+            }
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Get a list of valid bones for the specified skeleton
         /// 
         /// <para>
-        /// See the Unity source code
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L352">
-        /// UnityEditor.AvatarSetupTool.GetModelBones
-        /// </see>
+        /// See also
+        /// <seealso cref="GetModelBones"/>
         /// </para>
         /// </summary>
         /// <param name="root">Root transform of the skeleton object</param>
         /// <returns>Dictionary of found Transform and validity value</returns>
         public static Dictionary<Transform, bool> GetValidBones(Transform root)
         {
-            Reflection.MethodInfo avatarSetuMethodInfo = AvatarSetupToolType.GetMethod("GetModelBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
-
-            Dictionary<Transform, bool> validBones = avatarSetuMethodInfo.Invoke(null, new object[] { root, false, null }) as Dictionary<Transform, bool>;
-
-            return validBones;
+            return GetModelBones.Invoke(null, new object[] { root, false, null }) as Dictionary<Transform, bool>;
         }
 
         /// <summary>
         /// Get a bone map for the specified skeleton
         /// 
         /// <para>
-        /// See the Unity source code
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarAutoMapper.cs#L273">
-        /// UnityEditor.AvatarAutoMapper.MapBones
-        /// </see>
+        /// See also
+        /// <seealso cref="MapBones"/> and <seealso cref="GetValidBones"/>
         /// </para>
         /// </summary>
         /// <param name="root">Root transform of the skeleton object</param>
@@ -79,9 +112,7 @@ namespace NuitrackSDKEditor.Avatar
             if (validBones == null)
                 return null;
 
-            Reflection.MethodInfo methodInfo = AvatarAutoMapperType.GetMethod("MapBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
-
-            Dictionary<int, Transform> boneIDMap = methodInfo.Invoke(null, new object[] { root, validBones }) as Dictionary<int, Transform>;
+            Dictionary<int, Transform> boneIDMap = MapBones.Invoke(null, new object[] { root, validBones }) as Dictionary<int, Transform>;
             Dictionary<HumanBodyBones, Transform> boneTransformMap = boneIDMap.ToDictionary(k => (HumanBodyBones)k.Key, v => v.Value);
 
             return boneTransformMap;
@@ -91,16 +122,7 @@ namespace NuitrackSDKEditor.Avatar
         /// Put the avatar in the T-pose.
         /// 
         /// <para>
-        /// See the Unity source code
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L522">
-        /// UnityEditor.AvatarSetupTool.GetHumanBones
-        /// </see> 
-        /// 
-        /// and
-        /// 
-        /// <see href="https://github.com/Unity-Technologies/UnityCsReference/blob/master/Editor/Mono/Inspector/Avatar/AvatarSetupTool.cs#L1077">
-        /// UnityEditor.AvatarSetupTool.MakePoseValid
-        /// </see>
+        /// See also <seealso cref="GetValidBones"/>, <seealso cref="GetHumanBones"/> and <see cref="MakePoseValid"/>
         /// </para>
         ///
         /// </summary>
@@ -116,10 +138,6 @@ namespace NuitrackSDKEditor.Avatar
 
             Dictionary<Transform, bool> validBones = GetValidBones(root);
 
-            Reflection.MethodInfo getHumanBonesMethodInfo = AvatarSetupToolType.GetMethod(
-                "GetHumanBones", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static,
-                null, new System.Type[] { typeof(Dictionary<string, string>), typeof(Dictionary<Transform, bool>) }, null);
-
             Transform hipsTransform = includeBones.ContainsKey(HumanBodyBones.Hips) ? includeBones[HumanBodyBones.Hips] : null;
 
             Vector3 waistPosition = hipsTransform != null ? includeBones[HumanBodyBones.Hips].position : Vector3.zero;
@@ -127,11 +145,9 @@ namespace NuitrackSDKEditor.Avatar
 
             Dictionary<string, string> existingMappings = includeBones.ToDictionary(k => k.Key.ToString(), v => v.Value.name);
 
-            object[] boneWrapper = getHumanBonesMethodInfo.Invoke(null, new object[] { existingMappings, validBones }) as object[];
+            object[] boneWrapper = GetHumanBones.Invoke(null, new object[] { existingMappings, validBones }) as object[];
 
-            Reflection.MethodInfo makePoseValidMethodInfo = AvatarSetupToolType.GetMethod("MakePoseValid", Reflection.BindingFlags.Public | Reflection.BindingFlags.Static);
-
-            makePoseValidMethodInfo.Invoke(null, new object[] { boneWrapper });
+            MakePoseValid.Invoke(null, new object[] { boneWrapper });
 
             if (hipsTransform != null)
             {

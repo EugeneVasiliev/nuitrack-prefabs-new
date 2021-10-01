@@ -28,10 +28,15 @@ namespace NuitrackSDKEditor.Avatar
         /// UnityEditor.Handles.BoneRenderer.GetBoneWireVertices
         /// </see>
         /// </summary>
-        readonly MethodInfo boneVerticesMethod = typeof(Editor).
-            Assembly.GetType("UnityEditor.Handles").
-            GetNestedType("BoneRenderer", BindingFlags.NonPublic).
-            GetMethod("GetBoneWireVertices", BindingFlags.Public | BindingFlags.Static);
+        MethodInfo GetBoneVertices
+        {
+            get
+            {
+                return typeof(Editor).Assembly.GetType("UnityEditor.Handles").
+                    GetNestedType("BoneRenderer", BindingFlags.NonPublic).
+                    GetMethod("GetBoneWireVertices", BindingFlags.Public | BindingFlags.Static);
+            }
+        }
 
         readonly Color select = Color.white;
         readonly Color hoverColor = Color.black;
@@ -116,7 +121,7 @@ namespace NuitrackSDKEditor.Avatar
 
         void DrawBone(Vector3 start, Vector3 end)
         {
-            if (boneVerticesMethod.Invoke(null, new object[] { start, end }) is Vector3[] vertices)
+            if (GetBoneVertices.Invoke(null, new object[] { start, end }) is Vector3[] vertices)
                 Handles.DrawPolyLine(vertices);
         }
 
