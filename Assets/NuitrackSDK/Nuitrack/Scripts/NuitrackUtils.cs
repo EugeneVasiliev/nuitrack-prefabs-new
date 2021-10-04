@@ -48,8 +48,8 @@ public static class NuitrackUtils
         {JointType.Neck,                HumanBodyBones.Neck},
         {JointType.LeftCollar,          HumanBodyBones.LeftShoulder},
         {JointType.RightCollar,         HumanBodyBones.RightShoulder},
-        {JointType.Torso,               HumanBodyBones.Hips},
-        {JointType.Waist,               HumanBodyBones.Hips},   // temporarily
+        {JointType.Torso,               HumanBodyBones.Spine},
+        {JointType.Waist,               HumanBodyBones.Hips},
 
 
         {JointType.LeftFingertip,       HumanBodyBones.LeftMiddleDistal},
@@ -83,7 +83,10 @@ public static class NuitrackUtils
     /// <returns>HumanBodyBones</returns>
     public static HumanBodyBones ToUnityBones(this JointType nuitrackJoint)
     {
-        return nuitrackToUnity[nuitrackJoint];
+        if (nuitrackToUnity.ContainsKey(nuitrackJoint))
+            return nuitrackToUnity[nuitrackJoint];
+        else
+            return HumanBodyBones.LastBone;
     }
 
     static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
@@ -115,103 +118,42 @@ public static class NuitrackUtils
         return mirroredJoint;
     }
 
-    public static JointType GetParent(this JointType joint)
+    static readonly Dictionary<JointType, JointType> parentJoints = new Dictionary<JointType, JointType>()
     {
-        return parents[joint];
-    }
+        {JointType.Head,                JointType.Neck},
+        {JointType.Neck,                JointType.LeftCollar},
+        {JointType.LeftCollar,          JointType.Torso},
+        {JointType.RightCollar,         JointType.Torso},     
+        {JointType.Torso,               JointType.Waist},
+        {JointType.Waist,               JointType.None},
 
-    static Dictionary<JointType, JointType> parents = new Dictionary<JointType, JointType>()
-    {
-        {JointType.Waist,          JointType.None},
-        {JointType.Torso,          JointType.Waist},
-        {JointType.Neck,           JointType.LeftCollar},
-        {JointType.Head,           JointType.Neck},
-        {JointType.LeftCollar,     JointType.Torso},
-        {JointType.RightCollar,    JointType.Torso},
-        {JointType.LeftShoulder,   JointType.LeftCollar},
-        {JointType.RightShoulder,  JointType.RightCollar},
-        {JointType.LeftElbow,      JointType.LeftShoulder},
-        {JointType.RightElbow,     JointType.RightShoulder},
-        {JointType.LeftWrist,      JointType.LeftElbow},
-        {JointType.RightWrist,     JointType.RightElbow},
-        {JointType.LeftHand,       JointType.LeftWrist},
-        {JointType.RightHand,      JointType.RightWrist},
-        {JointType.LeftFingertip,  JointType.LeftHand},
-        {JointType.RightFingertip, JointType.RightHand},
-        {JointType.LeftHip,        JointType.Waist},
-        {JointType.RightHip,       JointType.Waist},
-        {JointType.LeftKnee,       JointType.LeftHip},
-        {JointType.RightKnee,      JointType.RightHip},
-        {JointType.LeftAnkle,      JointType.LeftKnee},
-        {JointType.RightAnkle,     JointType.RightKnee},
-        {JointType.LeftFoot,       JointType.LeftAnkle},
-        {JointType.RightFoot,      JointType.RightAnkle},
+        {JointType.LeftShoulder,        JointType.LeftCollar},
+        {JointType.LeftElbow,           JointType.LeftShoulder},
+        {JointType.LeftWrist,           JointType.LeftElbow},
+        {JointType.LeftHand,            JointType.LeftWrist},
+
+        {JointType.RightShoulder,       JointType.RightCollar},
+        {JointType.RightElbow,          JointType.RightShoulder},
+        {JointType.RightWrist,          JointType.RightElbow},
+        {JointType.RightHand,           JointType.RightWrist},
+
+        {JointType.LeftHip,             JointType.Waist},
+        {JointType.LeftKnee,            JointType.LeftHip},
+        {JointType.LeftAnkle,           JointType.LeftKnee},
+        {JointType.LeftFoot,            JointType.LeftAnkle},
+
+        {JointType.RightHip,            JointType.Waist},
+        {JointType.RightKnee,           JointType.RightHip},
+        {JointType.RightAnkle,          JointType.RightKnee},
+        {JointType.RightFoot,           JointType.RightAnkle},
     };
 
-    static readonly List<JointType> sortedJoints = new List<JointType>()
+    public static JointType GetParent(this JointType jointType)
     {
-        // ------------------------------------------ 0 - the order (level) of the joint relative to none
-        JointType.None,
-
-        // ------------------------------------------ 1
-        JointType.Waist,
-
-        // ------------------------------------------ 2
-        JointType.Torso,
-        JointType.LeftHip,
-        JointType.RightHip,
-
-        // ------------------------------------------ 3
-        JointType.Neck,
-        JointType.LeftCollar,
-        JointType.RightCollar,
-        JointType.LeftKnee,
-        JointType.RightKnee,
-
-        // ------------------------------------------ 4
-        JointType.Head,
-        JointType.LeftShoulder,
-        JointType.RightShoulder,
-        JointType.LeftAnkle,
-        JointType.RightAnkle,
-
-        // ------------------------------------------ 5
-        JointType.LeftElbow,
-        JointType.RightElbow,
-        JointType.LeftFoot,
-        JointType.RightFoot,
-
-        // ------------------------------------------ 6
-        JointType.LeftWrist,
-        JointType.RightWrist,
-
-        // ------------------------------------------ 7
-        JointType.LeftHand,
-        JointType.RightHand,
-
-        // ------------------------------------------ 8
-        JointType.LeftFingertip,
-        JointType.RightFingertip
-    };
-
-    /// <summary>
-    /// Sorts the joints according to the hierarchy from the lowest joints (lower back) to the highest (wrists and ankles).
-    /// Repetitions will be skipped.
-    /// For the sorting order <see cref="sortedJoints"/> 
-    /// </summary>
-    /// <param name="sourceJoints">List of joints.</param>
-    /// <returns>A sorted list of joints.</returns>
-    public static List<JointType> SortClamp(this List<JointType> sourceJoints)
-    {
-        List<JointType> outList = new List<JointType>();
-
-        foreach (JointType sortJoint in sortedJoints)
-        {
-            if (sourceJoints.Contains(sortJoint))
-                outList.Add(sortJoint);
-        }
-
-        return outList;
+        if (parentJoints.ContainsKey(jointType))
+            return parentJoints[jointType];
+        else
+            return JointType.None;
     }
 
     #endregion
