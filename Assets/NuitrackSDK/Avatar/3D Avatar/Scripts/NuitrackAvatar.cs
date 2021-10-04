@@ -3,42 +3,36 @@ using System.Collections;
 using System.Collections.Generic;
 using JointType = nuitrack.JointType;
 
-namespace NuitrackSDK.NuitrackDemos
+namespace NuitrackSDK.Avatar
 {
-    enum MappingMode
-    {
-        Indirect,
-        Direct,
-    }
-
-    public class Avatar : MonoBehaviour
+    public class NuitrackAvatar : BaseAvatar
     {
         [Header("Body")]
-        [SerializeField] Transform waist;
-        [SerializeField] Transform torso;
-        [SerializeField] Transform collar;
-        [SerializeField] Transform neck;
-        [SerializeField] Transform head;
+        [SerializeField, NuitrackSDKInspector] Transform waist;
+        [SerializeField, NuitrackSDKInspector] Transform torso;
+        [SerializeField, NuitrackSDKInspector] Transform collar;
+        [SerializeField, NuitrackSDKInspector] Transform neck;
+        [SerializeField, NuitrackSDKInspector] Transform head;
 
         [Header("Left hand")]
-        [SerializeField] Transform leftShoulder;
-        [SerializeField] Transform leftElbow;
-        [SerializeField] Transform leftWrist;
+        [SerializeField, NuitrackSDKInspector] Transform leftShoulder;
+        [SerializeField, NuitrackSDKInspector] Transform leftElbow;
+        [SerializeField, NuitrackSDKInspector] Transform leftWrist;
 
         [Header("Right hand")]
-        [SerializeField] Transform rightShoulder;
-        [SerializeField] Transform rightElbow;
-        [SerializeField] Transform rightWrist;
+        [SerializeField, NuitrackSDKInspector] Transform rightShoulder;
+        [SerializeField, NuitrackSDKInspector] Transform rightElbow;
+        [SerializeField, NuitrackSDKInspector] Transform rightWrist;
 
         [Header("Left leg")]
-        [SerializeField] Transform leftHip;
-        [SerializeField] Transform leftKnee;
-        [SerializeField] Transform leftAnkle;
+        [SerializeField, NuitrackSDKInspector] Transform leftHip;
+        [SerializeField, NuitrackSDKInspector] Transform leftKnee;
+        [SerializeField, NuitrackSDKInspector] Transform leftAnkle;
 
         [Header("Right leg")]
-        [SerializeField] Transform rightHip;
-        [SerializeField] Transform rightKnee;
-        [SerializeField] Transform rightAnkle;
+        [SerializeField, NuitrackSDKInspector] Transform rightHip;
+        [SerializeField, NuitrackSDKInspector] Transform rightKnee;
+        [SerializeField, NuitrackSDKInspector] Transform rightAnkle;
 
         List<ModelJoint> modelJoints = new List<ModelJoint>();
 
@@ -48,17 +42,22 @@ namespace NuitrackSDK.NuitrackDemos
             "\nCalibration is not supported." +
             "\n\nIf not specified, the object transformation is used.")]
         [SerializeField] Transform sensorSpace;
-        [SerializeField] MappingMode mappingMode;
+
+        [Tooltip("Aligns the size of the model's bones with the size of the bones of the user's skeleton, " +
+           "ensuring that the model's size best matches the user's size.")]
+        [SerializeField] bool alignmentBoneLength = false;
+
         [SerializeField] JointType rootJoint = JointType.Waist;
 
         [Header("VR settings")]
-        [SerializeField] GameObject vrHead;
-        [SerializeField] Transform headTransform;
+        [SerializeField, NuitrackSDKInspector] bool vrMode = false;
+        [SerializeField, NuitrackSDKInspector] GameObject vrHead;
+        [SerializeField, NuitrackSDKInspector] Transform headTransform;
         Transform spawnedHead;
 
         [Header("Calibration")]
         [SerializeField] bool recenterOnSuccess;
-        TPoseCalibration tPoseCalibration;
+
         Vector3 basePivotOffset = Vector3.zero;
         Vector3 startPoint; //Root joint model bone position on start
 
@@ -67,8 +66,8 @@ namespace NuitrackSDK.NuitrackDemos
 
         void OnEnable()
         {
-            tPoseCalibration = FindObjectOfType<TPoseCalibration>();
-            tPoseCalibration.onSuccess += OnSuccessCalib;
+            if(TPoseCalibration.Instance != null)
+                TPoseCalibration.Instance.onSuccess += OnSuccessCalib;
         }
 
         void SetJoint(Transform tr, JointType jointType)
@@ -138,15 +137,22 @@ namespace NuitrackSDK.NuitrackDemos
                 {
                     modelJoint.baseRotOffset = Quaternion.Inverse(SpaceTransform.rotation) * modelJoint.bone.rotation;
                     jointsRigged.Add(modelJoint.jointType.TryGetMirrored(), modelJoint);
-
-                    //Adding base distances between the child bone and the parent bone 
-                    if (modelJoint.jointType.GetParent() != JointType.None)
-                        AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
                 }
             }
 
-            if (vrHead)
+            foreach (ModelJoint modelJoint in modelJoints)
+            {
+                //Adding base distances between the child bone and the parent bone 
+                if (modelJoint.bone != null && modelJoint.jointType.GetParent() != JointType.None)
+                    AddBoneScale(modelJoint.jointType.TryGetMirrored(), modelJoint.jointType.GetParent().TryGetMirrored());
+            }
+
+            if (vrMode)
+            {
                 spawnedHead = Instantiate(vrHead).transform;
+                spawnedHead.position = headTransform.position;
+                spawnedHead.rotation = transform.rotation;
+            }
 
             if (jointsRigged.ContainsKey(rootJoint))
             {
@@ -169,44 +175,46 @@ namespace NuitrackSDK.NuitrackDemos
             jointsRigged[targetJoint].parentBone = jointsRigged[parentJoint].bone;
         }
 
-        void Update()
+        protected override void Update()
         {
-            //If a skeleton is detected, process the model
-            if (CurrentUserTracker.CurrentSkeleton != null) 
-                ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+            base.Update();
 
-            if (spawnedHead)
+            if (vrMode)
                 spawnedHead.position = headTransform.position;
         }
 
         /// <summary>
         /// Getting skeleton data from thr sensor and updating transforms of the model bones
         /// </summary>
-        void ProcessSkeleton(nuitrack.Skeleton skeleton)
+        protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
         {
-            if (mappingMode == MappingMode.Indirect)
+            if (!alignmentBoneLength)
             {
-                Vector3 rootPosition = SpaceTransform.rotation * skeleton.GetJoint(rootJoint).ToVector3() * 0.001f + basePivotOffset;
-                jointsRigged[rootJoint].bone.position = SpaceTransform.TransformPoint(rootPosition);
+                Vector3 jointPos = GetJoint(rootJoint).Position - basePivotOffset;
+                Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
+                
+                Vector3 newPos = SpaceTransform.TransformPoint(localPos);
+                jointsRigged[rootJoint].bone.position = newPos;
             }
 
             foreach (var riggedJoint in jointsRigged)
             {
                 //Get joint from the Nuitrack
-                nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                if (joint.Confidence > 0.01f)
+                //nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
+                JointTransform jointTransform = GetJoint(riggedJoint.Key);
+                if (jointTransform.IsActive)
                 {
                     //Get modelJoint
                     ModelJoint modelJoint = riggedJoint.Value;
 
                     //Bone rotation
-                    Quaternion jointRotation = IsTransformSpace ? joint.ToQuaternionMirrored() : joint.ToQuaternion();
+                    Quaternion jointRotation = IsTransformSpace ? jointTransform.RotationMirrored : jointTransform.Rotation;
 
                     modelJoint.bone.rotation = SpaceTransform.rotation * (jointRotation * modelJoint.baseRotOffset);
 
-                    if (mappingMode == MappingMode.Direct)
+                    if (alignmentBoneLength)
                     {
-                        Vector3 jointPos = (0.001f * joint.ToVector3()) + basePivotOffset;
+                        Vector3 jointPos = jointTransform.Position - basePivotOffset;
                         Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
 
                         Vector3 newPos = SpaceTransform.TransformPoint(localPos);
@@ -230,18 +238,15 @@ namespace NuitrackSDK.NuitrackDemos
             }
         }
 
-        private void OnSuccessCalib(Quaternion rotation)
+        void OnSuccessCalib(Quaternion rotation)
         {
-            StartCoroutine(CalculateOffset());
+            CalculateOffset();
         }
 
-        public IEnumerator CalculateOffset()
+        void CalculateOffset()
         {
-            if (!recenterOnSuccess || !IsTransformSpace) 
-                yield break;
-            
-            yield return new WaitForEndOfFrame();
-            yield return new WaitForEndOfFrame();
+            if (!recenterOnSuccess || !IsTransformSpace)
+                return;
 
             if (jointsRigged.ContainsKey(rootJoint))
             {
@@ -257,7 +262,8 @@ namespace NuitrackSDK.NuitrackDemos
 
         void OnDisable()
         {
-            tPoseCalibration.onSuccess -= OnSuccessCalib;
+            if(TPoseCalibration.Instance != null)
+                TPoseCalibration.Instance.onSuccess  -= OnSuccessCalib;
         }
     }
 }
