@@ -5,6 +5,8 @@ using System.Threading;
 
 using System.IO;
 
+using NuitrackSDK;
+
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
 #endif
@@ -22,6 +24,14 @@ enum WifiConnect
 [HelpURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/")]
 public class NuitrackManager : MonoBehaviour
 {
+    public enum RotationDegree
+    {
+        _0 = 0,
+        _90 = 90,
+        _180 = 180,
+        _270 = 270
+    }
+
     bool _threadRunning;
     Thread _thread;
 
@@ -44,19 +54,27 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
     [SerializeField] bool asyncInit = false;
     [SerializeField] InitEvent initEvent;
+
     [Header("You can use *.oni or *.bag file instead of a sensor")]
-    [SerializeField] bool useFileRecord;
-    [SerializeField] string pathToFileRecord;
+    [SerializeField, NuitrackSDKInspector] bool useFileRecord;
+    [SerializeField, NuitrackSDKInspector] string pathToFileRecord;
 
     [Header("Config stats")]
     [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
-    public bool depth2ColorRegistration = false;
+    [SerializeField] bool depth2ColorRegistration = false;
+   
     [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware\n MORE: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md")]
-    public bool useNuitrackAi = false;
+    [SerializeField] bool useNuitrackAi = false;
+    
     [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).\n Tutotial: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md")]
-    public bool useFaceTracking = false;
+    [SerializeField] bool useFaceTracking = false;
+
+    [Header("Sensor settings")]
     [Tooltip("Mirror sensor data")]
-    public bool mirror = false;
+    [SerializeField, NuitrackSDKInspector] bool mirror = false;
+
+    [Tooltip ("Sensor rotation is not available for mirror mode. Disable mirror to set the sensor rotation.")]
+    [SerializeField, NuitrackSDKInspector] RotationDegree rotationDegree = RotationDegree._0;
 
     public static bool sensorConnected = false;
     public static nuitrack.DepthSensor DepthSensor { get; private set; }
@@ -96,6 +114,22 @@ public class NuitrackManager : MonoBehaviour
     [HideInInspector] public bool nuitrackInitialized = false;
 
     [HideInInspector] public System.Exception initException;
+
+    public bool UseFaceTracking
+    {
+        get
+        {
+            return useFaceTracking;
+        }
+    }
+
+    public bool UseNuitrackAi
+    {
+        get
+        {
+            return useNuitrackAi;
+        }
+    }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
