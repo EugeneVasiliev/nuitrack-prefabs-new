@@ -48,11 +48,10 @@ public class NuitrackChecker
         }
         catch (System.Exception ex)
         {
-            if (ex.ToString().Contains("TBB"))
-                TBBReplacer.ShowMessage();
-
             Debug.Log("<color=red><b>Test Nuitrack init failed!</b></color>\n" +
-                "<color=red><b>It is recommended to test on AllModulesScene</b></color>\n" + backendMessage);
+                "<color=red><b>It is recommended to test on AllModulesScene. (Start the scene and follow the on-screen instructions)</b></color>\n" + backendMessage);
+
+            Debug.Log(ex.ToString());
         }
 
         StopThread();
