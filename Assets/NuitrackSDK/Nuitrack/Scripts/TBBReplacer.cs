@@ -7,6 +7,7 @@ public class TBBReplacer
 
     public static void CreateBat()
     {
+#if UNITY_EDITOR_WIN
         CheckBat();
         string nuitrackHomePath = System.Environment.GetEnvironmentVariable("NUITRACK_HOME");
         string nuitrackTbbPath = CmdPath(Path.Combine(nuitrackHomePath, "bin", "tbb.dll"));
@@ -26,6 +27,7 @@ public class TBBReplacer
 
         EditorApplication.quitting += Quit;
         EditorApplication.Exit(0);
+#endif
     }
 
     static void Quit()
@@ -35,13 +37,15 @@ public class TBBReplacer
 
     public static void ShowMessage()
     {
-        if(EditorUtility.DisplayDialog("TBB-file",
+#if UNITY_EDITOR_WIN
+        if (EditorUtility.DisplayDialog("TBB-file",
                 "You need to replace the tbb.dll file in Editor with Nuitrack compatible tbb.dll file. \n" +
                 "If you click [Yes] the editor will be restarted and the file will be replaced automatically \n" +
                 "(old tbb-file will be renamed to tbb_backup.dll)", "Yes", "No"))
         {
             TBBReplacer.CreateBat();
         }
+#endif
     }
 
     static string CmdPath(string path)

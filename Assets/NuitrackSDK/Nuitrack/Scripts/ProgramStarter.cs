@@ -7,6 +7,7 @@ public class ProgramStarter
 {
     public static void Run(string appPath, string workingDirectory, bool blockEditor = false)
     {
+#if UNITY_EDITOR_WIN
         try
         {
             if (File.Exists(appPath))
@@ -27,5 +28,6 @@ public class ProgramStarter
         {
             Debug.LogError("Unable to launch app: " + e.Message);
         }
+#endif
     }
 }
