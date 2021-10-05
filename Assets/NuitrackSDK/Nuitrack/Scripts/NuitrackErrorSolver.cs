@@ -22,15 +22,20 @@ public class NuitrackErrorSolver
                     "(More details: winaero.com/how-to-take-ownership-and-get-full-access-to-files-and-folders-in-windows-10/)";
 
 #endif
-#if UNITY_EDITOR_WIN
         if (ex.ToString().Contains("TBB"))
         {
-            string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
+#if UNITY_STANDALONE_WIN
             string nuitrackTbbPath = nuitrackHomePath + "\\bin\\tbb.dll";
+    #if UNITY_EDITOR_WIN
+            string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
             errorMessage = "<color=red><b>You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)</b></color>";
+            TBBReplacer.ShowMessage();
+    #else
+            errorMessage = "<color=red><b>Problem with the file tbb.dll in the Nuitrack folder " + nuitrackTbbPath + ". Reinstall Nuitrack</b></color>";
+    #endif
+#endif
         }
         else
-#endif
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         if (nuitrackHomePath == null)
             errorMessage = "<color=red><b>" + "Environment Variable [NUITRACK_HOME] not found" + "</b></color>" +
