@@ -26,7 +26,7 @@ public class NuitrackManager : MonoBehaviour
 {
     public enum RotationDegree
     {
-        _0 = 0,
+        Normal = 0,
         _90 = 90,
         _180 = 180,
         _270 = 270
@@ -48,33 +48,36 @@ public class NuitrackManager : MonoBehaviour
     [HideInInspector] public bool licenseTimeIsOver = false;
     [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
 
-    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
-    [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
+    [Space]
+
     [SerializeField] bool runInBackground = false;
+    
     [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
     [SerializeField] bool asyncInit = false;
+    
     [SerializeField] InitEvent initEvent;
+
+    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
+    [SerializeField, NuitrackSDKInspector] WifiConnect wifiConnect = WifiConnect.none;
+   
+    [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware")]
+    [SerializeField, NuitrackSDKInspector] bool useNuitrackAi = false;
+    
+    [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).")]
+    [SerializeField, NuitrackSDKInspector] bool useFaceTracking = false;
+
+    [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
+    [SerializeField, NuitrackSDKInspector] bool depth2ColorRegistration = false;
+
+    [Tooltip("Mirror sensor data")]
+    [SerializeField, NuitrackSDKInspector] bool mirror = false;
+
+    [Tooltip ("If you have the sensor installed vertically or upside down, you can level this. Sensor rotation is not available for mirror mode.")]
+    [SerializeField, NuitrackSDKInspector] RotationDegree sensorRotation = RotationDegree.Normal;
 
     [Header("You can use *.oni or *.bag file instead of a sensor")]
     [SerializeField, NuitrackSDKInspector] bool useFileRecord;
     [SerializeField, NuitrackSDKInspector] string pathToFileRecord;
-
-    [Header("Config stats")]
-    [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
-    [SerializeField] bool depth2ColorRegistration = false;
-   
-    [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware\n MORE: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md")]
-    [SerializeField] bool useNuitrackAi = false;
-    
-    [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).\n Tutotial: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md")]
-    [SerializeField] bool useFaceTracking = false;
-
-    [Header("Sensor settings")]
-    [Tooltip("Mirror sensor data")]
-    [SerializeField, NuitrackSDKInspector] bool mirror = false;
-
-    [Tooltip ("Sensor rotation is not available for mirror mode. Disable mirror to set the sensor rotation.")]
-    [SerializeField, NuitrackSDKInspector] RotationDegree rotationDegree = RotationDegree._0;
 
     public static bool sensorConnected = false;
     public static nuitrack.DepthSensor DepthSensor { get; private set; }
@@ -405,9 +408,10 @@ public class NuitrackManager : MonoBehaviour
                 }
 
                 if (mirror)
-                {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
-                }
+                else
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.RotateAngle", ((int)sensorRotation).ToString());
+
                 string devicesInfo = "";
                 if(nuitrack.Nuitrack.GetDeviceList().Count > 0)
                 {
