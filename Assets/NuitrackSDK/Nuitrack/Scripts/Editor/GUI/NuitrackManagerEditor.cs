@@ -1,14 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
 using System.IO;
 
+
 namespace NuitrackSDKEditor
 {
     [CustomEditor(typeof(NuitrackManager), true)]
-    public class NuitrackManagerEditor : NuitrackSDKEditorGUI
+    public class NuitrackManagerEditor : NuitrackSDKEditor
     {
         readonly Color warningColor = Color.yellow;
         readonly Color errorColor = Color.red;
@@ -18,41 +17,64 @@ namespace NuitrackSDKEditor
         {
             DrawDefaultInspector();
 
-            DrawMirrorAndAngle();
+            DrawConfigState();
+
+            DrawSensorOptions();
 
             DrawRecordFileGUI();
         }
 
-        #region Sensor mirror and angle
-
-        void DrawMirrorAndAngle()
+        void DrawConfigState()
         {
-            EditorGUILayout.LabelField("Sensor settings", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
+
+            NuitrackSDKGUI.PropertyWithHelpButton(
+                serializedObject,
+                "wifiConnect",
+                "https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case",
+                "Only skeleton. PC, Unity Editor, MacOS and IOS");
+
+
+            NuitrackSDKGUI.PropertyWithHelpButton(
+                serializedObject,
+                "useNuitrackAi",
+                "https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md",
+                "ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware");
+
+            NuitrackSDKGUI.PropertyWithHelpButton(
+                 serializedObject,
+                 "useFaceTracking",
+                 "https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md",
+                 "Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender)");
+        }
+
+        void DrawSensorOptions()
+        {
+            EditorGUILayout.Space();
+
+            EditorGUILayout.LabelField("Sensor options", EditorStyles.boldLabel);
+
+            SerializedProperty depth2ColorRegistration = serializedObject.FindProperty("depth2ColorRegistration");
+            EditorGUILayout.PropertyField(depth2ColorRegistration);
+            serializedObject.ApplyModifiedProperties();
 
             SerializedProperty mirrorProp = serializedObject.FindProperty("mirror");
             mirrorProp.boolValue = EditorGUILayout.Toggle("Mirror mode", mirrorProp.boolValue);
             serializedObject.ApplyModifiedProperties();
 
-            SerializedProperty rotationProp = serializedObject.FindProperty("rotationDegree");
+            SerializedProperty sensorRotation = serializedObject.FindProperty("sensorRotation");
 
             if (mirrorProp.boolValue)
-                rotationProp.enumValueIndex = 0;
+                sensorRotation.enumValueIndex = 0;
 
             EditorGUI.BeginDisabledGroup(mirrorProp.boolValue);
 
-            EditorGUILayout.PropertyField(rotationProp);
+            EditorGUILayout.PropertyField(sensorRotation);
             serializedObject.ApplyModifiedProperties();
 
             EditorGUI.EndDisabledGroup();
-
-            //GUIContent helpButton = EditorGUIUtility.IconContent("_Help");
-            //if(GUILayout.Button(helpButton, EditorStyles.miniButton))
-            //{
-
-            //}
         }
 
-        #endregion
 
         #region Record file
 
@@ -93,6 +115,8 @@ namespace NuitrackSDKEditor
 
         void DrawRecordFileGUI()
         {
+            EditorGUILayout.LabelField("Advanced", EditorStyles.boldLabel);
+
             bool useFile = serializedObject.FindProperty("useFileRecord").boolValue;
             string path = serializedObject.FindProperty("pathToFileRecord").stringValue;
             bool pathIsCorrect = File.Exists(path);

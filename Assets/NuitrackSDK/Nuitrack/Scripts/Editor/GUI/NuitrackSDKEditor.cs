@@ -10,67 +10,7 @@ using NuitrackSDK;
 
 namespace NuitrackSDKEditor
 {
-    /// <summary>
-    /// Put the <see cref="GUI"/> block code in the using statement to color the <see cref="GUI"/> elements in the specified color
-    /// After the using block, the <see cref="GUI"/> color will return to the previous one
-    ///
-    /// <example>
-    /// This shows how to change the GUI color
-    /// <code>
-    /// using (new GUIColor(Color.green))
-    /// {
-    ///     // Your GUI code ...
-    /// }
-    /// </code>
-    /// </example>
-    /// </summary>
-    public class GUIColor : IDisposable
-    {
-        Color oldColor;
-
-        public GUIColor(Color newColor)
-        {
-            oldColor = GUI.color;
-            GUI.color = newColor;
-        }
-
-        public void Dispose()
-        {
-            GUI.color = oldColor;
-        }
-    }
-
-    /// <summary>
-    /// Put the <see cref="Handles"/> block code in the using statement to color the <see cref="Handles"/> elements in the specified color
-    /// After the using block, the <see cref="Handles"/> color will return to the previous one
-    ///
-    /// <example>
-    /// This shows how to change the Handles color
-    /// <code>
-    /// using (new HandlesColor(Color.green))
-    /// {
-    ///     // Your Handles code ...
-    /// }
-    /// </code>
-    /// </example>
-    /// </summary>
-    public class HandlesColor : IDisposable
-    {
-        Color oldColor;
-
-        public HandlesColor(Color newColor)
-        {
-            oldColor = Handles.color;
-            Handles.color = newColor;
-        }
-
-        public void Dispose()
-        {
-            Handles.color = oldColor;
-        }
-    }
-
-    public abstract class NuitrackSDKEditorGUI : Editor
+    public abstract class NuitrackSDKEditor : Editor
     {
         Reflection.FieldInfo[] GetFieldInfo(Type typeObject)
         {
@@ -105,7 +45,7 @@ namespace NuitrackSDKEditor
         /// <summary>
         /// Draw the inspector. 
         /// Fields marked with the attribute <see cref="NuitrackSDKInspector"/> 
-        /// will not be drawn in the inheritors of <see cref="NuitrackSDKEditorGUI"/> . 
+        /// will not be drawn in the inheritors of <see cref="NuitrackSDKEditor"/> . 
         /// </summary>
         new protected void DrawDefaultInspector()
         {
