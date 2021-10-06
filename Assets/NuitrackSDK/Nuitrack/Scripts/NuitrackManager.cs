@@ -36,7 +36,7 @@ public class NuitrackManager : MonoBehaviour
     Thread _thread;
 
     public NuitrackInitState InitState { get { return NuitrackLoader.initState; } }
-    [SerializeField]
+    [SerializeField, NuitrackSDKInspector]
     bool
     depthModuleOn = true,
     colorModuleOn = true,
@@ -50,13 +50,8 @@ public class NuitrackManager : MonoBehaviour
 
     [Space]
 
-    [SerializeField] bool runInBackground = false;
+    [SerializeField, NuitrackSDKInspector] bool runInBackground = false;
     
-    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
-    [SerializeField] bool asyncInit = false;
-    
-    [SerializeField] InitEvent initEvent;
-
     [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
     [SerializeField, NuitrackSDKInspector] WifiConnect wifiConnect = WifiConnect.none;
    
@@ -77,6 +72,11 @@ public class NuitrackManager : MonoBehaviour
 
     [SerializeField, NuitrackSDKInspector] bool useFileRecord;
     [SerializeField, NuitrackSDKInspector] string pathToFileRecord;
+
+    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
+    [SerializeField, NuitrackSDKInspector] bool asyncInit = false;
+
+    [SerializeField, NuitrackSDKInspector] InitEvent initEvent;
 
     public static bool sensorConnected = false;
     public static nuitrack.DepthSensor DepthSensor { get; private set; }

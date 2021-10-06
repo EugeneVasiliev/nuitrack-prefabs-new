@@ -7,18 +7,60 @@ namespace NuitrackSDKEditor
     [CustomEditor(typeof(NuitrackManager), true)]
     public class NuitrackManagerEditor : NuitrackSDKEditor
     {
+        string[] modulesFlagNames = new string[]
+        {
+            "depthModuleOn",
+            "colorModuleOn",
+            "userTrackerModuleOn",
+            "skeletonTrackerModuleOn",
+            "gesturesRecognizerModuleOn",
+            "handsTrackerModuleOn"
+        };
+
+        bool openMdules = false;
+
         public override void OnInspectorGUI()
         {
+            DrawModules();
+
             DrawDefaultInspector();
 
             DrawConfiguration();
             DrawSensorOptions();
             DrawRecordFileGUI();
+
+            DrawInitEvetn();
+        }
+
+        void DrawModules()
+        {
+            openMdules = EditorGUILayout.BeginFoldoutHeaderGroup(openMdules, "Nuitrack modules");
+
+            if (openMdules)
+            {
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                foreach (string propertyName in modulesFlagNames)
+                {
+                    SerializedProperty property = serializedObject.FindProperty(propertyName);
+                    EditorGUILayout.PropertyField(property);
+                    serializedObject.ApplyModifiedProperties();
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         void DrawConfiguration()
         {
+            EditorGUILayout.Space();
             EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
+
+            SerializedProperty runInBackground = serializedObject.FindProperty("runInBackground");
+            EditorGUILayout.PropertyField(runInBackground);
+            serializedObject.ApplyModifiedProperties();
 
             NuitrackSDKGUI.PropertyWithHelpButton(
                 serializedObject,
@@ -83,6 +125,19 @@ namespace NuitrackSDKEditor
 
                 serializedObject.ApplyModifiedProperties();
             }
+        }
+
+        void DrawInitEvetn()
+        {
+            EditorGUILayout.Space();
+
+            SerializedProperty asyncInit = serializedObject.FindProperty("asyncInit");
+            EditorGUILayout.PropertyField(asyncInit);
+            serializedObject.ApplyModifiedProperties();
+
+            SerializedProperty initEvent = serializedObject.FindProperty("initEvent");
+            EditorGUILayout.PropertyField(initEvent);
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }
