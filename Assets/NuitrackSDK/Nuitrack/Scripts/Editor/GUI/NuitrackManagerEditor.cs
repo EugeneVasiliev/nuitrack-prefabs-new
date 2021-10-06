@@ -7,7 +7,7 @@ namespace NuitrackSDKEditor
     [CustomEditor(typeof(NuitrackManager), true)]
     public class NuitrackManagerEditor : NuitrackSDKEditor
     {
-        string[] modulesFlagNames = new string[]
+        readonly string[] modulesFlagNames = new string[]
         {
             "depthModuleOn",
             "colorModuleOn",
