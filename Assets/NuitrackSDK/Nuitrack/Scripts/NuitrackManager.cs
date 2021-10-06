@@ -45,8 +45,12 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [HideInInspector] public bool licenseTimeIsOver = false;
-    [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
+    bool licenseTimeIsOver = false;
+    public LicenseInfo LicenseInfo
+    {
+        get;
+        private set;
+    } = new LicenseInfo();
 
     [Space]
 
@@ -420,8 +424,8 @@ public class NuitrackManager : MonoBehaviour
                         string sensorName = device.GetInfo(nuitrack.device.DeviceInfoType.DEVICE_NAME);
                         if (i == 0)
                         {
-                            licenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
-                            licenseInfo.SensorName = sensorName;
+                            LicenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
+                            LicenseInfo.SensorName = sensorName;
                         }
 
                         devicesInfo += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "] ";
