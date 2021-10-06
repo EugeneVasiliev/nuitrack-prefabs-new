@@ -59,7 +59,7 @@ namespace NuitrackSDKEditor
             serializedObject.ApplyModifiedProperties();
 
             SerializedProperty mirrorProp = serializedObject.FindProperty("mirror");
-            mirrorProp.boolValue = EditorGUILayout.Toggle("Mirror mode", mirrorProp.boolValue);
+            EditorGUILayout.PropertyField(mirrorProp);
             serializedObject.ApplyModifiedProperties();
 
             SerializedProperty sensorRotation = serializedObject.FindProperty("sensorRotation");
@@ -137,12 +137,12 @@ namespace NuitrackSDKEditor
             }
 
             SerializedProperty useFileRecordProp = serializedObject.FindProperty("useFileRecord");
-            useFileRecordProp.boolValue = EditorGUILayout.Toggle("Use record file", useFileRecordProp.boolValue);
+            EditorGUILayout.PropertyField(useFileRecordProp, new GUIContent("Use record file"));
             serializedObject.ApplyModifiedProperties();
 
             if(useFileRecordProp.boolValue)
             {
-                SerializedProperty pathtoFileProp = serializedObject.FindProperty("pathToFileRecord");
+                SerializedProperty pathToFileProp = serializedObject.FindProperty("pathToFileRecord");
 
                 if (!pathIsCorrect || path == string.Empty)
                 {
@@ -150,7 +150,7 @@ namespace NuitrackSDKEditor
                     GUILayout.Label(message, EditorStyles.wordWrappedLabel);
                 }
 
-                pathtoFileProp.stringValue = EditorGUILayout.TextField("Path to file record", pathtoFileProp.stringValue);
+                EditorGUILayout.PropertyField(pathToFileProp, new GUIContent("Path to record file"));
 
                 GUILayout.BeginHorizontal();
 
@@ -159,12 +159,12 @@ namespace NuitrackSDKEditor
                     string newFilePath = EditorUtility.OpenFilePanelWithFilters("Open *.oni or *.bag file", Application.dataPath, fileFilter);
 
                     if(newFilePath != null && newFilePath != string.Empty)
-                        pathtoFileProp.stringValue = newFilePath;
+                        pathToFileProp.stringValue = newFilePath;
                 }
-                EditorGUI.BeginDisabledGroup(pathtoFileProp.stringValue == string.Empty);
+                EditorGUI.BeginDisabledGroup(pathToFileProp.stringValue == string.Empty);
 
                 if (GUILayout.Button(ClearFile))
-                    pathtoFileProp.stringValue = string.Empty;
+                    pathToFileProp.stringValue = string.Empty;
 
                 EditorGUI.EndDisabledGroup();
 
