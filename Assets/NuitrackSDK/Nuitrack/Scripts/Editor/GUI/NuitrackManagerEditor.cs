@@ -34,7 +34,7 @@ namespace NuitrackSDKEditor
 
         void DrawModules()
         {
-            openMdules = EditorGUILayout.BeginFoldoutHeaderGroup(openMdules, "Nuitrack modules");
+            openMdules = EditorGUILayout.BeginFoldoutHeaderGroup(openMdules, "Modules");
 
             if (openMdules)
             {
