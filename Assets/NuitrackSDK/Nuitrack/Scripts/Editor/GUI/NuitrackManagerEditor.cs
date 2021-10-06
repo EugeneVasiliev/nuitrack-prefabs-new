@@ -17,14 +17,12 @@ namespace NuitrackSDKEditor
         {
             DrawDefaultInspector();
 
-            DrawConfigState();
-
+            DrawConfiguration();
             DrawSensorOptions();
-
             DrawRecordFileGUI();
         }
 
-        void DrawConfigState()
+        void DrawConfiguration()
         {
             EditorGUILayout.LabelField("Configuration", EditorStyles.boldLabel);
 
