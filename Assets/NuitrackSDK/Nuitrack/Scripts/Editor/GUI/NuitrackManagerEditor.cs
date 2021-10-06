@@ -1,18 +1,12 @@
 using UnityEngine;
 using UnityEditor;
 
-using System.IO;
-
 
 namespace NuitrackSDKEditor
 {
     [CustomEditor(typeof(NuitrackManager), true)]
     public class NuitrackManagerEditor : NuitrackSDKEditor
     {
-        readonly Color warningColor = Color.yellow;
-        readonly Color errorColor = Color.red;
-        readonly Color okColor = Color.green;
-
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
@@ -73,108 +67,22 @@ namespace NuitrackSDKEditor
             EditorGUI.EndDisabledGroup();
         }
 
-
-        #region Record file
-
-        readonly string[] fileFilter = new string[] { "Bag or oni file", "bag,oni" };
-
-        GUIContent WarningMessage
-        {
-            get
-            {
-                GUIContent message = EditorGUIUtility.IconContent("console.warnicon.sml");
-                message.text = "Path is not specified";
-
-                return message;
-            }
-        }
-
-        GUIContent ErrorMessage
-        {
-            get
-            {
-                GUIContent message = EditorGUIUtility.IconContent("console.erroricon.sml");
-                message.text = "Specified file was not found, check the correctness of the path";
-
-                return message;
-            }
-        }
-
-        GUIContent ClearFile
-        {
-            get
-            {
-                GUIContent message = EditorGUIUtility.IconContent("d_TreeEditor.Trash");
-                message.text = "Clear";
-
-                return message;
-            }
-        }
-
         void DrawRecordFileGUI()
         {
             EditorGUILayout.LabelField("Advanced", EditorStyles.boldLabel);
-
-            bool useFile = serializedObject.FindProperty("useFileRecord").boolValue;
-            string path = serializedObject.FindProperty("pathToFileRecord").stringValue;
-            bool pathIsCorrect = File.Exists(path);
-
-            if (useFile)
-            {
-                Color color;
-
-                if (path == string.Empty)
-                    color = warningColor;
-                else if (!pathIsCorrect)
-                    color = errorColor;
-                else
-                    color = okColor;
-
-                using (new GUIColor(color))
-                    GUILayout.BeginVertical(EditorStyles.helpBox);
-            }
-
+            
             SerializedProperty useFileRecordProp = serializedObject.FindProperty("useFileRecord");
             EditorGUILayout.PropertyField(useFileRecordProp, new GUIContent("Use record file"));
             serializedObject.ApplyModifiedProperties();
 
-            if(useFileRecordProp.boolValue)
+            if (useFileRecordProp.boolValue)
             {
-                SerializedProperty pathToFileProp = serializedObject.FindProperty("pathToFileRecord");
+                SerializedProperty pathProperty = serializedObject.FindProperty("pathToFileRecord");
 
-                if (!pathIsCorrect || path == string.Empty)
-                {
-                    GUIContent message = path == string.Empty ? WarningMessage : ErrorMessage;
-                    GUILayout.Label(message, EditorStyles.wordWrappedLabel);
-                }
-
-                EditorGUILayout.PropertyField(pathToFileProp, new GUIContent("Path to record file"));
-
-                GUILayout.BeginHorizontal();
-
-                if (GUILayout.Button("Browse"))
-                {
-                    string newFilePath = EditorUtility.OpenFilePanelWithFilters("Open *.oni or *.bag file", Application.dataPath, fileFilter);
-
-                    if(newFilePath != null && newFilePath != string.Empty)
-                        pathToFileProp.stringValue = newFilePath;
-                }
-                EditorGUI.BeginDisabledGroup(pathToFileProp.stringValue == string.Empty);
-
-                if (GUILayout.Button(ClearFile))
-                    pathToFileProp.stringValue = string.Empty;
-
-                EditorGUI.EndDisabledGroup();
+                pathProperty.stringValue = NuitrackSDKGUI.OpenFileField(pathProperty.stringValue, "Bag or oni file", "bag", "oni");
 
                 serializedObject.ApplyModifiedProperties();
-
-                GUILayout.EndHorizontal();
             }
-
-            if (useFile)
-                GUILayout.EndVertical();
         }
-
-        #endregion
     }
 }

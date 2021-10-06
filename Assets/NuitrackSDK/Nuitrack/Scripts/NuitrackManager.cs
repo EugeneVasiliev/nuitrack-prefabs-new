@@ -75,7 +75,6 @@ public class NuitrackManager : MonoBehaviour
     [Tooltip ("If you have the sensor installed vertically or upside down, you can level this. Sensor rotation is not available for mirror mode.")]
     [SerializeField, NuitrackSDKInspector] RotationDegree sensorRotation = RotationDegree.Normal;
 
-    [Header("You can use *.oni or *.bag file instead of a sensor")]
     [SerializeField, NuitrackSDKInspector] bool useFileRecord;
     [SerializeField, NuitrackSDKInspector] string pathToFileRecord;
 
