@@ -5,14 +5,13 @@ namespace NuitrackSDK.SafetyGrid
 {
     public class SensorPointReplacer : MonoBehaviour
     {
-        [SerializeField] GameObject leftGrid;
-        [SerializeField] GameObject rightGrid;
-        [SerializeField] GameObject forwardGrid;
+        [SerializeField] MeshRenderer leftGrid;
+        [SerializeField] MeshRenderer rightGrid;
+        [SerializeField] MeshRenderer frontGrid;
 
         [SerializeField] Material gridMaterial;
         [SerializeField] float XYTrigger = 0.2f;
         [SerializeField] float ZTrigger = 1700;
-        [SerializeField] MeshRenderer[] meshRenderers;
         Material gridMat;
 
         Color gridColor;
@@ -27,10 +26,13 @@ namespace NuitrackSDK.SafetyGrid
             gridMat = new Material(gridMaterial.shader);
             gridMat.CopyPropertiesFromMaterial(gridMaterial);
 
-            for (int i = 0; i < meshRenderers.Length; i++)
-            {
-                meshRenderers[i].material = gridMat;
-            }
+            leftGrid.material = gridMat;
+            rightGrid.material = gridMat;
+            frontGrid.material = gridMat;
+
+            leftGrid.material.mainTextureScale = new Vector2(5, 10);
+            rightGrid.material.mainTextureScale = new Vector2(5, 10);
+            frontGrid.material.mainTextureScale = new Vector2(5, 3);
 
             gridColor = gridMat.color;
             gridColor.a = 0;
@@ -94,6 +96,9 @@ namespace NuitrackSDK.SafetyGrid
                 alpha = 1 - (minZ - 1500) / (ZTrigger - 1500);
             gridColor.a = alpha;
             gridMat.color = gridColor;
+            leftGrid.material.color = gridColor;
+            frontGrid.material.color = gridColor;
+            rightGrid.material.color = gridColor;
         }
     }
 }
