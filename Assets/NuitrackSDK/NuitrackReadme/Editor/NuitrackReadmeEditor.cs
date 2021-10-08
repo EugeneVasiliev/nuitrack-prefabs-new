@@ -2,10 +2,10 @@ using UnityEngine;
 using UnityEditor;
 
 using UnityEditor.SceneManagement;
-using NuitrackSDKEditor.Readme;
+
 
 namespace NuitrackSDKEditor.Readme
-{ 
+{
     [CustomEditor(typeof(NuitrackReadme), true)]
     public class NuitrackReadmeEditor : NuitrackSDKEditor
     {
@@ -43,27 +43,27 @@ namespace NuitrackSDKEditor.Readme
             }
         }
 
-        void DrawButton(Rect rect, string url, string label, string icon)
+        void DrawButton(string url, string label, string icon, GUIStyle style)
         {
             GUIContent videoButtonContent = EditorGUIUtility.IconContent(icon);
             videoButtonContent.text = label;
 
             EditorGUI.BeginDisabledGroup(url == null || url == string.Empty);
 
-            if (GUI.Button(rect, videoButtonContent))
+            if (GUILayout.Button(videoButtonContent, style))
                 Application.OpenURL(url);
 
             EditorGUI.EndDisabledGroup();
         }
 
-        void DrawButton(Rect rect, SceneAsset scene, string label)
+        void DrawButton(SceneAsset scene, string label, GUIStyle style)
         {
-            GUIContent videoButtonContent = EditorGUIUtility.ObjectContent(null, typeof(SceneAsset));
+            GUIContent videoButtonContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleon");
             videoButtonContent.text = label;
 
             EditorGUI.BeginDisabledGroup(scene == null);
 
-            if (GUI.Button(rect, videoButtonContent))
+            if (GUILayout.Button(videoButtonContent, style))
             {
                 EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
 
@@ -82,45 +82,37 @@ namespace NuitrackSDKEditor.Readme
 
             foreach (SerializedProperty tutorialItem in tutorialsItems)
             {
-                Rect controlRect = EditorGUILayout.GetControlRect(false, tutorailItemHeight);
-
                 Texture previewImage = tutorialItem.FindPropertyRelative("previewImage").objectReferenceValue as Texture;
                 string label = tutorialItem.FindPropertyRelative("label").stringValue;
 
-                GUI.Box(controlRect, previewImage, EditorStyles.helpBox);
+                using (new VecrticalGroup(EditorStyles.helpBox))
+                {
+                    using (new VecrticalGroup())
+                    {
+                        using (new HorizontalGroup())
+                        {
+                            float maxWidth = (tutorailItemHeight / previewImage.height) * previewImage.width;
+                            GUILayout.Box(previewImage, GUILayout.Height(tutorailItemHeight), GUILayout.Width(maxWidth));
 
-                Rect upSideRect = new Rect(controlRect);
-                upSideRect.xMin += (tutorailItemHeight / previewImage.height) * previewImage.width;
-                upSideRect.yMax -= controlRect.height / 2;
 
-                EditorGUI.LabelField(upSideRect, label, LabelStyle);
+                            EditorGUILayout.LabelField(label, LabelStyle);
+                        }
 
+                        EditorGUILayout.Space();
 
-                Rect downSideRect = new Rect(controlRect);
-                downSideRect.xMin += (tutorailItemHeight / previewImage.height) * previewImage.width;
-                downSideRect.yMin += (controlRect.height / 3) * 2;
+                        using (new HorizontalGroup())
+                        {
+                            string textURL = tutorialItem.FindPropertyRelative("textURL").stringValue;
+                            string videoURL = tutorialItem.FindPropertyRelative("videoURL").stringValue;
+                            SceneAsset scene = tutorialItem.FindPropertyRelative("scene").objectReferenceValue as SceneAsset;
 
-                string textURL = tutorialItem.FindPropertyRelative("textURL").stringValue;
+                            DrawButton(textURL, "Text", "PreTexA@2x", EditorStyles.miniButtonLeft);
+                            DrawButton(videoURL, "Video", "Profiler.Video@2x", EditorStyles.miniButtonMid);
+                            DrawButton(scene, "Scene", EditorStyles.miniButtonRight);
+                        }
 
-                Rect textUrlRect = new Rect(downSideRect);
-                textUrlRect.xMax -= (downSideRect.width / 3) * 2;
-
-                DrawButton(textUrlRect, textURL, "Text", "PreTexA@2x");
-
-                string videoURL = tutorialItem.FindPropertyRelative("videoURL").stringValue;
-
-                Rect videoUrlRect = new Rect(downSideRect);
-                videoUrlRect.xMin += (downSideRect.width / 3);
-                videoUrlRect.xMax -= (downSideRect.width / 3);
-
-                DrawButton(videoUrlRect, videoURL, "Video", "Profiler.Video@2x");
-
-                SceneAsset scene = tutorialItem.FindPropertyRelative("scene").objectReferenceValue as SceneAsset;
-
-                Rect openSceneRect = new Rect(downSideRect);
-                openSceneRect.xMin += (downSideRect.width / 3) * 2;
-
-                DrawButton(openSceneRect, scene, "Scene");
+                    }
+                }
             }
         }
     }

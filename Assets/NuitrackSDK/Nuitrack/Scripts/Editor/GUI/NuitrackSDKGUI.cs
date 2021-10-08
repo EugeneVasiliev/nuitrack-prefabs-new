@@ -67,6 +67,35 @@ namespace NuitrackSDKEditor
         }
     }
 
+
+    public class HorizontalGroup : IDisposable
+    {
+        public HorizontalGroup(GUIStyle styles = null, GUILayoutOption[] options = null)
+        {
+            styles ??= GUIStyle.none;
+            EditorGUILayout.BeginHorizontal(styles, options);
+        }
+
+        public void Dispose()
+        {
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+
+    public class VecrticalGroup : IDisposable
+    {
+        public VecrticalGroup(GUIStyle styles = null, GUILayoutOption[] options = null)
+        {
+            styles ??= GUIStyle.none;
+            EditorGUILayout.BeginVertical(styles, options);
+        }
+
+        public void Dispose()
+        {
+            EditorGUILayout.EndVertical();
+        }
+    }
+
     /// <summary>
     /// GUI draw helper class
     /// </summary>
