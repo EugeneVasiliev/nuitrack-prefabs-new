@@ -5,7 +5,7 @@ using nuitrack;
 
 namespace NuitrackSDKEditor.Avatar
 {
-    public class SkeletonMapper<T> where T : Object
+    public abstract class SkeletonMapper<T> where T : Object
     {
         public delegate void DropHandler(T dropObject, JointType jointType);
         public delegate void SelectHandler(JointType jointType);

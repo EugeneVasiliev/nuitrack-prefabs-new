@@ -5,6 +5,8 @@ using System.Threading;
 
 using System.IO;
 
+using NuitrackSDK;
+
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
 #endif
@@ -22,11 +24,19 @@ enum WifiConnect
 [HelpURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/")]
 public class NuitrackManager : MonoBehaviour
 {
+    public enum RotationDegree
+    {
+        Normal = 0,
+        _90 = 90,
+        _180 = 180,
+        _270 = 270
+    }
+
     bool _threadRunning;
     Thread _thread;
 
     public NuitrackInitState InitState { get { return NuitrackLoader.initState; } }
-    [SerializeField]
+    [SerializeField, NuitrackSDKInspector]
     bool
     depthModuleOn = true,
     colorModuleOn = true,
@@ -35,28 +45,42 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    [HideInInspector] public bool licenseTimeIsOver = false;
-    [HideInInspector] public LicenseInfo licenseInfo = new LicenseInfo();
+    bool licenseTimeIsOver = false;
+    public LicenseInfo LicenseInfo
+    {
+        get;
+        private set;
+    } = new LicenseInfo();
 
-    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS\n Please read this (Wireless case section): github.com/3DiVi/nuitrack-sdk/blob/master/doc/TVico_User_Guide.md#wireless-case")]
-    [SerializeField] WifiConnect wifiConnect = WifiConnect.none;
-    [SerializeField] bool runInBackground = false;
-    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
-    [SerializeField] bool asyncInit = false;
-    [SerializeField] InitEvent initEvent;
-    [Header("You can use *.oni or *.bag file instead of a sensor")]
-    [SerializeField] bool useFileRecord;
-    [SerializeField] string pathToFileRecord;
+    [Space]
 
-    [Header("Config stats")]
+    [SerializeField, NuitrackSDKInspector] bool runInBackground = false;
+    
+    [Tooltip("Only skeleton. PC, Unity Editor, MacOS and IOS")]
+    [SerializeField, NuitrackSDKInspector] WifiConnect wifiConnect = WifiConnect.none;
+   
+    [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware")]
+    [SerializeField, NuitrackSDKInspector] bool useNuitrackAi = false;
+    
+    [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).")]
+    [SerializeField, NuitrackSDKInspector] bool useFaceTracking = false;
+
     [Tooltip("Depth map doesn't accurately match an RGB image. Turn on this to align them")]
-    public bool depth2ColorRegistration = false;
-    [Tooltip("ONLY PC! Nuitrack AI is the new version of Nuitrack skeleton tracking middleware\n MORE: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Nuitrack_AI.md")]
-    public bool useNuitrackAi = false;
-    [Tooltip("Track and get information about faces with Nuitrack (position, angle of rotation, box, emotions, age, gender).\n Tutotial: github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md")]
-    public bool useFaceTracking = false;
+    [SerializeField, NuitrackSDKInspector] bool depth2ColorRegistration = false;
+
     [Tooltip("Mirror sensor data")]
-    public bool mirror = false;
+    [SerializeField, NuitrackSDKInspector] bool mirror = false;
+
+    [Tooltip ("If you have the sensor installed vertically or upside down, you can level this. Sensor rotation is not available for mirror mode.")]
+    [SerializeField, NuitrackSDKInspector] RotationDegree sensorRotation = RotationDegree.Normal;
+
+    [SerializeField, NuitrackSDKInspector] bool useFileRecord;
+    [SerializeField, NuitrackSDKInspector] string pathToFileRecord;
+
+    [Tooltip("Asynchronous initialization, allows you to turn on the nuitrack more smoothly. In this case, you need to ensure that all components that use this script will start only after its initialization.")]
+    [SerializeField, NuitrackSDKInspector] bool asyncInit = false;
+
+    [SerializeField, NuitrackSDKInspector] InitEvent initEvent;
 
     public static bool sensorConnected = false;
     public static nuitrack.DepthSensor DepthSensor { get; private set; }
@@ -96,6 +120,22 @@ public class NuitrackManager : MonoBehaviour
     [HideInInspector] public bool nuitrackInitialized = false;
 
     [HideInInspector] public System.Exception initException;
+
+    public bool UseFaceTracking
+    {
+        get
+        {
+            return useFaceTracking;
+        }
+    }
+
+    public bool UseNuitrackAi
+    {
+        get
+        {
+            return useNuitrackAi;
+        }
+    }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
@@ -371,9 +411,10 @@ public class NuitrackManager : MonoBehaviour
                 }
 
                 if (mirror)
-                {
                     nuitrack.Nuitrack.SetConfigValue("DepthProvider.Mirror", "true");
-                }
+                else
+                    nuitrack.Nuitrack.SetConfigValue("DepthProvider.RotateAngle", ((int)sensorRotation).ToString());
+
                 string devicesInfo = "";
                 if(nuitrack.Nuitrack.GetDeviceList().Count > 0)
                 {
@@ -383,8 +424,8 @@ public class NuitrackManager : MonoBehaviour
                         string sensorName = device.GetInfo(nuitrack.device.DeviceInfoType.DEVICE_NAME);
                         if (i == 0)
                         {
-                            licenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
-                            licenseInfo.SensorName = sensorName;
+                            LicenseInfo.Trial = device.GetActivationStatus() == nuitrack.device.ActivationStatus.TRIAL;
+                            LicenseInfo.SensorName = sensorName;
                         }
 
                         devicesInfo += "\nDevice " + i + " [Sensor Name: " + sensorName + ", License: " + device.GetActivationStatus() + "] ";
