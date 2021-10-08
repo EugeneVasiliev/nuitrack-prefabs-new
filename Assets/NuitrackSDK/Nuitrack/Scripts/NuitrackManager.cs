@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
@@ -400,6 +400,8 @@ public class NuitrackManager : MonoBehaviour
             }
 
             Debug.Log("Nuitrack Init OK");
+
+            nuitrack.Nuitrack.UpdateConfig();
 
             DepthSensor = nuitrack.DepthSensor.Create();
 
