@@ -7,7 +7,7 @@ using NuitrackSDKEditor.Readme;
 namespace NuitrackSDKEditor.Readme
 { 
     [CustomEditor(typeof(NuitrackReadme), true)]
-    public class NuitrackReadmeEditor : NuitrackSDKEditorGUI
+    public class NuitrackReadmeEditor : NuitrackSDKEditor
     {
         float tutorailItemHeight = 96;
 

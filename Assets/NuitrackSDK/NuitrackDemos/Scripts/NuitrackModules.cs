@@ -164,7 +164,7 @@ namespace NuitrackSDK.NuitrackDemos
 
         public void SwitchNuitrackAi()
         {
-            NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
+            NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.UseNuitrackAi);
         }
     }
 }
