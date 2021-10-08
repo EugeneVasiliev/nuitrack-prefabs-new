@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Threading;
@@ -393,6 +393,8 @@ public class NuitrackManager : MonoBehaviour
                     "Skeletonization Type: " + nuitrack.Nuitrack.GetConfigValue("Skeletonization.Type") + "\n" +
                     "Faces using: " + nuitrack.Nuitrack.GetConfigValue("Faces.ToUse") + devicesInfo);
             }
+
+            nuitrack.Nuitrack.UpdateConfig();
 
             Debug.Log("Nuitrack Init OK");
 
