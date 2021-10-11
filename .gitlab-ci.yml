@@ -4,7 +4,7 @@ stages:
 build_unity_package:
   stage: "build_package_and_NuitrackDemo"
   tags:
-    - windows_x64
+    - w10vbox
   script:
     - deploy.sh
   artifacts:
