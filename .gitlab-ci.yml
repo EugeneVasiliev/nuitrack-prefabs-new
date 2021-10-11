@@ -1,19 +1,61 @@
 stages:
-- build_package_and_NuitrackDemo
+- build_package
+- build_apk
+- build_aab
+- build_linux
 
 build_unity_package:
-  stage: "build_package_and_NuitrackDemo"
+  stage: "build_package"
   tags:
     - w10vbox
   script:
     - dir
-    - chmod +x ./deploy.cmd
-    - cmd /c deploy.cmd
+    - chmod +x ./deploy_package.cmd
+    - cmd /c deploy_package.cmd
     - dir
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
-      - NuitrackDemo.aab
+    expire_in: 14d
+
+build_apk:
+  stage: "build_apk"
+  tags:
+    - w10vbox
+  script:
+    - dir
+    - chmod +x ./deploy_apk.cmd
+    - cmd /c deploy_apk.cmd
+    - dir
+  artifacts:
+    paths:
       - NuitrackDemo.apk
+    expire_in: 14d
+
+build_aab:
+  stage: "build_aab"
+  tags:
+    - w10vbox
+  script:
+    - dir
+    - chmod +x ./deploy_abb.cmd
+    - cmd /c deploy_abb.cmd
+    - dir
+  artifacts:
+    paths:
+      - NuitrackDemo.aab
+    expire_in: 14d
+
+build_linux:
+  stage: "build_linux"
+  tags:
+    - w10vbox
+  script:
+    - dir
+    - chmod +x ./deploy_linux.cmd
+    - cmd /c deploy_linux.cmd
+    - dir
+  artifacts:
+    paths:
       - linux_build.zip
     expire_in: 14d
