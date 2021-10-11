@@ -17,6 +17,7 @@ build_unity_package:
     - dir
   artifacts:
     paths:
+      - Unity_v2020.3.1f1.alf
       - NuitrackSDK.unitypackage
       - log.txt
     expire_in: 14d
