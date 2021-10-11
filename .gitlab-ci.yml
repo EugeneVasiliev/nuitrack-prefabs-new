@@ -6,11 +6,7 @@ build_unity_package:
   tags:
     - w10vbox
   script:
-    - cmd /c echo %cd%
     - dir
-    - dir "c:/"
-    - dir "c:/Editors"
-    - dir "c:/Program Files"
     - chmod +x ./deploy.cmd
     - cmd /c deploy.cmd
     - cmd /c cat log.txt
