@@ -6,7 +6,6 @@
 
 !.gitlab-ci.yml
 !deploy.sh
-!test.sh
 !/Packages
 !/Assets
 
