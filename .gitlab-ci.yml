@@ -6,9 +6,10 @@ build_unity_package:
   tags:
     - w10vbox
   script:
-    - echo %cd%
+    - cmd /c echo %cd%
     - dir
-    - .\test.sh
+    - cat test.sh
+    - chmod +x ./test.sh
     - ./deploy.sh
   artifacts:
     paths:
