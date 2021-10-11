@@ -7,7 +7,7 @@ build_unity_package:
     - w10vbox
   script:
     - dir
-    - deploy.sh
+    - start deploy.sh
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
