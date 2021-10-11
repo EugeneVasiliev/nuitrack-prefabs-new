@@ -13,10 +13,10 @@ build_unity_package:
     - dir "c:/Program Files"
     - chmod +x ./deploy.cmd
     - cmd /c deploy.cmd
+    - cmd /c cat log.txt
     - dir
   artifacts:
     paths:
-      - Unity_v2020.3.1f1.alf
       - NuitrackSDK.unitypackage
       - log.txt
     expire_in: 14d
