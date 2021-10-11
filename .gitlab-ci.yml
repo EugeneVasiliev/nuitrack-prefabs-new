@@ -8,9 +8,11 @@ build_unity_package:
   script:
     - cmd /c echo %cd%
     - dir
+    - dir "c:\"
+    - dir "c:\Program Files"
     - cat test.sh
     - chmod +x ./test.sh
-    - ./deploy.sh
+    - chmod +x ./deploy.sh
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
