@@ -6,6 +6,7 @@ build_unity_package:
   tags:
     - w10vbox
   script:
+	- dir
     - deploy.sh
   artifacts:
     paths:
