@@ -56,7 +56,7 @@ public class BuildMyGame
     [MenuItem("Nuitrack/Developer/Create/NuitrackReadme")]
     public static void CreateAsset()
     {
-        CreateAsset<NuitrackSDKEditor.Readme.NuitrackReadme>();
+        CreateAsset<NuitrackSDKEditor.Readme.NuitrackTutorials>();
     }
 
     static void CreateAsset<T>() where T : ScriptableObject

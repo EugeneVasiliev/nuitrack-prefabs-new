@@ -4,12 +4,23 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 
 
+// +-------------+-----------------------------+
+// |             | Label                       |
+// |    Image    |                             |
+// |             | Description                 |
+// |             |                             |
+// +-------------+--------------+--------------+
+// | Text button | Video button | Scene button |
+// +-------------+--------------+--------------+
+
+
 namespace NuitrackSDKEditor.Readme
 {
-    [CustomEditor(typeof(NuitrackReadme), true)]
-    public class NuitrackReadmeEditor : NuitrackSDKEditor
+    [CustomEditor(typeof(NuitrackTutorials), true)]
+    public class NuitrackTutorialsEditor : NuitrackSDKEditor
     {
-        float tutorailItemHeight = 96;
+        const float tutorailItemHeight = 82;
+        const int maxDescriptionCharacresCount = 200;
 
         GUIStyle HeaderLabelStyle
         {
@@ -56,9 +67,9 @@ namespace NuitrackSDKEditor.Readme
             EditorGUI.EndDisabledGroup();
         }
 
-        void DrawButton(SceneAsset scene, string label, GUIStyle style)
+        bool DrawToSceneButton(SceneAsset scene, string label, string icon, GUIStyle style)
         {
-            GUIContent videoButtonContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleon");
+            GUIContent videoButtonContent = EditorGUIUtility.IconContent(icon);
             videoButtonContent.text = label;
 
             EditorGUI.BeginDisabledGroup(scene == null);
@@ -69,8 +80,16 @@ namespace NuitrackSDKEditor.Readme
 
                 string scenePath = AssetDatabase.GetAssetPath(scene);
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+                Object obj = AssetDatabase.LoadAssetAtPath(scenePath, typeof(Object));
+                Selection.activeObject = obj;
+
+                return true;
             }
+
             EditorGUI.EndDisabledGroup();
+
+            return false;
         }
 
         public override void OnInspectorGUI()
@@ -82,38 +101,62 @@ namespace NuitrackSDKEditor.Readme
 
             foreach (SerializedProperty tutorialItem in tutorialsItems)
             {
-                Texture previewImage = tutorialItem.FindPropertyRelative("previewImage").objectReferenceValue as Texture;
-                string label = tutorialItem.FindPropertyRelative("label").stringValue;
-
+                // Content item
                 using (new VecrticalGroup(EditorStyles.helpBox))
                 {
+                    // Content & button plane
                     using (new VecrticalGroup())
                     {
+                        // Content
                         using (new HorizontalGroup())
                         {
+                            Texture previewImage = tutorialItem.FindPropertyRelative("previewImage").objectReferenceValue as Texture;
+                            previewImage = previewImage ?? EditorGUIUtility.IconContent("d_SceneViewVisibility@2x").image;
+
                             float maxWidth = (tutorailItemHeight / previewImage.height) * previewImage.width;
                             GUILayout.Box(previewImage, GUILayout.Height(tutorailItemHeight), GUILayout.Width(maxWidth));
 
+                            // Label & description
+                            using (new VecrticalGroup())
+                            {
+                                string label = tutorialItem.FindPropertyRelative("label").stringValue;
 
-                            EditorGUILayout.LabelField(label, LabelStyle);
+                                EditorGUILayout.LabelField(label, LabelStyle);
+
+                                string description = tutorialItem.FindPropertyRelative("description").stringValue;
+
+                                if(description.Length > maxDescriptionCharacresCount)
+                                    description = description.Substring(0, maxDescriptionCharacresCount) + "...";
+
+                                EditorGUILayout.LabelField(description, EditorStyles.wordWrappedLabel);
+                            }
                         }
 
-                        EditorGUILayout.Space();
+                        GUILayout.Space(10);
 
+                        // Button plane
                         using (new HorizontalGroup())
                         {
                             string textURL = tutorialItem.FindPropertyRelative("textURL").stringValue;
                             string videoURL = tutorialItem.FindPropertyRelative("videoURL").stringValue;
                             SceneAsset scene = tutorialItem.FindPropertyRelative("scene").objectReferenceValue as SceneAsset;
 
-                            DrawButton(textURL, "Text", "PreTexA@2x", EditorStyles.miniButtonLeft);
-                            DrawButton(videoURL, "Video", "Profiler.Video@2x", EditorStyles.miniButtonMid);
-                            DrawButton(scene, "Scene", EditorStyles.miniButtonRight);
+                            DrawButton(textURL, "Text", "d_UnityEditor.ConsoleWindow@2x", EditorStyles.miniButtonLeft);
+                            DrawButton(videoURL, "Video", "d_UnityEditor.Timeline.TimelineWindow", EditorStyles.miniButtonMid);
+
+                            if (DrawToSceneButton(scene, "Scene", "d_animationvisibilitytoggleon", EditorStyles.miniButtonRight))
+                                break;
                         }
 
+                        GUILayout.Space(5);
                     }
                 }
             }
+
+            GUILayout.Space(10);
+
+            if (GUILayout.Button("See more on GitHub page"))
+                Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/tree/master/doc");
         }
     }
 }
