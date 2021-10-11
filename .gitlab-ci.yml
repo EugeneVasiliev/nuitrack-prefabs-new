@@ -13,5 +13,7 @@ build_unity_package:
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
-      - log.txt
+      - NuitrackDemo.aab
+      - NuitrackDemo.apk
+      - linux_build.zip
     expire_in: 14d
