@@ -8,7 +8,7 @@ build_unity_package:
   script:
     - echo %cd%
     - dir
-    - ./test.sh
+    - .\test.sh
     - ./deploy.sh
   artifacts:
     paths:
