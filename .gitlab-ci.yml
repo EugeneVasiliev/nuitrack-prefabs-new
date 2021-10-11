@@ -12,7 +12,7 @@ build_unity_package:
     - dir "c:/Editors"
     - dir "c:/Program Files"
     - chmod +x ./deploy.cmd
-    - cmd /c ./deploy.cmd
+    - cmd /c deploy.cmd
   artifacts:
     paths:
       - NuitrackSDK.unitypackage
