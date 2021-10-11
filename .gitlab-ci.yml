@@ -13,7 +13,6 @@ build_unity_package:
     - dir "c:/Program Files"
     - chmod +x ./deploy.cmd
     - cmd /c deploy.cmd
-    - cmd /c cat log.txt
     - dir
   artifacts:
     paths:
