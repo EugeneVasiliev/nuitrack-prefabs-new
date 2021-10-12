@@ -3,7 +3,7 @@ using UnityEditor;
 
 using UnityEditor.SceneManagement;
 
-
+// Menu Item Template
 // +-------------+-----------------------------+
 // |             | Label                       |
 // |    Image    |                             |
@@ -102,10 +102,10 @@ namespace NuitrackSDKEditor.Readme
             foreach (SerializedProperty tutorialItem in tutorialsItems)
             {
                 // Content item
-                using (new VecrticalGroup(EditorStyles.helpBox))
+                using (new VerticalGroup(EditorStyles.helpBox))
                 {
                     // Content & button plane
-                    using (new VecrticalGroup())
+                    using (new VerticalGroup())
                     {
                         // Content
                         using (new HorizontalGroup())
@@ -117,7 +117,7 @@ namespace NuitrackSDKEditor.Readme
                             GUILayout.Box(previewImage, GUILayout.Height(tutorailItemHeight), GUILayout.Width(maxWidth));
 
                             // Label & description
-                            using (new VecrticalGroup())
+                            using (new VerticalGroup())
                             {
                                 string label = tutorialItem.FindPropertyRelative("label").stringValue;
 

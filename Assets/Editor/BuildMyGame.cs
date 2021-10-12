@@ -53,6 +53,7 @@ public class BuildMyGame
         return EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
     }
 
+    // This menu will be missing in the final unitypackage
     [MenuItem("Nuitrack/Developer/Create/NuitrackReadme")]
     public static void CreateAsset()
     {

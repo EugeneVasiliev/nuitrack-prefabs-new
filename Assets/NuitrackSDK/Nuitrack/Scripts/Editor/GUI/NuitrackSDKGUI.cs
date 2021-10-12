@@ -11,6 +11,7 @@ namespace NuitrackSDKEditor
     /// Put the <see cref="GUI"/> block code in the using statement to color the <see cref="GUI"/> elements in the specified color
     /// After the using block, the <see cref="GUI"/> color will return to the previous one
     ///
+    /// <para>
     /// <example>
     /// This shows how to change the GUI color
     /// <code>
@@ -20,6 +21,7 @@ namespace NuitrackSDKEditor
     /// }
     /// </code>
     /// </example>
+    /// </para>
     /// </summary>
     public class GUIColor : IDisposable
     {
@@ -41,6 +43,7 @@ namespace NuitrackSDKEditor
     /// Put the <see cref="Handles"/> block code in the using statement to color the <see cref="Handles"/> elements in the specified color
     /// After the using block, the <see cref="Handles"/> color will return to the previous one
     ///
+    /// <para>
     /// <example>
     /// This shows how to change the Handles color
     /// <code>
@@ -50,6 +53,7 @@ namespace NuitrackSDKEditor
     /// }
     /// </code>
     /// </example>
+    /// </para>
     /// </summary>
     public class HandlesColor : IDisposable
     {
@@ -67,13 +71,32 @@ namespace NuitrackSDKEditor
         }
     }
 
-
+    /// <summary>
+    /// Place GUI elements in a horizontal group <seealso cref="EditorGUILayout.BeginHorizontal(GUIStyle, GUILayoutOption[])"/>
+    /// 
+    /// <para>
+    /// <example>
+    /// This shows how to put GUI elements in a horizontal group via using
+    /// <code>
+    /// using (new HorizontalGroup())
+    /// {
+    ///     // Your GUI code ...
+    /// }
+    /// </code>
+    /// </example>
+    /// </para>
+    /// </summary>
     public class HorizontalGroup : IDisposable
     {
-        public HorizontalGroup(GUIStyle styles = null, GUILayoutOption[] options = null)
+        /// <summary>
+        /// Create a horizontal group
+        /// </summary>
+        /// <param name="guiStyle">GUI style (default is GUIStyle.none)</param>
+        /// <param name="options">GUI layout option (GUILayout.Width, GUILayout.MinWidth and others)</param>
+        public HorizontalGroup(GUIStyle guiStyle = null, GUILayoutOption[] options = null)
         {
-            styles ??= GUIStyle.none;
-            EditorGUILayout.BeginHorizontal(styles, options);
+            guiStyle ??= GUIStyle.none;
+            EditorGUILayout.BeginHorizontal(guiStyle, options);
         }
 
         public void Dispose()
@@ -82,9 +105,29 @@ namespace NuitrackSDKEditor
         }
     }
 
-    public class VecrticalGroup : IDisposable
+    /// <summary>
+    /// Place GUI elements in a vertical group <seealso cref="EditorGUILayout.BeginVertical(GUIStyle, GUILayoutOption[])"/>
+    /// 
+    /// <para>
+    /// <example>
+    /// This shows how to put GUI elements in a vertical group via using
+    /// <code>
+    /// using (new VerticalGroup())
+    /// {
+    ///     // Your GUI code ...
+    /// }
+    /// </code>
+    /// </example>
+    /// </para>
+    /// </summary>
+    public class VerticalGroup : IDisposable
     {
-        public VecrticalGroup(GUIStyle styles = null, GUILayoutOption[] options = null)
+        /// <summary>
+        /// Create a vertical group
+        /// </summary>
+        /// <param name="guiStyle">GUI style (default is GUIStyle.none)</param>
+        /// <param name="options">GUI layout option (GUILayout.Width, GUILayout.MinWidth and others)</param>
+        public VerticalGroup(GUIStyle styles = null, GUILayoutOption[] options = null)
         {
             styles ??= GUIStyle.none;
             EditorGUILayout.BeginVertical(styles, options);
