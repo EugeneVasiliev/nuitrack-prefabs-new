@@ -10,8 +10,7 @@ build_unity_package:
     - w10vbox
   script:
     - dir
-    - chmod +x ./deploy_package.cmd
-    - cmd /c deploy_package.cmd
+    - deploy_package.cmd
     - dir
   artifacts:
     paths:
@@ -24,8 +23,7 @@ build_apk:
     - w10vbox
   script:
     - dir
-    - chmod +x ./deploy_apk.cmd
-    - cmd /c deploy_apk.cmd
+    - deploy_apk.cmd
     - dir
   artifacts:
     paths:
