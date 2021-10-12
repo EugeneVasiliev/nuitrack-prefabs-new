@@ -44,25 +44,6 @@ Config parameters:
 3. Drag to the Scene "NuitrackSDK\Frame\Prefabs\Sensor Frame Canvas"
 4. Run the scene
 
-*Tutorials*
-First Project - https://www.youtube.com/watch?v=F1Vx_pu9dbk || https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Basic.md (Skeleton)
-Avatar Animation - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Avatar_Animation.md (Skeleton)
-RGBandSkeletons - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_RGB_Skeletons.md (Skeleton)
-Point Cloud - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Point_Cloud.md (RGB, Depth)
-SegmentExample - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Segment.md (User tracking)
-FaceTracker - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Face_Tracking.md (Face tracking, RGB)
-Animated Emoji - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Animated_Emoji.md (Face tracking, RGB)
-Box (VR Mobile) (android game) - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_VR_Box.md (Skeleton, VR)
-GPUVisualization (mini-demo of visualization of sensor frames)
-HandTracker - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Gallery.md (Hand tracking, Gestures)
-Motion Capture - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Animation_Recording.md (Skeleton)
-JumpTrainer - https://www.youtube.com/user/3divicompany (RGB, Skeleton)
-NuitrackAI - https://www.youtube.com/watch?v=75gpVuwygx8 (Nuitrack AI, RGB, Object tracking)
-Zombie Nightmare (Oculus RIFT) - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_Zombies_Oculus.md (Skeleton, VR)
-AR Football - https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/Unity_AR_Football.md (Skeleton, AR)
-AR Nuitrack - https://www.youtube.com/user/3divicompany (RGB, Depth, Skeleton)
-FinalIK - https://www.youtube.com/watch?v=UeZO3GHo_MI (Skeleton)
-
 *Troubleshooting*
 Q:After unpacking, the editor interface broke. 
 A:Restart the editor everything should be fixed

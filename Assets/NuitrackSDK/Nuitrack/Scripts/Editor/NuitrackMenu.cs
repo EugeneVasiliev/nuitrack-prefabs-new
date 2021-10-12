@@ -44,7 +44,8 @@ namespace NuitrackSDKEditor
         [MenuItem("Nuitrack/Help/Open Tutorials Page", priority = 21)]
         public static void GoToDocsPage()
         {
-            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/");
+            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath("Assets/NuitrackSDK/TUTORIALS.asset", typeof(UnityEngine.Object));
+            Selection.activeObject = obj;
         }
 
         [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]
