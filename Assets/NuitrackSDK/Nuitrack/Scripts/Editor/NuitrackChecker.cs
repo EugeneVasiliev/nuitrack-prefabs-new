@@ -1,24 +1,20 @@
 using UnityEngine;
 using UnityEditor;
-using System.Threading;
+using System.IO;
 
 public class NuitrackChecker
 {
-    static bool _threadRunning;
-    static Thread _thread;
     static BuildTargetGroup buildTargetGroup;
     static string backendMessage;
+
+    static string filename = "nuitrack.lock";
 
     public static void Check()
     {
         buildTargetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
         backendMessage = "Current Scripting Backend " + PlayerSettings.GetScriptingBackend(buildTargetGroup) + "  Target:" + buildTargetGroup;
 
-        if (!_threadRunning)
-        {
-            _thread = new Thread(WorkingThread);
-            _thread.Start();
-        }
+        PingNuitrack();
     }
 
     static void PingNuitrack()
@@ -54,25 +50,11 @@ public class NuitrackChecker
             Debug.Log(ex.ToString());
         }
 
-        StopThread();
-    }
-
-    static void WorkingThread()
-    {
-        _threadRunning = true;
-
-        while (_threadRunning)
+        if (!File.Exists(filename))
         {
-            PingNuitrack();
-        }
-    }
-
-    static void StopThread()
-    {
-        if (_threadRunning)
-        {
-            _threadRunning = false;
-            _thread.Join();
+            FileInfo fi = new FileInfo(filename);
+            fi.Create();
+            UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
         }
     }
 }
