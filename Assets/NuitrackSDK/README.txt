@@ -44,6 +44,9 @@ Config parameters:
 3. Drag to the Scene "NuitrackSDK\Frame\Prefabs\Sensor Frame Canvas"
 4. Run the scene
 
+*Tutorials*
+To open the list of tutorials in the main menu, click: Nuitrack -> Help -> Open tutorials list
+
 *Troubleshooting*
 Q:After unpacking, the editor interface broke. 
 A:Restart the editor everything should be fixed
