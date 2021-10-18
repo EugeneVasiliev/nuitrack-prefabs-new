@@ -49,7 +49,7 @@ public class NuitrackErrorSolver
             errorMessage = noSensorMessage;
         else if (error.Contains("INIT_NUITRACK_MANAGER_NOT_INSTALLED"))
         {
-            errorMessage = "<color=red><b>" + "Install Nuitrack App. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms" + "</b></color>";
+            errorMessage = "<color=red><b>" + "Install VicoVR App from Google Play or Nuitrack App. https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms" + "</b></color>";
         }
         else if (error.Contains("INIT_NUITRACK_RESOURCES_NOT_INSTALLED"))
         {
