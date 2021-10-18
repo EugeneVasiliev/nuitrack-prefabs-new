@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.IO;
 using System;
+using NuitrackSDKEditor.Documentation;
 
 namespace NuitrackSDKEditor
 {
@@ -42,10 +43,9 @@ namespace NuitrackSDKEditor
         }
 
         [MenuItem("Nuitrack/Help/Open tutorials list", priority = 21)]
-        public static void GoToDocsPage()
+        public static void OpenTutoralList()
         {
-            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath("Assets/NuitrackSDK/TUTORIALS.asset", typeof(UnityEngine.Object));
-            Selection.activeObject = obj;
+            NuitrackTutorialsEditorWindow.Init();
         }
 
         [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]
