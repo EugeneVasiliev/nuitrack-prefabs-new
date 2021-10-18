@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 
+using System.Collections.Generic;
+
 using UnityEditor.SceneManagement;
 
 // Menu Item Template
@@ -23,6 +25,8 @@ namespace NuitrackSDKEditor.Documentation
 
         static Vector2 scrollPos = Vector2.zero;
 
+        static string selectTags = string.Empty;
+
         public static void Init()
         {
             // Get existing open window or if none, make a new one:
@@ -32,7 +36,7 @@ namespace NuitrackSDKEditor.Documentation
 
         void OnGUI()
         {
-            DrawTutorials();
+            DrawTutorials(true);
         }
 
         static GUIStyle HeaderLabelStyle
@@ -105,14 +109,42 @@ namespace NuitrackSDKEditor.Documentation
             return false;
         }
    
-        public static void DrawTutorials()
+        static string TagField()
+        {
+            GUIContent clearButton = EditorGUIUtility.IconContent("d_winbtn_win_close");
+            clearButton.tooltip = "Clear";
+
+            Rect main = EditorGUILayout.GetControlRect();
+            main.xMax -= clearButton.image.width;
+
+            Rect clearButtonRect = new Rect(main.x + main.width, main.y, clearButton.image.width, main.height);
+
+            string inputTags = EditorGUI.TextField(main, "Filter by tags", selectTags);
+
+            if (GUI.Button(clearButtonRect, clearButton, GUIStyle.none))
+            {
+                inputTags = string.Empty;
+                GUIUtility.keyboardControl = 0;
+            }
+
+            return inputTags;
+        }
+
+        public static void DrawTutorials(bool inspectorMode)
         {
             EditorGUILayout.LabelField("Nuitrack tutorials", HeaderLabelStyle);
             EditorGUILayout.Space();
 
             NuitrackTutorials tutorials = (NuitrackTutorials)AssetDatabase.LoadAssetAtPath("Assets/NuitrackSDK/TUTORIALS.asset", typeof(NuitrackTutorials));
 
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
+            selectTags = TagField();
+
+            List<string> tags = new List<string>(selectTags.Split(','));
+            for(int i = 0; i < tags.Count; i++)
+                tags[i] = tags[i].Trim(' ');
+
+            if (inspectorMode)
+                scrollPos = GUILayout.BeginScrollView(scrollPos);
 
             foreach (NuitrackTutorials.TutorialItem tutorialItem in tutorials.TutorialItems)
             {
@@ -145,7 +177,22 @@ namespace NuitrackSDKEditor.Documentation
                             }
                         }
 
-                        GUILayout.Space(10);
+                        using (new HorizontalGroup())
+                        {
+                            foreach (string tag in tutorialItem.Tags)
+                            {
+                                bool tagClicked = GUILayout.Button(string.Format("#{0}", tag), EditorStyles.linkLabel);
+                                EditorGUIUtility.AddCursorRect(GUILayoutUtility.GetLastRect(), MouseCursor.Link);
+
+                                if (tagClicked)
+                                {
+                                    selectTags += selectTags == string.Empty ? tag : string.Format(" ,{0}", tag);
+                                    GUIUtility.keyboardControl = 0;
+                                }
+                            }
+                        }
+
+                            GUILayout.Space(10);
 
                         // Button plane
                         using (new HorizontalGroup())
@@ -162,7 +209,8 @@ namespace NuitrackSDKEditor.Documentation
                 }
             }
 
-            GUILayout.EndScrollView();
+            if (inspectorMode)
+                GUILayout.EndScrollView();
 
             GUILayout.Space(10);
 

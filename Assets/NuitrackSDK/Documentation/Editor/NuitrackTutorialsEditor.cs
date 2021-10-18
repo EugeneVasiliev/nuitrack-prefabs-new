@@ -7,8 +7,7 @@ namespace NuitrackSDKEditor.Documentation
     {
         public override void OnInspectorGUI()
         {
-            NuitrackTutorialsEditorWindow.DrawTutorials();
-            // pass all draws
+            NuitrackTutorialsEditorWindow.DrawTutorials(false);
         }
     }
 }

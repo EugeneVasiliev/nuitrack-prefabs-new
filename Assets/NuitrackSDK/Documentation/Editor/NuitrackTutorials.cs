@@ -21,6 +21,8 @@ namespace NuitrackSDKEditor.Documentation
 
             [SerializeField] SceneAsset scene;
 
+            [SerializeField] List<string> tags;
+
             public string Label
             {
                 get
@@ -66,6 +68,14 @@ namespace NuitrackSDKEditor.Documentation
                 get
                 {
                     return scene;
+                }
+            }
+
+            public List<string> Tags
+            {
+                get
+                {
+                    return tags;
                 }
             }
         }
