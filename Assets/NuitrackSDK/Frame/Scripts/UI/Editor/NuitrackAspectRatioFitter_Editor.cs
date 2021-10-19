@@ -39,7 +39,7 @@ namespace NuitrackSDKEditor.Frame
             base.OnInspectorGUI();
 
             if (FindObjectOfType<NuitrackManager>(true) == null)
-                Helper.NuitrackNotExistMessage();
+                NuitrackSDKGUI.NuitrackNotExistMessage();
 
             if (nuitrackAspectRatioFitter.aspectMode != AspectRatioFitter.AspectMode.FitInParent)
             {
@@ -50,7 +50,7 @@ namespace NuitrackSDKEditor.Frame
                     "\nRecommended: Fit In Parent.",
                     nuitrackAspectRatioFitter.aspectMode);
 
-                Helper.DrawMessage(message, LogType.Warning, fixAcpectMode, "Fix");        
+                NuitrackSDKGUI.DrawMessage(message, LogType.Warning, fixAcpectMode, "Fix");
             }
 
             serializedObject.ApplyModifiedProperties();
