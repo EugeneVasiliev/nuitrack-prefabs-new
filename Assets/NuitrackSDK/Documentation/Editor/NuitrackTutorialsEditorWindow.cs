@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Collections.Generic;
 
 using UnityEditor.SceneManagement;
+using UnityEngine.Events;
 
 // Menu Item Template
 // +-------------+-----------------------------+
@@ -20,17 +21,18 @@ namespace NuitrackSDKEditor.Documentation
 {
     public class NuitrackTutorialsEditorWindow : EditorWindow
     {
-        const float tutorailItemHeight = 82;
-        const int maxDescriptionCharacresCount = 200;
+        const float itemHeight = 82;
+        const int maxDescriptionCharCount = 200;
 
         static Vector2 scrollPos = Vector2.zero;
-
         static string selectTags = string.Empty;
+
+        static Color filterEnableColor = Color.green;
 
         public static void Init()
         {
-            // Get existing open window or if none, make a new one:
-            NuitrackTutorialsEditorWindow window = (NuitrackTutorialsEditorWindow)EditorWindow.GetWindow(typeof(NuitrackTutorialsEditorWindow));
+            NuitrackTutorialsEditorWindow window = GetWindow<NuitrackTutorialsEditorWindow>();
+            window.minSize = new Vector2(500, 600);
             window.Show();
         }
 
@@ -108,26 +110,16 @@ namespace NuitrackSDKEditor.Documentation
 
             return false;
         }
-   
-        static string TagField()
+
+        static bool ContainsTag(List<string> tags, List<string> filterTags)
         {
-            GUIContent clearButton = EditorGUIUtility.IconContent("d_winbtn_win_close");
-            clearButton.tooltip = "Clear";
-
-            Rect main = EditorGUILayout.GetControlRect();
-            main.xMax -= clearButton.image.width;
-
-            Rect clearButtonRect = new Rect(main.x + main.width, main.y, clearButton.image.width, main.height);
-
-            string inputTags = EditorGUI.TextField(main, "Filter by tags", selectTags);
-
-            if (GUI.Button(clearButtonRect, clearButton, GUIStyle.none))
+            foreach (string tutorialTag in tags)
             {
-                inputTags = string.Empty;
-                GUIUtility.keyboardControl = 0;
+                foreach (string filterTag in filterTags)
+                    if (tutorialTag.ToLower().Contains(filterTag))
+                        return true;
             }
-
-            return inputTags;
+            return false;
         }
 
         public static void DrawTutorials(bool inspectorMode)
@@ -137,17 +129,31 @@ namespace NuitrackSDKEditor.Documentation
 
             NuitrackTutorials tutorials = (NuitrackTutorials)AssetDatabase.LoadAssetAtPath("Assets/NuitrackSDK/TUTORIALS.asset", typeof(NuitrackTutorials));
 
-            selectTags = TagField();
+            UnityAction addButtonAction = delegate
+            {
+                selectTags = string.Empty;
+                GUIUtility.keyboardControl = 0;
+            };
 
-            List<string> tags = new List<string>(selectTags.Split(','));
-            for(int i = 0; i < tags.Count; i++)
-                tags[i] = tags[i].Trim(' ');
+            Rect fieldRect = NuitrackSDKGUI.WithRightButton(addButtonAction, "winbtn_win_close", "Clear");
+            Color tagSetColor = selectTags == string.Empty ? GUI.color : Color.Lerp(GUI.color, filterEnableColor, 0.5f);
+
+            using (new GUIColor(tagSetColor))
+                selectTags = EditorGUI.TextField(fieldRect, "Filter by tags", selectTags);
+
+            GUILayout.Space(10);
+
+            string lowerSelectTags = selectTags.ToLower();
+            List<string> filterTags = new List<string>(lowerSelectTags.Split(new char[] { ',', ';' }, System.StringSplitOptions.RemoveEmptyEntries));
 
             if (inspectorMode)
                 scrollPos = GUILayout.BeginScrollView(scrollPos);
 
             foreach (NuitrackTutorials.TutorialItem tutorialItem in tutorials.TutorialItems)
             {
+                if(filterTags.Count > 0 && !ContainsTag(tutorialItem.Tags, filterTags))
+                    continue;
+
                 // Content item
                 using (new VerticalGroup(EditorStyles.helpBox))
                 {
@@ -157,11 +163,12 @@ namespace NuitrackSDKEditor.Documentation
                         // Content
                         using (new HorizontalGroup())
                         {
-                            Texture previewImage = tutorialItem.PreviewImage;
-                            previewImage = previewImage ?? EditorGUIUtility.IconContent("d_SceneViewVisibility@2x").image;
+                            Texture previewImage = tutorialItem.PreviewImage != null ?
+                                tutorialItem.PreviewImage :
+                                EditorGUIUtility.IconContent("SceneViewVisibility@2x").image;
 
-                            float maxWidth = (tutorailItemHeight / previewImage.height) * previewImage.width;
-                            GUILayout.Box(previewImage, GUILayout.Height(tutorailItemHeight), GUILayout.Width(maxWidth));
+                            float maxWidth = (itemHeight / previewImage.height) * previewImage.width;
+                            GUILayout.Box(previewImage, GUILayout.Height(itemHeight), GUILayout.Width(maxWidth));
 
                             // Label & description
                             using (new VerticalGroup())
@@ -170,8 +177,8 @@ namespace NuitrackSDKEditor.Documentation
 
                                 string description = tutorialItem.Description;
 
-                                if (description.Length > maxDescriptionCharacresCount)
-                                    description = description.Substring(0, maxDescriptionCharacresCount) + "...";
+                                if (description.Length > maxDescriptionCharCount)
+                                    description = description.Substring(0, maxDescriptionCharCount) + "...";
 
                                 EditorGUILayout.LabelField(description, EditorStyles.wordWrappedLabel);
                             }
@@ -181,26 +188,28 @@ namespace NuitrackSDKEditor.Documentation
                         {
                             foreach (string tag in tutorialItem.Tags)
                             {
-                                bool tagClicked = GUILayout.Button(string.Format("#{0}", tag), EditorStyles.linkLabel);
+                                GUIContent tagButton = new GUIContent(string.Format("#{0}", tag), "Click to show tutorials with a similar tag");
+
+                                bool tagClicked = GUILayout.Button(tagButton, EditorStyles.linkLabel);
                                 EditorGUIUtility.AddCursorRect(GUILayoutUtility.GetLastRect(), MouseCursor.Link);
 
                                 if (tagClicked)
                                 {
-                                    selectTags += selectTags == string.Empty ? tag : string.Format(" ,{0}", tag);
+                                    selectTags += selectTags == string.Empty ? tag : string.Format(", {0}", tag);
                                     GUIUtility.keyboardControl = 0;
                                 }
                             }
                         }
-
-                            GUILayout.Space(10);
+                        
+                        GUILayout.Space(10);
 
                         // Button plane
                         using (new HorizontalGroup())
                         {
-                            DrawButton(tutorialItem.TextURL, "Text", "d_UnityEditor.ConsoleWindow@2x", EditorStyles.miniButtonLeft);
-                            DrawButton(tutorialItem.VideoURL, "Video", "d_UnityEditor.Timeline.TimelineWindow", EditorStyles.miniButtonMid);
+                            DrawButton(tutorialItem.TextURL, "Text", "UnityEditor.ConsoleWindow", EditorStyles.miniButtonLeft);
+                            DrawButton(tutorialItem.VideoURL, "Video", "UnityEditor.Timeline.TimelineWindow", EditorStyles.miniButtonMid);
 
-                            if (DrawToSceneButton(tutorialItem.Scene, "Scene", "d_animationvisibilitytoggleon", EditorStyles.miniButtonRight))
+                            if (DrawToSceneButton(tutorialItem.Scene, "Scene", "animationvisibilitytoggleon", EditorStyles.miniButtonRight))
                                 break;
                         }
 

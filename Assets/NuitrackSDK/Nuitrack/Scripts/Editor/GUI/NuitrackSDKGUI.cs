@@ -3,7 +3,7 @@ using UnityEditor;
 
 using System;
 using System.IO;
-
+using UnityEngine.Events;
 
 namespace NuitrackSDKEditor
 {
@@ -145,23 +145,25 @@ namespace NuitrackSDKEditor
     public static class NuitrackSDKGUI
     {
         /// <summary>
-        /// Draw the "Help" button. Return a rectangle to draw your GUI element with an indent for the button.
+        ///  Draw an additional button to the right of the GUI element (for example, the clear or help button)
+        ///  Return a rectangle to draw your GUI element with an indent for the button.
         /// </summary>
-        /// <param name="url">Click-through link</param>
+        /// <param name="buttonAction">Action when clicking on an button</param>
+        /// <param name="iconName">Name of the icon for the button</param>
         /// <param name="tooltip">(optional) ToolTip displayed when hovering over the button</param>
         /// <returns>Rectangle to draw your GUI element with an indent for the button.</returns>
-        public static Rect WithHelpButton(string url, string tooltip = "")
+        public static Rect WithRightButton(UnityAction buttonAction, string iconName, string tooltip = "")
         {
-            GUIContent helpButton = EditorGUIUtility.IconContent("_Help");
-            helpButton.tooltip = tooltip;
+            GUIContent buttonContent = EditorGUIUtility.IconContent(iconName);
+            buttonContent.tooltip = tooltip;
 
             Rect main = EditorGUILayout.GetControlRect();
-            main.xMax -= helpButton.image.width;
+            main.xMax -= buttonContent.image.width;
 
-            Rect helpButtonRect = new Rect(main.x + main.width, main.y, helpButton.image.width, main.height);
+            Rect addButtonRect = new Rect(main.x + main.width, main.y, buttonContent.image.width, main.height);
 
-            if (GUI.Button(helpButtonRect, helpButton, GUIStyle.none))
-                Application.OpenURL(url);
+            if (GUI.Button(addButtonRect, buttonContent, GUIStyle.none))
+                buttonAction.Invoke();
 
             return main;
         }
@@ -177,7 +179,9 @@ namespace NuitrackSDKEditor
         {
             SerializedProperty property = serializedObject.FindProperty(propertyName);
 
-            Rect propertyRect = WithHelpButton(url, toolTip);
+            UnityAction helpClick = delegate { Application.OpenURL(url); };
+
+            Rect propertyRect = WithRightButton(helpClick, "_Help", toolTip);
 
             EditorGUI.PropertyField(propertyRect, property);
             serializedObject.ApplyModifiedProperties();
@@ -196,7 +200,7 @@ namespace NuitrackSDKEditor
             GUIContent browseButtonContent = EditorGUIUtility.IconContent("Project");
             browseButtonContent.text = "Browse";
 
-            GUIContent clearButtonContent = EditorGUIUtility.IconContent("d_TreeEditor.Trash");
+            GUIContent clearButtonContent = EditorGUIUtility.IconContent("TreeEditor.Trash");
             clearButtonContent.text = "Clear";
 
             GUIContent errorMessage = EditorGUIUtility.IconContent("console.erroricon.sml");
@@ -247,7 +251,10 @@ namespace NuitrackSDKEditor
             EditorGUI.BeginDisabledGroup(path == string.Empty);
 
             if (GUILayout.Button(clearButtonContent))
+            {
                 path = string.Empty;
+                GUIUtility.keyboardControl = 0;
+            }
 
             EditorGUI.EndDisabledGroup();
 
