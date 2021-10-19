@@ -278,30 +278,41 @@ namespace NuitrackSDKEditor.Avatar
             NuitrackAvatar nuitrackAvatar = serializedObject.targetObject as NuitrackAvatar;
             Transform root = nuitrackAvatar.transform;
 
-            Vector3 midPoint = root.position;
             Transform[] childTransforms = root.GetComponentsInChildren<Transform>();
-            List<Transform> secondChildTransforms = new List<Transform>(childTransforms);
 
-            float maxDist = 0;
+            float maxDistance = 0;
+            float minDistance = float.MaxValue;
+
+            Vector3 midPoint = root.position;
 
             foreach (Transform child in childTransforms)
             {
-                midPoint += child.position;
+                float midPointDist = 0;
+                float centerMassDist = 0;
 
-                foreach (Transform secondChild in secondChildTransforms)
+                foreach (Transform second in childTransforms)
                 {
-                    float dist = Vector3.Distance(secondChild.position, child.position);
-                    if (dist > maxDist)
-                        maxDist = dist;
+                    float distance = Vector3.Distance(child.position, second.position);
+
+                    midPointDist += distance;
+                    centerMassDist += distance * distance;
                 }
 
-                secondChildTransforms.Remove(child);
+                midPointDist /= childTransforms.Length;
+                centerMassDist = Mathf.Sqrt(centerMassDist);
+
+                if (midPointDist > maxDistance)
+                    maxDistance = midPointDist;
+
+                if (centerMassDist < minDistance)
+                {
+                    minDistance = centerMassDist;
+                    midPoint = child.position;
+                }
             }
 
-            midPoint /= childTransforms.Length + 1;
-
             SceneView.lastActiveSceneView.pivot = midPoint;
-            SceneView.lastActiveSceneView.size = maxDist * 0.5f;
+            SceneView.lastActiveSceneView.size = maxDistance;
             SceneView.lastActiveSceneView.rotation = root.rotation * Quaternion.Euler(0f, 180f, 0f);
 
             SceneView.lastActiveSceneView.Repaint();
