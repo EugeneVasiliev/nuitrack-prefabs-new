@@ -75,7 +75,7 @@ namespace NuitrackSDKEditor.Avatar
             Rect rect = GUILayoutUtility.GetRect(SkeletonStyles.UnityDude, GUIStyle.none, GUILayout.MaxWidth(SkeletonStyles.UnityDude.image.width));
             rect.x += (EditorGUIUtility.currentViewWidth - rect.width) / 2;
 
-            Color grayColor = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+            Color grayColor = new Color(0.3f, 0.3f, 0.3f, 1.0f);
 
             using (new GUIColor(grayColor))
                 GUI.DrawTexture(rect, SkeletonStyles.UnityDude.image);
