@@ -45,7 +45,7 @@ public class NuitrackManager : MonoBehaviour
     gesturesRecognizerModuleOn = true,
     handsTrackerModuleOn = true;
 
-    bool licenseTimeIsOver = false;
+    bool nuitrackError = false;
     public LicenseInfo LicenseInfo
     {
         get;
@@ -571,7 +571,7 @@ public class NuitrackManager : MonoBehaviour
 
     public void StartNuitrack()
     {
-        licenseTimeIsOver = false;
+        nuitrackError = false;
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (!IsNuitrackLibrariesInitialized())
             return;
@@ -624,7 +624,7 @@ public class NuitrackManager : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (IsNuitrackLibrariesInitialized())
 #endif
-        if (licenseTimeIsOver)
+        if (nuitrackError)
             return;
 
         if (!pauseState || (asyncInit && _threadRunning))
@@ -635,14 +635,10 @@ public class NuitrackManager : MonoBehaviour
             }
             catch (System.Exception ex)
             {
+                NuitrackErrorSolver.CheckError(ex, true, false);
                 if (ex.ToString().Contains("LicenseNotAcquiredException"))
                 {
-                    NuitrackErrorSolver.CheckError(ex, true, false);
-                    licenseTimeIsOver = true;
-                }
-                else
-                {
-                    Debug.LogError(ex.ToString());
+                    nuitrackError = true;
                 }
             }
         }
