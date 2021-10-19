@@ -45,7 +45,7 @@ namespace NuitrackSDKEditor
         [MenuItem("Nuitrack/Help/Open tutorials list", priority = 21)]
         public static void OpenTutoralList()
         {
-            NuitrackTutorialsEditorWindow.Init();
+            NuitrackTutorialsEditorWindow.Open();
         }
 
         [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]

@@ -1,10 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-using System.Collections.Generic;
-
 using UnityEditor.SceneManagement;
-using UnityEngine.Events;
+
+using System.Collections.Generic;
 
 // Menu Item Template
 // +-------------+-----------------------------+
@@ -29,7 +28,7 @@ namespace NuitrackSDKEditor.Documentation
 
         static Color filterEnableColor = Color.green;
 
-        public static void Init()
+        public static void Open()
         {
             NuitrackTutorialsEditorWindow window = GetWindow<NuitrackTutorialsEditorWindow>();
             window.minSize = new Vector2(500, 600);
@@ -113,13 +112,24 @@ namespace NuitrackSDKEditor.Documentation
 
         static bool ContainsTag(List<string> tags, List<string> filterTags)
         {
-            foreach (string tutorialTag in tags)
+            foreach (string filterTag in filterTags)
             {
-                foreach (string filterTag in filterTags)
+                bool haveTags = false;
+                
+                foreach (string tutorialTag in tags)
+                {
                     if (tutorialTag.ToLower().Contains(filterTag))
-                        return true;
+                    {
+                        haveTags = true;
+                        break;
+                    }
+                }
+
+                if (!haveTags)
+                    return false;
             }
-            return false;
+
+            return true;
         }
 
         public static void DrawTutorials(bool inspectorMode)
@@ -129,11 +139,11 @@ namespace NuitrackSDKEditor.Documentation
 
             NuitrackTutorials tutorials = (NuitrackTutorials)AssetDatabase.LoadAssetAtPath("Assets/NuitrackSDK/TUTORIALS.asset", typeof(NuitrackTutorials));
 
-            UnityAction addButtonAction = delegate
+            static void addButtonAction()
             {
                 selectTags = string.Empty;
                 GUIUtility.keyboardControl = 0;
-            };
+            }
 
             Rect fieldRect = NuitrackSDKGUI.WithRightButton(addButtonAction, "winbtn_win_close", "Clear");
             Color tagSetColor = selectTags == string.Empty ? GUI.color : Color.Lerp(GUI.color, filterEnableColor, 0.5f);
@@ -144,6 +154,9 @@ namespace NuitrackSDKEditor.Documentation
             GUILayout.Space(10);
 
             string lowerSelectTags = selectTags.ToLower();
+            lowerSelectTags = lowerSelectTags.Replace(", ", ",");
+            lowerSelectTags = lowerSelectTags.Replace("; ", ";");
+
             List<string> filterTags = new List<string>(lowerSelectTags.Split(new char[] { ',', ';' }, System.StringSplitOptions.RemoveEmptyEntries));
 
             if (inspectorMode)
