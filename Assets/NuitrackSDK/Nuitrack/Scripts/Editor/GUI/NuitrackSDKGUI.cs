@@ -188,6 +188,9 @@ namespace NuitrackSDKEditor
             return path;
         }
 
+
+        #region Message
+
         static Dictionary<LogType, Color> messageColors = new Dictionary<LogType, Color>()
         {
             { LogType.Warning, Color.yellow },
@@ -196,8 +199,6 @@ namespace NuitrackSDKEditor
             { LogType.Assert, Color.red },
             { LogType.Exception, Color.red }
         };
-
-        #region Message
 
         public static void NuitrackNotExistMessage()
         {

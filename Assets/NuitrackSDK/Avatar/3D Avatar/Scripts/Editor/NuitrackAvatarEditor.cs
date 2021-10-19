@@ -398,6 +398,9 @@ namespace NuitrackSDKEditor.Avatar
                   Where(k => GetTransformFromField(k) != null).
                   ToDictionary(k => k.ToUnityBones(), v => GetTransformFromField(v));
 
+            Object[] bones = includeJoints.Values.ToArray();
+            Undo.RegisterCompleteObjectUndo(bones, "Set T-Pose");
+
             NuitrackAvatar avatar = target as NuitrackAvatar;
 
             SkeletonUtils.SetToTPose(avatar.transform, includeJoints);
