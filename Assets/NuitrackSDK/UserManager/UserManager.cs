@@ -158,6 +158,7 @@ public class UserData
     }
 }
 
+
 public class Floor
 {
     public Vector3 Point
@@ -193,6 +194,12 @@ public class UserManager : MonoBehaviour
     ulong lastTimeStamp = 0;
 
     static Dictionary<int, UserData> users = new Dictionary<int, UserData>();
+
+    public static int UserCount
+    {
+        get;
+        private set;
+    }
 
     public static Floor Floor
     {
@@ -237,6 +244,7 @@ public class UserManager : MonoBehaviour
         {
             users.Clear();
             CurrentUser = null;
+            UserCount = NuitrackManager.SkeletonData.NumUsers;
 
             foreach (nuitrack.Skeleton skeleton in NuitrackManager.SkeletonData.Skeletons)
             {
