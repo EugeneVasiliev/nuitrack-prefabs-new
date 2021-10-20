@@ -199,13 +199,13 @@ public class UserManager : MonoBehaviour
         get; private set;
     }
 
-    public static UserData CurrentUserData
+    public static UserData CurrentUser
     {
         get;
         private set;
     }
 
-    public static UserData GetUserData(int userID)
+    public static UserData GetUser(int userID)
     {
         if (users.ContainsKey(userID))
             return users[userID];
@@ -217,6 +217,7 @@ public class UserManager : MonoBehaviour
     {
         return users.Values.ToList();
     }
+
 
     void Awake()
     {
@@ -235,7 +236,7 @@ public class UserManager : MonoBehaviour
         if (NuitrackManager.SkeletonData != null && NuitrackManager.SkeletonData.Timestamp != lastTimeStamp)
         {
             users.Clear();
-            CurrentUserData = null;
+            CurrentUser = null;
 
             foreach (nuitrack.Skeleton skeleton in NuitrackManager.SkeletonData.Skeletons)
             {
@@ -247,12 +248,13 @@ public class UserManager : MonoBehaviour
                 users.Add(skeleton.ID, userData);
 
                 if (CurrentUserTracker.CurrentUser == skeleton.ID)
-                    CurrentUserData = userData;
+                    CurrentUser = userData;
             }
 
             lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
         }
     }
+
 
     nuitrack.UserHands GetUserHands(int userID)
     {
