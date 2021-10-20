@@ -24,19 +24,12 @@ namespace NuitrackSDK.Avatar
             }
 
             NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
-
-            NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
         }
 
-        void OnSkeletonUpdate(SkeletonData skeletonData)
+        void Update()
         {
             for (int i = 0; i < avatars.Count; i++)
-                avatars[i].gameObject.SetActive(i < skeletonData.Skeletons.Length);
-        }
-
-        private void OnDestroy()
-        {
-            NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
+                avatars[i].gameObject.SetActive(i < UserManager.UserCount);
         }
     }
 }
