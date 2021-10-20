@@ -92,7 +92,7 @@ namespace NuitrackSDK.Avatar
             connections = null;
         }
 
-        protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
+        protected override void ProcessSkeleton(UserData.SkeletonData skeleton)
         {
             if (skeleton == null) return;
 
@@ -111,9 +111,9 @@ namespace NuitrackSDK.Avatar
 
             for (int i = 0; i < jointsInfo.Length; i++)
             {
-                JointTransform j = GetJoint(jointsInfo[i]);
+                UserData.SkeletonData.Joint j = skeleton.GetJoint(jointsInfo[i]);
 
-                if (j.IsActive)
+                if (j.Confidence > JointConfidence)
                 {
                     if (!joints[jointsInfo[i]].activeSelf) joints[jointsInfo[i]].SetActive(true);
 

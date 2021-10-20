@@ -59,7 +59,7 @@ namespace NuitrackSDK.Avatar
             }
         }
 
-        protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
+        protected override void ProcessSkeleton(UserData.SkeletonData skeleton)
         {
             if (skeleton == null)
                 return;
@@ -72,8 +72,8 @@ namespace NuitrackSDK.Avatar
                 nuitrack.JointType jointType = jointsInfo.Key;
                 RectTransform rectTransform = jointsInfo.Value;
 
-                JointTransform j = GetJoint(jointType);
-                if (j.IsActive)
+                UserData.SkeletonData.Joint j = skeleton.GetJoint(jointType);
+                if (j.Confidence > JointConfidence)
                 {
                     rectTransform.gameObject.SetActive(true);
 
