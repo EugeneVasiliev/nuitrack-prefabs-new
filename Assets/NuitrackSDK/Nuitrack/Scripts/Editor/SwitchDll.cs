@@ -109,6 +109,5 @@ public class SwitchDll : IPreprocessBuildWithReport
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows, value);
         plugin.SetCompatibleWithPlatform(BuildTarget.StandaloneWindows64, value);
         plugin.SetCompatibleWithEditor(value);
-        plugin.SaveAndReimport();
     }
 }
