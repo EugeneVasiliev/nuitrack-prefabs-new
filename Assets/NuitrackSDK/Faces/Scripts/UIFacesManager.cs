@@ -32,7 +32,7 @@ public class UIFacesManager : MonoBehaviour
 
         for (int i = 0; i < uiFaces.Count; i++)
         {
-            if (i < userData.Count)
+            if (i < UserManager.UserCount)
             {
                 uiFaces[i].gameObject.SetActive(true);
                 uiFaces[i].ProcessFace(userData[i]);

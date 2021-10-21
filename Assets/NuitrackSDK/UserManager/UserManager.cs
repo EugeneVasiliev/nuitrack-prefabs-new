@@ -240,27 +240,34 @@ public class UserManager : MonoBehaviour
 
         JsonInfo faceInfo = NuitrackManager.NuitrackJson;
 
-        if (NuitrackManager.SkeletonData != null && NuitrackManager.SkeletonData.Timestamp != lastTimeStamp)
+        if (NuitrackManager.SkeletonData != null)
         {
-            users.Clear();
-            CurrentUser = null;
-            UserCount = NuitrackManager.SkeletonData.NumUsers;
-
-            foreach (nuitrack.Skeleton skeleton in NuitrackManager.SkeletonData.Skeletons)
+            if (NuitrackManager.SkeletonData.Timestamp != lastTimeStamp)
             {
-                nuitrack.UserHands userHands = GetUserHands(skeleton.ID);
-                Face face = GetFace(skeleton.ID, faceInfo);
-                nuitrack.GestureType? gestureType = GetGestureType(skeleton.ID);
-                
-                UserData userData = new UserData(skeleton, userHands, face, gestureType);
-                users.Add(skeleton.ID, userData);
+                users.Clear();
+                CurrentUser = null;
+                UserCount = NuitrackManager.SkeletonData.NumUsers;
 
-                if (CurrentUserTracker.CurrentUser == skeleton.ID)
-                    CurrentUser = userData;
+                foreach (nuitrack.Skeleton skeleton in NuitrackManager.SkeletonData.Skeletons)
+                {
+                    nuitrack.UserHands userHands = GetUserHands(skeleton.ID);
+                    Face face = GetFace(skeleton.ID, faceInfo);
+                    nuitrack.GestureType? gestureType = GetGestureType(skeleton.ID);
+
+                    UserData userData = new UserData(skeleton, userHands, face, gestureType);
+                    users.Add(skeleton.ID, userData);
+
+                    if (CurrentUserTracker.CurrentUser == skeleton.ID)
+                        CurrentUser = userData;
+
+                    
+                }
+
+                lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
             }
-
-            lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
         }
+        else
+            users.Clear();
     }
 
 
