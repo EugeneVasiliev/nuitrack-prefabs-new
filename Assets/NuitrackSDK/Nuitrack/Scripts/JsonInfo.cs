@@ -13,16 +13,7 @@ public class Instances
     public int id;
     public string @class;
     public Face face;
-    public bbox bbox;
-}
-
-[System.Serializable]
-public class bbox
-{
-    public float left;
-    public float top;
-    public float width;
-    public float height;
+    public Rectangle bbox;
 }
 
 [System.Serializable]
@@ -45,6 +36,14 @@ public class Rectangle
     public float top;
     public float width;
     public float height;
+
+    public Rect Rect
+    {
+        get
+        {
+            return new Rect(left, top, width, height);
+        }
+    }
 }
 
 [System.Serializable]
