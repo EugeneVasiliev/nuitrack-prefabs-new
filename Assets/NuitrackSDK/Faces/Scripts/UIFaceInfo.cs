@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+//using NuitrackSDK;
+
+
 public class UIFaceInfo : MonoBehaviour
 {
     [Header("Info")]
@@ -31,7 +34,7 @@ public class UIFaceInfo : MonoBehaviour
     {
         if (autoProcessing)
         {
-            ProcessFace(UserManager.CurrentUser);
+            ProcessFace(NuitrackManager.Users.Current);
         }
     }
 

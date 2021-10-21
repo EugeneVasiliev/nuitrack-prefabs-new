@@ -30,7 +30,7 @@ namespace NuitrackSDK.Avatar
         void Update()
         {
             foreach(UIAvatar uIAvatar in avatars)
-                uIAvatar.gameObject.SetActive(UserManager.GetUser(uIAvatar.SkeletonID) != null);
+                uIAvatar.gameObject.SetActive(NuitrackManager.Users.GetUser(uIAvatar.SkeletonID) != null);
         }
     }
 }

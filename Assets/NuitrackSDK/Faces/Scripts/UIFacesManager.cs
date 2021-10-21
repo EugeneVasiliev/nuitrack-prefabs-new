@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using nuitrack;
+﻿using UnityEngine;
+
+using System.Collections.Generic;
+
 
 public class UIFacesManager : MonoBehaviour
 {
@@ -28,11 +29,11 @@ public class UIFacesManager : MonoBehaviour
 
     void Update()
     {
-        List<UserData> userData = UserManager.GetUserList();
+        List<UserData> userData = NuitrackManager.Users.GetList();
 
         for (int i = 0; i < uiFaces.Count; i++)
         {
-            if (i < UserManager.UserCount)
+            if (i < NuitrackManager.Users.Count)
             {
                 uiFaces[i].gameObject.SetActive(true);
                 uiFaces[i].ProcessFace(userData[i]);

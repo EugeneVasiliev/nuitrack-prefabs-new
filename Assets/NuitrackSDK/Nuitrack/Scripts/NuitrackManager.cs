@@ -137,6 +137,18 @@ public class NuitrackManager : MonoBehaviour
         }
     }
 
+
+    public static Floor Floor
+    {
+        get; private set;
+    } = new Floor(Vector3.zero, Vector3.zero);
+
+    public static Users Users
+    {
+        get;
+    } = new Users();
+
+
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
     {
@@ -500,6 +512,8 @@ public class NuitrackManager : MonoBehaviour
             UserFrame.Dispose();
         UserFrame = (nuitrack.UserFrame)frame.Clone();
         onUserTrackerUpdate?.Invoke(UserFrame);
+
+        Floor = new Floor(frame.FloorNormal.ToVector3().normalized, frame.Floor.ToVector3());
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
@@ -510,10 +524,10 @@ public class NuitrackManager : MonoBehaviour
         sensorConnected = true;
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
 
-        UserManager.AddData(SkeletonData);
+        Users.AddData(SkeletonData);
 
         if (useFaceTracking)
-            UserManager.AddData(NuitrackJson);
+            Users.AddData(NuitrackJson);
     }
 
     void OnNewGestures(nuitrack.GestureData gestures)
@@ -526,7 +540,7 @@ public class NuitrackManager : MonoBehaviour
                     onNewGesture(gestures.Gestures[i]);
             }
 
-            UserManager.AddData(gestures);
+            Users.AddData(gestures);
         }
     }
 
@@ -545,7 +559,7 @@ public class NuitrackManager : MonoBehaviour
         else
             СurrentHands = null;
 
-        UserManager.AddData(HandTrackerData);
+        Users.AddData(HandTrackerData);
     }
 
     void OnApplicationPause(bool pauseStatus)

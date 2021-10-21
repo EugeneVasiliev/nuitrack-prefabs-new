@@ -43,7 +43,7 @@ namespace NuitrackSDK.Avatar
             get
             {
                 if(UseCurrentUserTracker)
-                    return UserManager.CurrentUser != null ? UserManager.CurrentUser.ID : 0;
+                    return NuitrackManager.Users.Current != null ? NuitrackManager.Users.Current.ID : 0;
                 else
                     return skeletonID;
             }
@@ -119,9 +119,9 @@ namespace NuitrackSDK.Avatar
             get
             {
                 if (useCurrentUserTracker)
-                    return UserManager.CurrentUser?.Skeleton;
+                    return NuitrackManager.Users.Current?.Skeleton;
                 else
-                    return UserManager.GetUser(skeletonID)?.Skeleton;
+                    return NuitrackManager.Users.GetUser(skeletonID)?.Skeleton;
             }
         }
 
