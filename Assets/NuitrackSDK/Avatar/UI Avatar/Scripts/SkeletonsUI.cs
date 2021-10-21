@@ -21,7 +21,7 @@ namespace NuitrackSDK.Avatar
             {
                 GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, spawnRectTransform);
                 UIAvatar skeleton = newAvatar.GetComponent<UIAvatar>();
-                skeleton.SkeletonID = i + 1;
+                skeleton.UserID = i + 1;
                 avatars.Add(skeleton);
             }
 
@@ -31,7 +31,7 @@ namespace NuitrackSDK.Avatar
         void Update()
         {
             foreach(UIAvatar uIAvatar in avatars)
-                uIAvatar.gameObject.SetActive(NuitrackManager.Users.GetUser(uIAvatar.SkeletonID) != null);
+                uIAvatar.gameObject.SetActive(NuitrackManager.Users.GetUser(uIAvatar.UserID) != null);
         }
     }
 }

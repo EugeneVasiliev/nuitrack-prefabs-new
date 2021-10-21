@@ -13,13 +13,13 @@ namespace NuitrackSDK.Avatar
         bool useCurrentUserTracker = true;
         
         [SerializeField, NuitrackSDKInspector]
-        int skeletonID = 1;
+        int userID = 1;
 
         [SerializeField, NuitrackSDKInspector] 
         float jointConfidence = 0.1f;
 
         /// <summary>
-        /// If True, the current user tracker is used, otherwise the user specified by ID is used <see cref="SkeletonID"/>
+        /// If True, the current user tracker is used, otherwise the user specified by ID is used <see cref="UserID"/>
         /// </summary>
         public bool UseCurrentUserTracker
         {
@@ -38,20 +38,20 @@ namespace NuitrackSDK.Avatar
         /// For the case when current user tracker <see cref="UseCurrentUserTracker"/> of is used, the ID of the active user will be returned
         /// If current user tracker is used and a new ID is set, tracking of the current user will stop
         /// </summary>
-        public int SkeletonID
+        public int UserID
         {
             get
             {
                 if(UseCurrentUserTracker)
                     return NuitrackManager.Users.Current != null ? NuitrackManager.Users.Current.ID : 0;
                 else
-                    return skeletonID;
+                    return userID;
             }
             set
             {
-                if (value >= MinSkeletonID && value <= MaxSkeletonID)
+                if (value >= MinUserID && value <= MaxUserID)
                 {
-                    skeletonID = value;
+                    userID = value;
 
                     if(useCurrentUserTracker)
                         Debug.Log(string.Format("CurrentUserTracker mode was disabled for {0}", gameObject.name));
@@ -59,14 +59,14 @@ namespace NuitrackSDK.Avatar
                     useCurrentUserTracker = false;
                 }
                 else
-                    throw new System.Exception(string.Format("The Skeleton ID must be within the bounds of [{0}, {1}]", MinSkeletonID, MaxSkeletonID));
+                    throw new System.Exception(string.Format("The User ID must be within the bounds of [{0}, {1}]", MinUserID, MaxUserID));
             }
         }
 
         /// <summary>
         /// Minimum allowed ID
         /// </summary>
-        public int MinSkeletonID
+        public int MinUserID
         {
             get
             {
@@ -77,7 +77,7 @@ namespace NuitrackSDK.Avatar
         /// <summary>
         /// Maximum allowed ID
         /// </summary>
-        public int MaxSkeletonID
+        public int MaxUserID
         {
             get
             {
@@ -107,21 +107,21 @@ namespace NuitrackSDK.Avatar
         {
             get
             {
-                return ControllerSkeleton != null;
+                return ControllerUser != null;
             }
         }
 
         /// <summary>
-        /// The controler skeleton. Maybe null
+        /// The controler user. Maybe null
         /// </summary>
-        public UserData.SkeletonData ControllerSkeleton
+        public UserData ControllerUser
         {
             get
             {
                 if (useCurrentUserTracker)
-                    return NuitrackManager.Users.Current?.Skeleton;
+                    return NuitrackManager.Users.Current;
                 else
-                    return NuitrackManager.Users.GetUser(skeletonID)?.Skeleton;
+                    return NuitrackManager.Users.GetUser(userID);
             }
         }
 
@@ -129,30 +129,30 @@ namespace NuitrackSDK.Avatar
         /// Get a shell object for the specified joint
         /// </summary>
         /// <param name="jointType">Joint type</param>
-        /// <returns>Shell object <see cref="JointTransform"/></returns>
+        /// <returns>Shell object <see cref="UserData.SkeletonData.Joint"/></returns>
         public UserData.SkeletonData.Joint GetJoint(nuitrack.JointType jointType)
         {
-            if (!IsActive)
+            if (!IsActive || ControllerUser.Skeleton == null)
                 return null;
 
-            return ControllerSkeleton.GetJoint(jointType);
+            return ControllerUser.Skeleton.GetJoint(jointType);
         }
 
         protected virtual void Update()
         {
-            UserData.SkeletonData skeleton = ControllerSkeleton;
+            UserData userData = ControllerUser;
 
-            if (skeleton == null)
+            if (userData == null)
                 return;
 
-            if(skeleton != null)
-                ProcessSkeleton(skeleton);
+            if(userData != null)
+                Process(userData);
         }
 
         /// <summary>
         /// Redefine this method to implement skeleton processing
         /// </summary>
-        /// <param name="skeleton">Skeleton <see cref="nuitrack.Skeleton/>"/></param>
-        protected abstract void ProcessSkeleton(UserData.SkeletonData skeleton);
+        /// <param name="userData">User data <see cref="UserData/>"/></param>
+        protected abstract void Process(UserData userData);
     }
 }
