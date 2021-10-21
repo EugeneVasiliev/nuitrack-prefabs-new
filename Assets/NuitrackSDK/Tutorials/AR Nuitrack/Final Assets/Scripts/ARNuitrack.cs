@@ -46,7 +46,7 @@ public class ARNuitrack : MonoBehaviour
         UpdateHieghtMap(depthFrame);
         FitMeshIntoFrame(depthFrame);
 
-        UpdateFloor(userFrame);
+        UpdateFloor();
     }
 
     void UpdateRGB(nuitrack.ColorFrame frame)
@@ -97,21 +97,18 @@ public class ARNuitrack : MonoBehaviour
         meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
     }
 
-    void UpdateFloor(nuitrack.UserFrame frame)
+    void UpdateFloor()
     {
-        Vector3 floorPoint = frame.Floor.ToVector3() * 0.001f;
-        Vector3 floorNormal = frame.FloorNormal.ToVector3().normalized;
-
-        Plane newFloor = new Plane(floorNormal, floorPoint);
+        Plane newFloor = NuitrackManager.Floor;
 
         if (floorPlane.Equals(default(Plane)))
-            floorPlane = new Plane(floorNormal, floorPoint);
+            floorPlane = newFloor;
 
         Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(Vector3.zero);
         Vector3 floorSensor = floorPlane.ClosestPointOnPlane(Vector3.zero);
 
         if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAngle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHeight)
-            floorPlane = new Plane(floorNormal, floorPoint);
+            floorPlane = newFloor;
 
         Vector3 reflectNormal = Vector3.Reflect(-floorPlane.normal, Vector3.up);
         Vector3 forward = sensorSpace.forward;

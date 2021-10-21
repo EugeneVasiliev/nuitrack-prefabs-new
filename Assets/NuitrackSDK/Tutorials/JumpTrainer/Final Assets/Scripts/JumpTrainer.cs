@@ -111,10 +111,7 @@ public class JumpTrainer : MonoBehaviour
 
         DisplayLines(true);   
 
-        Vector3 floorPoint = NuitrackManager.UserFrame.Floor.ToVector3();
-        Vector3 floorNormal = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
-
-        floorPlane = new Plane(floorNormal, floorPoint);
+        floorPlane = NuitrackManager.Floor;
 
         nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
 
@@ -153,7 +150,7 @@ public class JumpTrainer : MonoBehaviour
 
         floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenFloorWaistPoint.y);
 
-        Vector3 bestJumpPosition = floorWaistPosition + floorNormal * BestJumpHeight * 1000;
+        Vector3 bestJumpPosition = floorWaistPosition + floorPlane.normal * BestJumpHeight * 1000;
         Vector3 screenBestJumpPoint = FrameSpaceProjPoint(NuitrackVector(bestJumpPosition), NuitrackManager.DepthFrame);
 
         bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenBestJumpPoint.y);
