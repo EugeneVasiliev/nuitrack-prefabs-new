@@ -9,7 +9,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[AddComponentMenu("Nuitrack/Example/TranslationAvatar")]
+[AddComponentMenu("NuitrackSDK/Tutorials/First Project/NativeAvatar")]
 public class NativeAvatar : MonoBehaviour
 {
     string message = "";

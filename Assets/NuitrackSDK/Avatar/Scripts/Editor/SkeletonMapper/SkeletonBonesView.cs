@@ -114,7 +114,7 @@ namespace NuitrackSDKEditor.Avatar
             GUIContent assignBonesContent = EditorGUIUtility.IconContent("AvatarSelector");
             assignBonesContent.text = "Assigned bones";
 
-            GUIContent noneContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleoff");
+            GUIContent noneContent = EditorGUIUtility.IconContent("animationvisibilitytoggleoff");
 
             skeletonModeGuiContent = new GUIContent[] { modelBonesContent, assignBonesContent, noneContent };
         }

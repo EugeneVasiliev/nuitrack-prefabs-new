@@ -5,6 +5,7 @@ using System;
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/UI/UI Avatar")]
     public class UIAvatar : BaseAvatar
     {
         [Header("Skeleton")]

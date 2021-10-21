@@ -39,18 +39,18 @@ namespace NuitrackSDKEditor.Frame
             base.OnInspectorGUI();
 
             if (FindObjectOfType<NuitrackManager>(true) == null)
-                Helper.NuitrackNotExistMessage();
+                NuitrackSDKGUI.NuitrackNotExistMessage();
 
             if (nuitrackAspectRatioFitter.aspectMode != AspectRatioFitter.AspectMode.FitInParent)
             {
-                UnityAction fixAcpectMode = delegate { FixAspectMode(m_AspectMode); };
+                UnityAction fixAspectMode = delegate { FixAspectMode(m_AspectMode); };
 
                 string message = string.Format("Aspect Mode is set to {0}." +
                     "The frame from the sensor may not be displayed correctly." +
                     "\nRecommended: Fit In Parent.",
                     nuitrackAspectRatioFitter.aspectMode);
 
-                Helper.DrawMessage(message, LogType.Warning, fixAcpectMode, "Fix");        
+                NuitrackSDKGUI.DrawMessage(message, LogType.Warning, fixAspectMode, "Fix");
             }
 
             serializedObject.ApplyModifiedProperties();
