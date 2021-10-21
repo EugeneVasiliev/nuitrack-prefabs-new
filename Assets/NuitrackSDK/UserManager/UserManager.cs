@@ -142,19 +142,33 @@ public class UserData
         get; private set;
     }
 
-    public UserData(nuitrack.Skeleton skeleton, nuitrack.UserHands userHands, Face face, nuitrack.GestureType? gestureType)
+    public void SetSkeleton(nuitrack.Skeleton skeleton)
     {
-        ID = skeleton.ID;
         Skeleton = new SkeletonData(skeleton);
+    }
 
+    public void SetUserHands(nuitrack.UserHands userHands)
+    {
         if (userHands != null)
         {
             LeftHand = userHands.LeftHand;
             RightHand = userHands.RightHand;
         }
+    }
 
+    public void SetFace(Face face)
+    {
         Face = face;
+    }
+
+    public void SetGesture(nuitrack.GestureType gestureType)
+    {
         GestureType = gestureType;
+    }
+
+    public UserData(int id)
+    {
+        ID = id;
     }
 }
 
@@ -187,18 +201,18 @@ public class Floor
 }
 
 
-public class UserManager : MonoBehaviour
+public class UserManager
 {
-    [SerializeField] float jointConfidence = 0.1f;
-
-    ulong lastTimeStamp = 0;
+    static ulong lastTimeStamp = 0;
 
     static Dictionary<int, UserData> users = new Dictionary<int, UserData>();
 
     public static int UserCount
     {
-        get;
-        private set;
+        get
+        {
+            return users.Count;
+        }
     }
 
     public static Floor Floor
@@ -208,8 +222,13 @@ public class UserManager : MonoBehaviour
 
     public static UserData CurrentUser
     {
-        get;
-        private set;
+        get
+        {
+            if (CurrentUserTracker.CurrentSkeleton != null && users.ContainsKey(CurrentUserTracker.CurrentSkeleton.ID))
+                return users[CurrentUserTracker.CurrentSkeleton.ID];
+            else
+                return null;
+        }
     }
 
     public static UserData GetUser(int userID)
@@ -225,108 +244,70 @@ public class UserManager : MonoBehaviour
         return users.Values.ToList();
     }
 
+    static void CheckTimeStamp(ulong newTimeStamp)
+    {
+        if (lastTimeStamp != newTimeStamp)
+        {
+            lastTimeStamp = newTimeStamp;
+            users.Clear();
+        }
+    }
+
     public static void AddData(nuitrack.SkeletonData skeletonData)
     {
-        
+        CheckTimeStamp(skeletonData.Timestamp);
+
+        foreach (nuitrack.Skeleton skeleton in skeletonData.Skeletons)
+        {
+            if (!users.ContainsKey(skeleton.ID))
+                users.Add(skeleton.ID, new UserData(skeleton.ID));
+
+            users[skeleton.ID].SetSkeleton(skeleton);
+        }
+
+        Debug.Log("SkeletonData " + users.Count);
     }
 
     public static void AddData(nuitrack.HandTrackerData handTrackerData)
     {
+        CheckTimeStamp(handTrackerData.Timestamp);
 
+        foreach (nuitrack.UserHands hands in handTrackerData.UsersHands)
+        {
+            if (!users.ContainsKey(hands.UserId))
+                users.Add(hands.UserId, new UserData(hands.UserId));
+
+            users[hands.UserId].SetUserHands(hands);
+        }
+    }
+
+    public static void AddData(nuitrack.GestureData gestureData)
+    {
+        CheckTimeStamp(gestureData.Timestamp);
+
+        foreach (nuitrack.Gesture gesture in gestureData.Gestures)
+        {
+            if (!users.ContainsKey(gesture.UserID))
+                users.Add(gesture.UserID, new UserData(gesture.UserID));
+
+            users[gesture.UserID].SetGesture(gesture.Type);
+        }
     }
 
     public static void AddData(JsonInfo jsonInfo)
     {
+        if (jsonInfo == null || jsonInfo.Instances == null)
+            return;
 
+        CheckTimeStamp(jsonInfo.Timestamp);
+
+        foreach (Instances instances in jsonInfo.Instances)
+        {
+            if (!users.ContainsKey(instances.id))
+                users.Add(instances.id, new UserData(instances.id));
+
+            if(instances.face != null)
+                users[instances.id].SetFace(instances.face);
+        }
     }
-
-    void Awake()
-    {
-        Floor = new Floor(Vector3.zero, Vector3.zero);
-    }
-
-
-
-    //void Update()
-    //{
-    //    Vector3 floorPoint = NuitrackManager.UserFrame.Floor.ToVector3();
-    //    Vector3 floorNormal = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
-
-    //    Floor = new Floor(floorPoint, floorNormal);
-
-    //    JsonInfo faceInfo = NuitrackManager.NuitrackJson;
-
-    //    if (NuitrackManager.SkeletonData != null)
-    //    {
-    //        if (NuitrackManager.SkeletonData.Timestamp != lastTimeStamp)
-    //        {
-    //            users.Clear();
-    //            CurrentUser = null;
-    //            UserCount = NuitrackManager.SkeletonData.NumUsers;
-
-    //            foreach (nuitrack.Skeleton skeleton in NuitrackManager.SkeletonData.Skeletons)
-    //            {
-    //                nuitrack.UserHands userHands = GetUserHands(skeleton.ID);
-    //                Face face = GetFace(skeleton.ID, faceInfo);
-    //                nuitrack.GestureType? gestureType = GetGestureType(skeleton.ID);
-
-    //                UserData userData = new UserData(skeleton, userHands, face, gestureType);
-    //                users.Add(skeleton.ID, userData);
-
-    //                if (CurrentUserTracker.CurrentUser == skeleton.ID)
-    //                    CurrentUser = userData;
-
-                    
-    //            }
-
-    //            lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
-    //        }
-    //    }
-    //    else
-    //        users.Clear();
-    //}
-
-
-    //nuitrack.UserHands GetUserHands(int userID)
-    //{
-    //    nuitrack.UserHands userHands = null;
-
-    //    if (NuitrackManager.HandTrackerData != null)
-    //        userHands = NuitrackManager.HandTrackerData.GetUserHandsByID(userID);
-
-    //    return userHands;
-    //}
-
-    //Face GetFace(int userID, JsonInfo faceInfo)
-    //{
-    //    Face face = null;
-
-    //    if (faceInfo != null && faceInfo.Instances != null)
-    //    {
-    //        foreach(Instances instances in faceInfo.Instances)
-    //            if(instances.id == userID)
-    //                return instances.face;
-    //    }
-
-    //    return face;
-    //}
-
-    //nuitrack.GestureType? GetGestureType(int userID)
-    //{
-    //    nuitrack.GestureType? gestureType = null;
-
-    //    if (NuitrackManager.GestureRecognizer != null)
-    //    {
-    //        nuitrack.GestureData gestureData = NuitrackManager.GestureRecognizer.GetGestureData();
-
-    //        if (gestureData != null)
-    //        {
-    //            foreach (nuitrack.Gesture ges in gestureData.Gestures)
-    //                if (ges.UserID == userID)
-    //                    return ges.Type;
-    //        }
-    //    }
-
-    //    return gestureType;
-    //}
 }

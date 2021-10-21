@@ -3,7 +3,7 @@
 [System.Serializable]
 public class JsonInfo
 {
-    public string Timestamp;
+    public ulong Timestamp;
     public Instances[] Instances;
 }
 

@@ -509,6 +509,11 @@ public class NuitrackManager : MonoBehaviour
         SkeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         sensorConnected = true;
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
+
+        UserManager.AddData(SkeletonData);
+
+        if (useFaceTracking)
+            UserManager.AddData(NuitrackJson);
     }
 
     void OnNewGestures(nuitrack.GestureData gestures)
@@ -518,10 +523,10 @@ public class NuitrackManager : MonoBehaviour
             if (onNewGesture != null)
             {
                 for (int i = 0; i < gestures.Gestures.Length; i++)
-                {
                     onNewGesture(gestures.Gestures[i]);
-                }
             }
+
+            UserManager.AddData(gestures);
         }
     }
 
@@ -532,15 +537,15 @@ public class NuitrackManager : MonoBehaviour
         HandTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
         onHandsTrackerUpdate?.Invoke(HandTrackerData);
 
-        if (HandTrackerData == null) return;
+        if (HandTrackerData == null)
+            return;
+
         if (CurrentUserTracker.CurrentUser != 0)
-        {
             СurrentHands = HandTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
-        }
         else
-        {
             СurrentHands = null;
-        }
+
+        UserManager.AddData(HandTrackerData);
     }
 
     void OnApplicationPause(bool pauseStatus)
