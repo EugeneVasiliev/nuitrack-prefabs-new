@@ -138,10 +138,10 @@ public class NuitrackManager : MonoBehaviour
     }
 
 
-    public static Floor Floor
+    public static Plane Floor
     {
         get; private set;
-    } = new Floor(Vector3.zero, Vector3.zero);
+    } = new Plane(Vector3.up, Vector3.zero);
 
     public static Users Users
     {
@@ -513,7 +513,7 @@ public class NuitrackManager : MonoBehaviour
         UserFrame = (nuitrack.UserFrame)frame.Clone();
         onUserTrackerUpdate?.Invoke(UserFrame);
 
-        Floor = new Floor(frame.FloorNormal.ToVector3().normalized, frame.Floor.ToVector3());
+        Floor = new Plane(UserFrame.FloorNormal.ToVector3().normalized, UserFrame.Floor.ToVector3() * 0.001f);
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
