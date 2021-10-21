@@ -41,7 +41,7 @@ public class Rectangle
     {
         get
         {
-            return new Rect(left, top, width, height);
+            return new Rect(Mathf.Clamp01(left), Mathf.Clamp01(top), Mathf.Clamp01(width), Mathf.Clamp01(height));
         }
     }
 }

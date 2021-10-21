@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using nuitrack;
+﻿using UnityEngine;
+
+using System.Collections.Generic;
+
 
 namespace NuitrackSDK.Avatar
 {
@@ -28,8 +29,8 @@ namespace NuitrackSDK.Avatar
 
         void Update()
         {
-            for (int i = 0; i < avatars.Count; i++)
-                avatars[i].gameObject.SetActive(i < UserManager.UserCount);
+            foreach(UIAvatar uIAvatar in avatars)
+                uIAvatar.gameObject.SetActive(UserManager.GetUser(uIAvatar.SkeletonID) != null);
         }
     }
 }

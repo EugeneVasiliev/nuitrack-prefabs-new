@@ -264,8 +264,6 @@ public class UserManager
 
             users[skeleton.ID].SetSkeleton(skeleton);
         }
-
-        Debug.Log("SkeletonData " + users.Count);
     }
 
     public static void AddData(nuitrack.HandTrackerData handTrackerData)
