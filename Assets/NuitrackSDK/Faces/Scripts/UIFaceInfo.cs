@@ -53,11 +53,13 @@ public class UIFaceInfo : MonoBehaviour
             image.enabled = true;
             infoPanel.SetActive(showInfo);
 
-            Vector2 newPosition = new Vector2(
-                spawnTransform.rect.width * (Mathf.Clamp01(currentFace.rectangle.left) - 0.5f) + frameTransform.rect.width / 2,
-                spawnTransform.rect.height * (0.5f - Mathf.Clamp01(currentFace.rectangle.top)) - frameTransform.rect.height / 2);
+            Rect faceRect = currentFace.rectangle.Rect;
 
-            frameTransform.sizeDelta = new Vector2(currentFace.rectangle.width * spawnTransform.rect.width, currentFace.rectangle.height * spawnTransform.rect.height);
+            Vector2 newPosition = new Vector2(
+                spawnTransform.rect.width * (faceRect.x - 0.5f) + frameTransform.rect.width / 2,
+                spawnTransform.rect.height * (0.5f - faceRect.y) - frameTransform.rect.height / 2);
+
+            frameTransform.sizeDelta = new Vector2(faceRect.width * spawnTransform.rect.width, faceRect.height * spawnTransform.rect.height);
             frameTransform.anchoredPosition = newPosition;
 
             ageText.text = currentFace.age.type;
