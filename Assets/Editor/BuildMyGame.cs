@@ -2,6 +2,9 @@
 using System.Linq;
 using UnityEditor;
 
+using UnityEngine;
+using System.IO;
+
 public class BuildMyGame
 {
     public static void BuildAab()
@@ -48,5 +51,40 @@ public class BuildMyGame
     static string[] GetScenes()
     {
         return EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray();
+    }
+
+    // This menu will be missing in the final unitypackage
+    [MenuItem("Nuitrack/Developer/Create/NuitrackReadme")]
+    public static void CreateAsset()
+    {
+        CreateAsset<NuitrackSDKEditor.Documentation.NuitrackTutorials>();
+    }
+
+    static void CreateAsset<T>() where T : ScriptableObject
+    {
+        T newAsset = ScriptableObject.CreateInstance<T>();
+
+        string assetPath = AssetDatabase.GetAssetPath(Selection.activeObject);
+
+        if (assetPath.Equals("") == true)
+        {
+            assetPath = "Assets";
+        }
+
+        else if (Path.GetExtension(assetPath).Equals("") == false)
+        {
+            string filename = Path.GetFileName(assetPath);
+            assetPath = assetPath.Replace(filename, "");
+        }
+
+        string assetFilename = "/Data" + typeof(T).ToString() + ".asset";
+        string newAssetFullPath = AssetDatabase.GenerateUniqueAssetPath(assetPath + assetFilename);
+
+        AssetDatabase.CreateAsset(newAsset, newAssetFullPath);
+
+        // Save and Focus
+        AssetDatabase.SaveAssets();
+        EditorUtility.FocusProjectWindow();
+        Selection.activeObject = newAsset;
     }
 }
