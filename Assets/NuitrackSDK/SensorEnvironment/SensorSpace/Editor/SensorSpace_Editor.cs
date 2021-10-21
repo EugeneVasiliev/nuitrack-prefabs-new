@@ -22,7 +22,7 @@ namespace NuitrackSDKEditor.Frame
             base.OnInspectorGUI();
 
             if (FindObjectOfType<NuitrackManager>(true) == null)
-                Helper.NuitrackNotExistMessage();
+                NuitrackSDKGUI.NuitrackNotExistMessage();
 
             SensorSpace sensorSpace = serializedObject.targetObject as SensorSpace;
             Canvas canvas = viewCanvasProperty.objectReferenceValue as Canvas;
@@ -38,13 +38,13 @@ namespace NuitrackSDKEditor.Frame
 
                     UnityAction fixAction = delegate { FixCanvasRenderMode(canvas, sensorSpace); };
 
-                    Helper.DrawMessage(message, LogType.Warning, fixAction, buttonLabel);               
+                    NuitrackSDKGUI.DrawMessage(message, LogType.Warning, fixAction, buttonLabel);
                 }
             }
             else
             {
                 string message = "View Canvas is not set. The screen size will be used to align the camera's fov.";
-                Helper.DrawMessage(message, LogType.Log);
+                NuitrackSDKGUI.DrawMessage(message, LogType.Log);
             }
         }
 
