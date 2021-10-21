@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/UI/Skeletons UI")]
     public class SkeletonsUI : MonoBehaviour
     {
         [SerializeField] RectTransform spawnRectTransform;

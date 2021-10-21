@@ -5,6 +5,7 @@ using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/3D/NuitrackAvatar")]
     public class NuitrackAvatar : BaseAvatar
     {
         [Header("Body")]
