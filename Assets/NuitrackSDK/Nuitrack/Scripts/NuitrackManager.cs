@@ -511,7 +511,7 @@ public class NuitrackManager : MonoBehaviour
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
     }
 
-    private void OnNewGestures(nuitrack.GestureData gestures)
+    void OnNewGestures(nuitrack.GestureData gestures)
     {
         if (gestures.NumGestures > 0)
         {
@@ -711,12 +711,23 @@ public class NuitrackManager : MonoBehaviour
     {
         try
         {
-            if (DepthSensor != null) DepthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
-            if (ColorSensor != null) ColorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
-            if (UserTracker != null) UserTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
-            if (SkeletonTracker != null) SkeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
-            if (GestureRecognizer != null) GestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
-            if (HandTracker != null) HandTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
+            if (DepthSensor != null) 
+                DepthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
+
+            if (ColorSensor != null) 
+                ColorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
+
+            if (UserTracker != null) 
+                UserTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
+
+            if (SkeletonTracker != null) 
+                SkeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
+
+            if (GestureRecognizer != null)
+                GestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
+
+            if (HandTracker != null) 
+                HandTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
 
             DepthFrame = null;
             ColorFrame = null;
