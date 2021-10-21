@@ -2,6 +2,7 @@
 using UnityEditor;
 using System.IO;
 using System;
+using NuitrackSDKEditor.Documentation;
 
 namespace NuitrackSDKEditor
 {
@@ -41,10 +42,10 @@ namespace NuitrackSDKEditor
             Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/");
         }
 
-        [MenuItem("Nuitrack/Help/Open Tutorials Page", priority = 21)]
-        public static void GoToDocsPage()
+        [MenuItem("Nuitrack/Help/Open tutorials list", priority = 21)]
+        public static void OpenTutoralList()
         {
-            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/");
+            NuitrackTutorialsEditorWindow.Open();
         }
 
         [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]
