@@ -8,7 +8,6 @@ using System.Threading;
 
 using NuitrackSDK;
 
-
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
 #endif

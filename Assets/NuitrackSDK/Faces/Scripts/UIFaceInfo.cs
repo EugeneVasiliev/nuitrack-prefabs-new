@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-//using NuitrackSDK;
-
 
 public class UIFaceInfo : MonoBehaviour
 {
