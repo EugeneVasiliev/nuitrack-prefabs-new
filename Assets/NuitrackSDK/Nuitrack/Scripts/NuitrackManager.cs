@@ -1,11 +1,13 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+
+using System;
+using System.IO;
+using System.Collections;
 using System.Threading;
 
-using System.IO;
-
 using NuitrackSDK;
+
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
@@ -98,11 +100,19 @@ public class NuitrackManager : MonoBehaviour
     public static event nuitrack.DepthSensor.OnUpdate onDepthUpdate;
     public static event nuitrack.ColorSensor.OnUpdate onColorUpdate;
     public static event nuitrack.UserTracker.OnUpdate onUserTrackerUpdate;
+
+    [Obsolete ("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
     public static event nuitrack.SkeletonTracker.OnSkeletonUpdate onSkeletonTrackerUpdate;
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand) ", false)]
     public static event nuitrack.HandTracker.OnUpdate onHandsTrackerUpdate;
 
     public delegate void OnNewGestureHandler(nuitrack.Gesture gesture);
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).GestureType or NuitrackManager.Users.Current.GestureType", false)]
     public static event OnNewGestureHandler onNewGesture;
+
+    [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand) ", false)]
     public static nuitrack.UserHands СurrentHands { get; private set; }
 
     static NuitrackManager instance;
