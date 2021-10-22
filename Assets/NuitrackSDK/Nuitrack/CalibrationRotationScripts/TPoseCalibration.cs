@@ -57,7 +57,7 @@ public class TPoseCalibration : MonoBehaviour
     };
 
     [SerializeField] float maxAngle = 30f;
-    [SerializeField] float maxSqrDifference = 10000f;
+    [SerializeField] float maxSqrDifference = 0.1f;
 
     static Quaternion sensorOrientation = Quaternion.identity;
     static public Quaternion SensorOrientation { get { return sensorOrientation; } }
@@ -115,7 +115,7 @@ public class TPoseCalibration : MonoBehaviour
         }
         else
         {
-            if (CurrentUserTracker.CurrentUser != 0)
+            if (NuitrackManager.Users.CurrentUserID != 0)
             {
                 if (!calibrationStarted)
                 {
@@ -129,7 +129,8 @@ public class TPoseCalibration : MonoBehaviour
                         timer = 0f;
                         cooldown = calibrationTime;
 
-                        if (onSuccess != null) onSuccess(GetHeadAngles());
+                        if (onSuccess != null) 
+                            onSuccess(GetHeadAngles());
                     }
                     else
                     {
@@ -137,11 +138,13 @@ public class TPoseCalibration : MonoBehaviour
                         if (!calibrationStarted)
                         {
                             timer = 0f;
-                            if (onFail != null) onFail();
+                            if (onFail != null) 
+                                onFail();
                         }
                         else
                         {
-                            if (onProgress != null) onProgress(timer / calibrationTime);
+                            if (onProgress != null) 
+                                onProgress(timer / calibrationTime);
                             timer += Time.unscaledDeltaTime;
                         }
                     }
@@ -152,17 +155,18 @@ public class TPoseCalibration : MonoBehaviour
 
     void StartCalibration()
     {
-        Dictionary<nuitrack.JointType, nuitrack.Joint> joints = new Dictionary<nuitrack.JointType, nuitrack.Joint>();
+        Dictionary<nuitrack.JointType, UserData.SkeletonData.Joint> joints = new Dictionary<nuitrack.JointType, UserData.SkeletonData.Joint>();
 
+        int jointIndex = 0;
+        foreach (nuitrack.JointType joint in checkedJoints)
         {
-            int i = 0;
-            foreach (nuitrack.JointType joint in checkedJoints)
-            {
-                joints.Add(joint, CurrentUserTracker.CurrentSkeleton.GetJoint(joint));
-                if (joints[joint].Confidence < 0.5f) return;
-                initPositions[i] = joints[joint].ToVector3();
-                i++;
-            }
+            joints.Add(joint, NuitrackManager.Users.Current.Skeleton.GetJoint(joint));
+
+            if (joints[joint].Confidence < 0.5f) 
+                return;
+
+            initPositions[jointIndex] = joints[joint].Position;
+            jointIndex++;
         }
 
         switch (calibrationType)
@@ -171,12 +175,12 @@ public class TPoseCalibration : MonoBehaviour
                 {
                     Vector3[] handDeltas = new Vector3[6];
 
-                    handDeltas[0] = joints[nuitrack.JointType.LeftWrist].ToVector3() - joints[nuitrack.JointType.RightWrist].ToVector3();
-                    handDeltas[1] = joints[nuitrack.JointType.LeftWrist].ToVector3() - joints[nuitrack.JointType.LeftElbow].ToVector3();
-                    handDeltas[2] = joints[nuitrack.JointType.LeftElbow].ToVector3() - joints[nuitrack.JointType.LeftShoulder].ToVector3();
-                    handDeltas[3] = joints[nuitrack.JointType.LeftShoulder].ToVector3() - joints[nuitrack.JointType.RightShoulder].ToVector3();
-                    handDeltas[4] = joints[nuitrack.JointType.RightShoulder].ToVector3() - joints[nuitrack.JointType.RightElbow].ToVector3();
-                    handDeltas[5] = joints[nuitrack.JointType.RightElbow].ToVector3() - joints[nuitrack.JointType.RightWrist].ToVector3();
+                    handDeltas[0] = joints[nuitrack.JointType.LeftWrist].Position - joints[nuitrack.JointType.RightWrist].Position;
+                    handDeltas[1] = joints[nuitrack.JointType.LeftWrist].Position - joints[nuitrack.JointType.LeftElbow].Position;
+                    handDeltas[2] = joints[nuitrack.JointType.LeftElbow].Position - joints[nuitrack.JointType.LeftShoulder].Position;
+                    handDeltas[3] = joints[nuitrack.JointType.LeftShoulder].Position - joints[nuitrack.JointType.RightShoulder].Position;
+                    handDeltas[4] = joints[nuitrack.JointType.RightShoulder].Position - joints[nuitrack.JointType.RightElbow].Position;
+                    handDeltas[5] = joints[nuitrack.JointType.RightElbow].Position - joints[nuitrack.JointType.RightWrist].Position;
 
                     for (int i = 1; i < 6; i++)
                     {
@@ -187,14 +191,17 @@ public class TPoseCalibration : MonoBehaviour
                     }
 
                     calibrationStarted = true;
-                    if (onStart != null) onStart();
+
+                    if (onStart != null)
+                        onStart();
+
                     break;
                 }
             case CalibrationType.RightHand90DegreesUTurn:
                 {
-                    Vector3 torsoNeck = joints[nuitrack.JointType.Neck].ToVector3() - joints[nuitrack.JointType.Torso].ToVector3();
-                    Vector3 shoulderElbow = joints[nuitrack.JointType.RightElbow].ToVector3() - joints[nuitrack.JointType.RightShoulder].ToVector3();
-                    Vector3 elbowWrist = joints[nuitrack.JointType.RightWrist].ToVector3() - joints[nuitrack.JointType.RightElbow].ToVector3();
+                    Vector3 torsoNeck = joints[nuitrack.JointType.Neck].Position - joints[nuitrack.JointType.Torso].Position;
+                    Vector3 shoulderElbow = joints[nuitrack.JointType.RightElbow].Position - joints[nuitrack.JointType.RightShoulder].Position;
+                    Vector3 elbowWrist = joints[nuitrack.JointType.RightWrist].Position - joints[nuitrack.JointType.RightElbow].Position;
 
                     if (
                     (Mathf.Abs(Vector3.Angle(torsoNeck, shoulderElbow) - 90f) > maxAngle) ||    // !torso perpendicular to shoulder
@@ -205,7 +212,10 @@ public class TPoseCalibration : MonoBehaviour
                         return;
                     }
                     calibrationStarted = true;
-                    if (onStart != null) onStart();
+
+                    if (onStart != null)
+                        onStart();
+
                     break;
                 }
         }
@@ -213,20 +223,20 @@ public class TPoseCalibration : MonoBehaviour
 
     void ProcessCalibration()
     {
-        Dictionary<nuitrack.JointType, nuitrack.Joint> joints = new Dictionary<nuitrack.JointType, nuitrack.Joint>();
+        Dictionary<nuitrack.JointType, UserData.SkeletonData.Joint> joints = new Dictionary<nuitrack.JointType, UserData.SkeletonData.Joint>();
 
         {
             int i = 0;
             foreach (nuitrack.JointType joint in checkedJoints)
             {
-                joints.Add(joint, CurrentUserTracker.CurrentSkeleton.GetJoint(joint));
+                joints.Add(joint, NuitrackManager.Users.Current.Skeleton.GetJoint(joint));
                 if (joints[joint].Confidence < 0.5f)
                 {
                     calibrationStarted = false;
                     return;
                 }
 
-                currentPositions[i] = joints[joint].ToVector3();
+                currentPositions[i] = joints[joint].Position;
                 i++;
             }
         }
@@ -248,9 +258,9 @@ public class TPoseCalibration : MonoBehaviour
             {
                 float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[4] - currentPositions[7]).z, (currentPositions[4] - currentPositions[7]).x);
                 float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
-
-                Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
-                Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
+                    
+                Vector3 torso = NuitrackManager.Users.Current.Skeleton.GetJoint(nuitrack.JointType.Torso).Position;
+                Vector3 neck = NuitrackManager.Users.Current.Skeleton.GetJoint(nuitrack.JointType.Neck).Position;
                 Vector3 diff = neck - torso;
 
                 sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
@@ -264,8 +274,8 @@ public class TPoseCalibration : MonoBehaviour
                 float angleY = -Mathf.Rad2Deg * Mathf.Atan2((currentPositions[2] - currentPositions[3]).z, (currentPositions[2] - currentPositions[3]).x);
                 float angleX = -Mathf.Rad2Deg * Mathf.Atan2(Input.gyro.gravity.z, -Input.gyro.gravity.y);
 
-                Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
-                Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
+                Vector3 torso = NuitrackManager.Users.Current.Skeleton.GetJoint(nuitrack.JointType.Torso).Position;
+                Vector3 neck = NuitrackManager.Users.Current.Skeleton.GetJoint(nuitrack.JointType.Neck).Position;
                 Vector3 diff = neck - torso;
 
                 sensorOrientation = Quaternion.Euler(Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);

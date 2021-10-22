@@ -564,8 +564,8 @@ public class NuitrackManager : MonoBehaviour
         if (HandTrackerData == null)
             return;
 
-        if (CurrentUserTracker.CurrentUser != 0)
-            СurrentHands = HandTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
+        if (Users.CurrentUserID != 0)
+            СurrentHands = HandTrackerData.GetUserHandsByID(Users.CurrentUserID);
         else
             СurrentHands = null;
 
