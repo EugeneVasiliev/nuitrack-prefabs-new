@@ -104,7 +104,7 @@ public class NuitrackManager : MonoBehaviour
     [Obsolete ("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
     public static event nuitrack.SkeletonTracker.OnSkeletonUpdate onSkeletonTrackerUpdate;
 
-    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand) ", false)]
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
     public static event nuitrack.HandTracker.OnUpdate onHandsTrackerUpdate;
 
     public delegate void OnNewGestureHandler(nuitrack.Gesture gesture);
@@ -112,7 +112,7 @@ public class NuitrackManager : MonoBehaviour
     [Obsolete("Use NuitrackManager.Users.GetUser(userID).GestureType or NuitrackManager.Users.Current.GestureType", false)]
     public static event OnNewGestureHandler onNewGesture;
 
-    [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand) ", false)]
+    [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
     public static nuitrack.UserHands СurrentHands { get; private set; }
 
     static NuitrackManager instance;

@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 //logic (and number of tracked users) may change from app to app
 //for developer's needs
@@ -8,32 +8,15 @@ using System.Collections;
 
 public class CurrentUserTracker : MonoBehaviour
 {
-    static int currentUser;
-    public static int CurrentUser { get { return currentUser; } }
-
-    static nuitrack.Skeleton currentSkeleton;
-    public static nuitrack.Skeleton CurrentSkeleton { get { return currentSkeleton; } }
-
-    static CurrentUserTracker instance;
-
-    public static CurrentUserTracker Instance
+    public static int CurrentUser
     {
-        get
-        {
-            if (instance == null)
-            {
-                instance = FindObjectOfType<CurrentUserTracker>();
-                if (instance == null)
-                {
-                    GameObject container = new GameObject();
-                    container.name = "CurrentUserTracker";
-                    instance = container.AddComponent<CurrentUserTracker>();
-                }
+        get; private set;
+    }
 
-                DontDestroyOnLoad(instance);
-            }
-            return instance;
-        }
+    [Obsolete("Use NuitrackManager.Users.Current.Skeleton", false)]
+    public static nuitrack.Skeleton CurrentSkeleton
+    {
+        get; private set;
     }
 
     void Start()
@@ -46,21 +29,21 @@ public class CurrentUserTracker : MonoBehaviour
     {
         if ((skeletonData == null) || (skeletonData.NumUsers == 0))
         {
-            currentUser = 0;
-            currentSkeleton = null;
+            CurrentUser = 0;
+            CurrentSkeleton = null;
             return;
         }
 
-        if (currentUser != 0)
+        if (CurrentUser != 0)
         {
-            currentSkeleton = skeletonData.GetSkeletonByID(currentUser);
-            currentUser = (currentSkeleton == null) ? 0 : currentUser;
+            CurrentSkeleton = skeletonData.GetSkeletonByID(CurrentUser);
+            CurrentUser = (CurrentSkeleton == null) ? 0 : CurrentUser;
         }
 
-        if (currentUser == 0)
+        if (CurrentUser == 0)
         {
-            currentUser = skeletonData.Skeletons[0].ID;
-            currentSkeleton = skeletonData.Skeletons[0];
+            CurrentUser = skeletonData.Skeletons[0].ID;
+            CurrentSkeleton = skeletonData.Skeletons[0];
         }
     }
 }
