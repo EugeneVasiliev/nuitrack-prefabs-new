@@ -6,11 +6,6 @@ public class Users
 {
     readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
 
-    public ulong TimeStamp
-    {
-        get; private set;
-    }
-
     public int Count
     {
         get
@@ -42,15 +37,6 @@ public class Users
         return users.Values.ToList();
     }
 
-    void CheckTimeStamp(ulong newTimeStamp)
-    {
-        if (TimeStamp != newTimeStamp)
-        {
-            TimeStamp = newTimeStamp;
-            users.Clear();
-        }
-    }
-
     UserData TryGetUser(int id)
     {
         if (!users.ContainsKey(id))
@@ -59,10 +45,13 @@ public class Users
         return users[id];
     }
 
+    internal void Clear()
+    {
+        users.Clear();
+    }
+
     internal void AddData(nuitrack.SkeletonData skeletonData)
     {
-        CheckTimeStamp(skeletonData.Timestamp);
-
         foreach (nuitrack.Skeleton skeleton in skeletonData.Skeletons)
             TryGetUser(skeleton.ID).SetSkeleton(skeleton);
 
@@ -88,26 +77,20 @@ public class Users
 
     internal void AddData(nuitrack.HandTrackerData handTrackerData)
     {
-        CheckTimeStamp(handTrackerData.Timestamp);
-
         foreach (nuitrack.UserHands hands in handTrackerData.UsersHands)
             TryGetUser(hands.UserId).SetUserHands(hands);
     }
 
     internal void AddData(nuitrack.GestureData gestureData)
     {
-        CheckTimeStamp(gestureData.Timestamp);
-
         foreach (nuitrack.Gesture gesture in gestureData.Gestures)
-            TryGetUser(gesture.UserID).SetGesture(gesture.Type);
+            TryGetUser(gesture.UserID).SetGesture(gesture);
     }
 
     internal void AddData(JsonInfo jsonInfo)
     {
         if (jsonInfo == null || jsonInfo.Instances == null)
             return;
-
-        CheckTimeStamp(jsonInfo.Timestamp);
 
         foreach (Instances instances in jsonInfo.Instances)
             if (instances.face != null)

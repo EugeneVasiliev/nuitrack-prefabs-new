@@ -114,6 +114,10 @@ public class UserData
         }
     }
 
+
+    nuitrack.UserHands rawUserHands = null;
+    nuitrack.Gesture? rawGesture = null;
+
     public int ID
     {
         get;
@@ -127,17 +131,26 @@ public class UserData
 
     public nuitrack.HandContent? LeftHand
     {
-        get; private set;
+        get
+        {
+            return rawUserHands?.LeftHand;
+        }
     }
 
     public nuitrack.HandContent? RightHand
     {
-        get; private set;
+        get
+        {
+            return rawUserHands?.RightHand;
+        }
     }
 
     public nuitrack.GestureType? GestureType
     {
-        get; private set;
+        get
+        {
+            return rawGesture?.Type;
+        }
     }
 
     public Face Face
@@ -152,11 +165,7 @@ public class UserData
 
     public void SetUserHands(nuitrack.UserHands userHands)
     {
-        if (userHands != null)
-        {
-            LeftHand = userHands.LeftHand;
-            RightHand = userHands.RightHand;
-        }
+        rawUserHands = userHands;
     }
 
     public void SetFace(Face face)
@@ -164,9 +173,9 @@ public class UserData
         Face = face;
     }
 
-    public void SetGesture(nuitrack.GestureType gestureType)
+    public void SetGesture(nuitrack.Gesture? gesture)
     {
-        GestureType = gestureType;
+        rawGesture = gesture;
     }
 
     public UserData(int id)

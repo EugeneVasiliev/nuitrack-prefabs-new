@@ -533,15 +533,14 @@ public class NuitrackManager : MonoBehaviour
         SkeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         sensorConnected = true;
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
-
-        Users.AddData(SkeletonData);
-
-        if (useFaceTracking)
-            Users.AddData(NuitrackJson);
     }
+
+    nuitrack.GestureData gestureData = null;
 
     void OnNewGestures(nuitrack.GestureData gestures)
     {
+        gestureData = gestures;
+
         if (gestures.NumGestures > 0)
         {
             if (onNewGesture != null)
@@ -549,8 +548,6 @@ public class NuitrackManager : MonoBehaviour
                 for (int i = 0; i < gestures.Gestures.Length; i++)
                     onNewGesture(gestures.Gestures[i]);
             }
-
-            Users.AddData(gestures);
         }
     }
 
@@ -568,8 +565,6 @@ public class NuitrackManager : MonoBehaviour
             СurrentHands = HandTrackerData.GetUserHandsByID(Users.CurrentUserID);
         else
             СurrentHands = null;
-
-        Users.AddData(HandTrackerData);
     }
 
     void OnApplicationPause(bool pauseStatus)
@@ -650,6 +645,23 @@ public class NuitrackManager : MonoBehaviour
 
     void Update()
     {
+        Users.Clear();
+
+        if(SkeletonData != null)
+            Users.AddData(SkeletonData);
+
+        if(HandTrackerData != null)
+            Users.AddData(HandTrackerData);
+
+        if (useFaceTracking)
+            Users.AddData(NuitrackJson);
+
+        if (gestureData != null)
+        {
+            Users.AddData(gestureData);
+            gestureData = null;
+        }
+
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (IsNuitrackLibrariesInitialized())
 #endif
