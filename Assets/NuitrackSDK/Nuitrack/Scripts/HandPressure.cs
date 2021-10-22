@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 class PressureBone
@@ -17,37 +15,30 @@ public class HandPressure : MonoBehaviour
     float pressSpeed = 20;
     [SerializeField] PressureBone[] bones;
     [SerializeField] bool rightHand = true;
-    nuitrack.HandContent hand;
 
     float minPressure = .5f, maxPressure = 1.0f;
 
-    void Start()
-    {
-
-    }
-
     void Update()
     {
-        //Debug.Log(NuitrackManager.СurrentHands);
-
         if (Application.platform != RuntimePlatform.WindowsEditor)
         {
-            if (NuitrackManager.СurrentHands != null)
+            UserData user = NuitrackManager.Users.Current;
+
+            if (user != null)
             {
                 if (rightHand)
                 {
-                    if (NuitrackManager.СurrentHands.RightHand != null)
+                    if (user.RightHand != null)
                     {
-                        hand = (nuitrack.HandContent)NuitrackManager.СurrentHands.RightHand;
-
+                        nuitrack.HandContent hand = (nuitrack.HandContent)user.RightHand;
                         pressure = Mathf.Lerp(pressure, hand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
                     }
                 }
                 else
                 {
-                    if (NuitrackManager.СurrentHands.LeftHand != null)
+                    if (user.LeftHand != null)
                     {
-                        hand = (nuitrack.HandContent)NuitrackManager.СurrentHands.LeftHand;
+                        nuitrack.HandContent hand = (nuitrack.HandContent)user.LeftHand;
                         pressure = Mathf.Lerp(pressure, hand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
                     }
                 }
@@ -56,8 +47,11 @@ public class HandPressure : MonoBehaviour
 
         //pressure = Mathf.InverseLerp(minPressure, maxPressure, pressure);
 
-        if (pressure > maxPressure) maxPressure = pressure;
-        if (pressure < minPressure) minPressure = pressure;
+        if (pressure > maxPressure)
+            maxPressure = pressure;
+
+        if (pressure < minPressure)
+            minPressure = pressure;
 
         for (int i = 0; i < bones.Length; i++)
         {
