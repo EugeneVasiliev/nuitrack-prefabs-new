@@ -10,7 +10,7 @@ namespace NuitrackSDK.NuitrackDemos
 
        void Update()
         {
-            foreach (UserData user in NuitrackManager.Users.GetList())
+            foreach (UserData user in NuitrackManager.Users)
             {
                 if (user != null && user.GestureType != null)
                 {

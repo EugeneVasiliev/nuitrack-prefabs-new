@@ -1,10 +1,14 @@
 using System.Linq;
 using System.Collections.Generic;
 
-
-public class Users
+public class Users : System.Collections.IEnumerable
 {
     readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
+
+    public System.Collections.IEnumerator GetEnumerator()
+    {
+        return users.Values.GetEnumerator();
+    }
 
     public int Count
     {
