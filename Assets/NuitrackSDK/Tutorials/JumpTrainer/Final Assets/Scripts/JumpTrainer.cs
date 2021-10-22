@@ -109,9 +109,12 @@ public class JumpTrainer : MonoBehaviour
             return;
         }
 
-        DisplayLines(true);   
+        DisplayLines(true);
 
-        floorPlane = NuitrackManager.Floor;
+        if (NuitrackManager.Floor == null)
+            return;
+
+        floorPlane = (Plane)NuitrackManager.Floor;
 
         nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
 

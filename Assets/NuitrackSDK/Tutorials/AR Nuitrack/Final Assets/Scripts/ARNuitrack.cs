@@ -99,7 +99,10 @@ public class ARNuitrack : MonoBehaviour
 
     void UpdateFloor()
     {
-        Plane newFloor = NuitrackManager.Floor;
+        if (NuitrackManager.Floor == null)
+            return;
+
+        Plane newFloor = (Plane)NuitrackManager.Floor;
 
         if (floorPlane.Equals(default(Plane)))
             floorPlane = newFloor;

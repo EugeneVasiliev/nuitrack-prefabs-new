@@ -148,10 +148,10 @@ public class NuitrackManager : MonoBehaviour
     }
 
 
-    public static Plane Floor
+    public static Plane? Floor
     {
         get; private set;
-    } = new Plane(Vector3.up, Vector3.zero);
+    } = null;
 
     public static Users Users
     {
