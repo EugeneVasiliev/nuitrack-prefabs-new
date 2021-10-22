@@ -93,7 +93,11 @@ public class NuitrackManager : MonoBehaviour
     public static nuitrack.DepthFrame DepthFrame { get; private set; }
     public static nuitrack.ColorFrame ColorFrame { get; private set; }
     public static nuitrack.UserFrame UserFrame { get; private set; }
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
     public static nuitrack.SkeletonData SkeletonData { get; private set; }
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
     public static nuitrack.HandTrackerData HandTrackerData { get; private set; }
 
     public static event nuitrack.DepthSensor.OnUpdate onDepthUpdate;
