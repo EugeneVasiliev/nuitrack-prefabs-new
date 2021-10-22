@@ -120,11 +120,6 @@ public class UserData
         private set;
     }
 
-    public ulong TimeStamp
-    {
-        get; private set;
-    }
-
     public SkeletonData Skeleton
     {
         get; private set;
@@ -174,9 +169,8 @@ public class UserData
         GestureType = gestureType;
     }
 
-    public UserData(int id, ulong timeStamp)
+    public UserData(int id)
     {
         ID = id;
-        TimeStamp = timeStamp;
     }
 }

@@ -4,9 +4,12 @@ using System.Collections.Generic;
 
 public class Users
 {
-    ulong lastTimeStamp = 0;
-
     readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
+
+    public ulong TimeStamp
+    {
+        get; private set;
+    }
 
     public int Count
     {
@@ -41,9 +44,9 @@ public class Users
 
     void CheckTimeStamp(ulong newTimeStamp)
     {
-        if (lastTimeStamp != newTimeStamp)
+        if (TimeStamp != newTimeStamp)
         {
-            lastTimeStamp = newTimeStamp;
+            TimeStamp = newTimeStamp;
             users.Clear();
         }
     }
@@ -51,7 +54,7 @@ public class Users
     UserData TryGetUser(int id)
     {
         if (!users.ContainsKey(id))
-            users.Add(id, new UserData(id, lastTimeStamp));
+            users.Add(id, new UserData(id));
 
         return users[id];
     }
