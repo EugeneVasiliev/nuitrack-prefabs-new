@@ -10,37 +10,40 @@ public class UserData
         /// </summary>
         public class Joint
         {
-            nuitrack.Joint joint;
+            public nuitrack.Joint RawJoint
+            {
+                get; private set;
+            }
 
             public Joint(nuitrack.Joint joint)
             {
-                this.joint = joint;
+                RawJoint = joint;
             }
 
             public float Confidence
             {
                 get
                 {
-                    return joint.Confidence;
+                    return RawJoint.Confidence;
                 }
             }
 
-            public nuitrack.JointType JointType
+            public nuitrack.JointType NuitrackType
             {
                 get
                 {
-                    return joint.Type;
+                    return RawJoint.Type;
                 }
             }
 
             /// <summary>
             /// The corresponding type of Unity bone
             /// </summary>
-            public HumanBodyBones HumanBodyBone
+            public HumanBodyBones HumanBodyBoneType
             {
                 get
                 {
-                    return joint.Type.ToUnityBones();
+                    return RawJoint.Type.ToUnityBones();
                 }
             }
 
@@ -51,7 +54,7 @@ public class UserData
             {
                 get
                 {
-                    return joint.ToVector3() * 0.001f;
+                    return RawJoint.ToVector3() * 0.001f;
                 }
             }
 
@@ -62,7 +65,7 @@ public class UserData
             {
                 get
                 {
-                    return joint.ToQuaternion(); //Quaternion.Inverse(CalibrationInfo.SensorOrientation)
+                    return RawJoint.ToQuaternion(); //Quaternion.Inverse(CalibrationInfo.SensorOrientation)
                 }
             }
 
@@ -73,7 +76,7 @@ public class UserData
             {
                 get
                 {
-                    return joint.ToQuaternionMirrored();
+                    return RawJoint.ToQuaternionMirrored();
                 }
             }
 
@@ -84,34 +87,42 @@ public class UserData
             {
                 get
                 {
-                    return new Vector2(Mathf.Clamp01(joint.Proj.X), Mathf.Clamp01(joint.Proj.Y));
+                    return new Vector2(Mathf.Clamp01(RawJoint.Proj.X), Mathf.Clamp01(RawJoint.Proj.Y));
                 }
             }
         }
 
-        nuitrack.Skeleton sourceSkeleton;
+        public nuitrack.Skeleton RawSkeleton
+        {
+            get; private set;
+        }
 
         public SkeletonData(nuitrack.Skeleton skeleton)
         {
-            sourceSkeleton = skeleton;
+            RawSkeleton = skeleton;
         }
 
         public Joint GetJoint(nuitrack.JointType jointType)
         {
-            nuitrack.Joint joint = sourceSkeleton.GetJoint(jointType);
+            nuitrack.Joint joint = RawSkeleton.GetJoint(jointType);
             return new Joint(joint);
         }
 
-        //public Joint GetJoint(HumanBodyBones humanBodyBone)
-        //{
-        //    return GetJoint(humanBodyBone.ToNuitrackJoint());
-        //}
+        public Joint GetJoint(HumanBodyBones humanBodyBone)
+        {
+            return GetJoint(humanBodyBone.ToNuitrackJoint());
+        }
     }
 
     public int ID
     {
         get;
         private set;
+    }
+
+    public ulong TimeStamp
+    {
+        get; private set;
     }
 
     public SkeletonData Skeleton
@@ -163,8 +174,9 @@ public class UserData
         GestureType = gestureType;
     }
 
-    public UserData(int id)
+    public UserData(int id, ulong timeStamp)
     {
         ID = id;
+        TimeStamp = timeStamp;
     }
 }

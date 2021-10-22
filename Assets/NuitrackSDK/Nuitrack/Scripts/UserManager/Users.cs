@@ -52,7 +52,7 @@ public class Users
     UserData TryGetUser(int id)
     {
         if (!users.ContainsKey(id))
-            users.Add(id, new UserData(id));
+            users.Add(id, new UserData(id, lastTimeStamp));
 
         return users[id];
     }
