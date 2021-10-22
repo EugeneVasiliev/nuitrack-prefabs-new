@@ -16,15 +16,14 @@ public class Users
         }
     }
 
+    public int CurrentUserID
+    {
+        get; private set;
+    }
+
     public UserData Current
     {
-        get
-        {
-            if (CurrentUserTracker.CurrentSkeleton != null && users.ContainsKey(CurrentUserTracker.CurrentSkeleton.ID))
-                return users[CurrentUserTracker.CurrentSkeleton.ID];
-            else
-                return null;
-        }
+        get; private set;
     }
 
     public UserData GetUser(int userID)
@@ -63,6 +62,25 @@ public class Users
 
         foreach (nuitrack.Skeleton skeleton in skeletonData.Skeletons)
             TryGetUser(skeleton.ID).SetSkeleton(skeleton);
+
+        if (skeletonData == null || skeletonData.NumUsers == 0)
+        {
+            CurrentUserID = 0;
+            Current = null;
+            return;
+        }
+
+        if (CurrentUserID != 0)
+        {
+            Current = GetUser(CurrentUserID);
+            CurrentUserID = (Current == null) ? 0 : CurrentUserID;
+        }
+
+        if (CurrentUserID == 0)
+        {
+            CurrentUserID = skeletonData.Skeletons[0].ID;
+            Current = GetUser(CurrentUserID);
+        }
     }
 
     internal void AddData(nuitrack.HandTrackerData handTrackerData)
