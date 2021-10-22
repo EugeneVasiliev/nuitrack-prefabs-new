@@ -100,13 +100,6 @@ public class GalleryControl : MonoBehaviour
 
         if (numberOfPages > 1)
             scrollStep = 1f / (numberOfPages - 1);
-
-        NuitrackManager.onNewGesture += NuitrackManager_onNewGesture;        
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onNewGesture -= NuitrackManager_onNewGesture;
     }
 
     private void CurrentImageItem_OnClick(ImageItem currentItem)
@@ -130,6 +123,11 @@ public class GalleryControl : MonoBehaviour
 
     private void Update()
     {
+        UserData user = NuitrackManager.Users.Current;
+
+        if (user != null && user.GestureType != null)
+            NuitrackManager_onNewGesture((nuitrack.GestureType)user.GestureType);
+
         switch (currentViewMode)
         {
             case ViewMode.View:
@@ -189,7 +187,7 @@ public class GalleryControl : MonoBehaviour
         }
     }
 
-    private void NuitrackManager_onNewGesture(nuitrack.Gesture gesture)
+    private void NuitrackManager_onNewGesture(nuitrack.GestureType gesture)
     {
         switch (currentViewMode)
         {
@@ -197,13 +195,13 @@ public class GalleryControl : MonoBehaviour
 
                 currentPage = Mathf.RoundToInt(scrollRect.horizontalScrollbar.value * (1 / scrollStep));
 
-                if (gesture.Type == nuitrack.GestureType.GestureSwipeLeft)
+                if (gesture == nuitrack.GestureType.GestureSwipeLeft)
                 {
                     currentPage = Mathf.Clamp(++currentPage, 0, numberOfPages - 1);
                     StartScrollAnimation();
                 }
 
-                if (gesture.Type == nuitrack.GestureType.GestureSwipeRight)
+                if (gesture == nuitrack.GestureType.GestureSwipeRight)
                 {
                     currentPage = Mathf.Clamp(--currentPage, 0, numberOfPages - 1);
                     StartScrollAnimation();
@@ -213,7 +211,7 @@ public class GalleryControl : MonoBehaviour
 
             case ViewMode.View:
 
-                if (gesture.Type == nuitrack.GestureType.GestureSwipeUp)
+                if (gesture == nuitrack.GestureType.GestureSwipeUp)
                 {
                     currentViewMode = ViewMode.Preview;
                     animated = true;
