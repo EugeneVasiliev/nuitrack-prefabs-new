@@ -21,7 +21,10 @@ public class Users
 
     public UserData Current
     {
-        get; private set;
+        get
+        {
+            return GetUser(CurrentUserID) ?? null;
+        }
     }
 
     public UserData GetUser(int userID)
@@ -58,21 +61,14 @@ public class Users
         if (skeletonData == null || skeletonData.NumUsers == 0)
         {
             CurrentUserID = 0;
-            Current = null;
             return;
         }
 
         if (CurrentUserID != 0)
-        {
-            Current = GetUser(CurrentUserID);
-            CurrentUserID = (Current == null) ? 0 : CurrentUserID;
-        }
+            CurrentUserID = (GetUser(CurrentUserID) == null) ? 0 : CurrentUserID;
 
         if (CurrentUserID == 0)
-        {
             CurrentUserID = skeletonData.Skeletons[0].ID;
-            Current = GetUser(CurrentUserID);
-        }
     }
 
     internal void AddData(nuitrack.HandTrackerData handTrackerData)

@@ -115,6 +115,8 @@ public class NuitrackManager : MonoBehaviour
     [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
     public static nuitrack.UserHands СurrentHands { get; private set; }
 
+    nuitrack.GestureData gestureData = null;
+
     static NuitrackManager instance;
     NuitrackInitState initState = NuitrackInitState.INIT_NUITRACK_MANAGER_NOT_INSTALLED;
 
@@ -534,8 +536,6 @@ public class NuitrackManager : MonoBehaviour
         sensorConnected = true;
         onSkeletonTrackerUpdate?.Invoke(SkeletonData);
     }
-
-    nuitrack.GestureData gestureData = null;
 
     void OnNewGestures(nuitrack.GestureData gestures)
     {
