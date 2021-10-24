@@ -225,6 +225,7 @@ namespace NuitrackSDK.Avatar
         {
             nuitrack.Skeleton skeleton = ControllerSkeleton;
 
+            //TODO: ERROR
             if (skeleton == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
                 return;
 

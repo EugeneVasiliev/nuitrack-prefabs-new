@@ -55,6 +55,11 @@ namespace NuitrackSDK.Avatar
         [SerializeField, NuitrackSDKInspector] Transform headTransform;
         Transform spawnedHead;
 
+        [Header("Border Grid settings")]
+        [SerializeField] bool needBorderGrid = false;
+        [SerializeField] GameObject borderGrid;
+        Transform spawnedBorderGrid;
+
         [Header("Calibration")]
         [SerializeField] bool recenterOnSuccess;
 
@@ -158,6 +163,13 @@ namespace NuitrackSDK.Avatar
             {
                 Vector3 rootPosition = jointsRigged[rootJoint].bone.position;
                 startPoint = SpaceTransform.InverseTransformPoint(rootPosition);
+
+                if (needBorderGrid)
+                {
+                    spawnedBorderGrid = Instantiate(borderGrid).transform;
+                    spawnedBorderGrid.position = jointsRigged[rootJoint].bone.position;
+                    spawnedBorderGrid.rotation = transform.rotation * Quaternion.Euler(0,180,0);
+                }
             }
         }
 
