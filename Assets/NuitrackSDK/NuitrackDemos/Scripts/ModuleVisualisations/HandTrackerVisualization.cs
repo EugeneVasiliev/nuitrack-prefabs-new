@@ -10,65 +10,60 @@ namespace NuitrackSDK.NuitrackDemos
         [SerializeField] GameObject handUIPrefab;
         [SerializeField] float sizeNormal = 0, sizeClick = 0;
         [SerializeField] Color leftColor = Color.white, rightColor = Color.red;
-        Dictionary<int, Image[]> hands;
 
-        void Start()
-        {
-            hands = new Dictionary<int, Image[]>();
-        }
+        Dictionary<int, List<Image>> hands = new Dictionary<int, List<Image>>();
 
         void Update()
         {
-            foreach (KeyValuePair<int, Image[]> kvp in hands)
+            foreach (KeyValuePair<int, List<Image>> kvp in hands)
             {
                 if (NuitrackManager.Users.GetUser(kvp.Key) == null)
                 {
-                    hands[kvp.Key][0].enabled = false;
-                    hands[kvp.Key][1].enabled = false;
+                    foreach (Image img in hands[kvp.Key])
+                        img.enabled = false;
                 }
             }
 
             foreach (UserData userData in NuitrackManager.Users)
             {
                 if (!hands.ContainsKey(userData.ID))
-                    CreateNewHands(userData.ID);
+                    CreateHands(userData.ID);
 
                 ControllHand(userData.ID, 0, userData.LeftHand);
                 ControllHand(userData.ID, 1, userData.RightHand);
             }
         }
 
-        void CreateNewHands(int userId)
+        void CreateHands(int userID)
         {
-            hands.Add(userId, new Image[2]);
-            GameObject leftHand = Instantiate(handUIPrefab);
-            GameObject rightHand = Instantiate(handUIPrefab);
-
-            leftHand.transform.SetParent(handsContainer, false);
-            rightHand.transform.SetParent(handsContainer, false);
-
-            hands[userId][0] = leftHand.GetComponent<Image>();
-            hands[userId][1] = rightHand.GetComponent<Image>();
-
-            hands[userId][0].enabled = false;
-            hands[userId][1].enabled = false;
-            hands[userId][0].color = leftColor;
-            hands[userId][1].color = rightColor;
+            hands.Add(userID, new List<Image>());
+            CreateHand(userID, leftColor);
+            CreateHand(userID, rightColor);
         }
 
-        void ControllHand(int userID, int handImageID, nuitrack.HandContent? handContent)
+        void CreateHand(int userID, Color color)
         {
-            if ((handContent == null) || (handContent.Value.X == -1f))
-            {
-                hands[userID][handImageID].enabled = false;
-            }
+            Image image = Instantiate(handUIPrefab).GetComponent<Image>();
+
+            image.transform.SetParent(handsContainer, false);        
+            image.enabled = false;
+            image.color = color;
+
+            hands[userID].Add(image);
+        }
+
+        void ControllHand(int userID, int sideID, nuitrack.HandContent? handContent)
+        {
+            if (handContent == null || handContent.Value.X == -1f)
+                hands[userID][sideID].enabled = false;
             else
             {
-                hands[userID][handImageID].enabled = true;
+                hands[userID][sideID].enabled = true;
+
                 Vector2 pos = new Vector2(handContent.Value.X, 1f - handContent.Value.Y);
-                hands[userID][handImageID].rectTransform.anchorMin = pos;
-                hands[userID][handImageID].rectTransform.anchorMax = pos;
-                hands[userID][handImageID].rectTransform.sizeDelta = handContent.Value.Click ? new Vector2(sizeClick, sizeClick) : new Vector2(sizeNormal, sizeNormal);
+                hands[userID][sideID].rectTransform.anchorMin = pos;
+                hands[userID][sideID].rectTransform.anchorMax = pos;
+                hands[userID][sideID].rectTransform.sizeDelta = handContent.Value.Click ? new Vector2(sizeClick, sizeClick) : new Vector2(sizeNormal, sizeNormal);
             }
         }
     }
