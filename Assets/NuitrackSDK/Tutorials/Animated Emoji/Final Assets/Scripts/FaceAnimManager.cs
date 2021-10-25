@@ -10,7 +10,6 @@ public class FaceAnimManager : MonoBehaviour
     [Range(0, 6)]
     [SerializeField] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
 
-    public JsonInfo faceInfo;
     List<FaceAnimController> faceAnimControllers = new List<FaceAnimController>();
     float headsDistance = 100;
 
@@ -26,41 +25,26 @@ public class FaceAnimManager : MonoBehaviour
         }
 
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(faceCount);
-        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
     }
 
-    void OnSkeletonUpdate(SkeletonData skeletonData)
+    void Update()
     {
-        if (faceInfo == null || faceInfo.Instances.Length == 0)
-            return;
-
         for (int i = 0; i < faceAnimControllers.Count; i++)
         {
-            if (i < skeletonData.Skeletons.Length)
-            {
-                Skeleton skeleton = skeletonData.GetSkeletonByID(faceInfo.Instances[i].id);
-                if(skeleton != null)
-                {
-                    nuitrack.Joint headJoint = skeleton.GetJoint(JointType.Head);
+            int id = i + 1;
+            UserData user = NuitrackManager.Users.GetUser(id);
 
-                    faceAnimControllers[i].gameObject.SetActive(headJoint.Confidence > 0.5f);
-                    faceAnimControllers[i].UpdateFace(faceInfo.Instances[i], headJoint);
-                }
+            if (user != null && user.Skeleton != null && user.Face != null)
+            {
+                UserData.SkeletonData.Joint headJoint = user.Skeleton.GetJoint(JointType.Head);
+
+                faceAnimControllers[i].gameObject.SetActive(headJoint.Confidence > 0.5f);
+                faceAnimControllers[i].UpdateFace(user.Face, headJoint);
             }
             else
             {
                 faceAnimControllers[i].gameObject.SetActive(false);
             }
         }
-    }
-
-    private void Update()
-    {
-        faceInfo = NuitrackManager.NuitrackJson;
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
     }
 }
