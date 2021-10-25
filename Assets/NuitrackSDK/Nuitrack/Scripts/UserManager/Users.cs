@@ -62,7 +62,7 @@ public class Users : IEnumerable
         if (skeletonData != null)
         {
             foreach (Skeleton skeleton in skeletonData.Skeletons)
-                TryGetUser(skeleton.ID).SetSkeleton(skeleton);
+                TryGetUser(skeleton.ID).AddData(skeleton);
 
             if (skeletonData == null || skeletonData.NumUsers == 0)
                 CurrentUserID = 0;
@@ -79,20 +79,20 @@ public class Users : IEnumerable
         if (handTrackerData != null)
         {
             foreach (UserHands hands in handTrackerData.UsersHands)
-                TryGetUser(hands.UserId).SetUserHands(hands);
+                TryGetUser(hands.UserId).AddData(hands);
         }
 
         if (gestureData != null)
         {
             foreach (Gesture gesture in gestureData.Gestures)
-                TryGetUser(gesture.UserID).SetGesture(gesture);
+                TryGetUser(gesture.UserID).AddDtata(gesture);
         }
 
         if (jsonInfo != null && jsonInfo.Instances != null)
         {
             foreach (Instances instances in jsonInfo.Instances)
                 if (instances.face != null)
-                    TryGetUser(instances.id).SetFace(instances.face);
+                    TryGetUser(instances.id).AddData(instances.face);
         }
     }
 }
