@@ -11,11 +11,9 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] float fov = 60;
         [SerializeField] bool autoAdjustingFOV = true;
         [SerializeField] Transform leftHinge, rightHinge;
-        [SerializeField] Transform leftPos, rightPos;
 
-        Color gridColor;
-
-        float bufferPercent = 10;
+        [Range(0, 1)]
+        [SerializeField] float sensitivity = 0.15f;
 
         void Start()
         {
@@ -30,8 +28,8 @@ namespace NuitrackSDK.SafetyGrid
             rightHinge.localEulerAngles = new Vector3(0, -angle, 0);
             frontGrid.transform.localPosition = new Vector3(frontGrid.transform.localPosition.x, frontGrid.transform.localPosition.y, warningDistance);
             float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);
-            leftPos.transform.localPosition = new Vector3(0, 0, sideDistance);
-            rightPos.transform.localPosition = new Vector3(0, 0, sideDistance);
+            leftGrid.transform.localPosition = new Vector3(0, 0, leftGrid.size.x * leftGrid.transform.localScale.x / 2 + sideDistance);
+            rightGrid.transform.localPosition = new Vector3(0, 0, rightGrid.size.x * rightGrid.transform.localScale.x / 2 + sideDistance);
             float frontWidth = Mathf.Sqrt(-(warningDistance * warningDistance) + sideDistance * sideDistance);
             frontGrid.size = new Vector2(frontWidth * 2 / frontGrid.transform.localScale.x, frontGrid.size.y);
         }
@@ -59,21 +57,37 @@ namespace NuitrackSDK.SafetyGrid
             joints.Add(skeleton.GetJoint(nuitrack.JointType.RightAnkle));
 
             float minZ = float.MaxValue;
-            foreach (nuitrack.Joint i in joints)
+            float proximityLeft = 0, proximityRight = 0;
+            foreach (nuitrack.Joint joint in joints)
             {
-                float posZ = i.ToVector3().z / 1000; //mm into unityunits
+                float jointPosX = joint.ToVector3().x / 1000;
+                float posZ = joint.ToVector3().z / 1000; //mm into unityunits
+
+                float angle = fov / 2;
+                float sideDistance = posZ / Mathf.Cos(angle * Mathf.Deg2Rad);
+                float frontWidth = Mathf.Sqrt(-(posZ * posZ) + sideDistance * sideDistance);
+                float disttoside = jointPosX / frontWidth;
+
+                if (proximityLeft < disttoside)
+                    proximityLeft = disttoside;
+
+                if (proximityRight > disttoside)
+                    proximityRight = disttoside;
+
                 if (minZ > posZ)
                     minZ = posZ;
             }
 
-            float alpha = (warningDistance - minZ) / (warningDistance / 100 * bufferPercent);
+            ChangeAlpha(frontGrid, (warningDistance - minZ) / (warningDistance * sensitivity));
+            ChangeAlpha(leftGrid, 1.0f - (1.0f - proximityLeft) / sensitivity);
+            ChangeAlpha(rightGrid, 1.0f - (1.0f - (-proximityRight)) / sensitivity);
+        }
 
-            gridColor = frontGrid.color;
+        void ChangeAlpha(SpriteRenderer spriteRenderer, float alpha)
+        {
+            Color gridColor = spriteRenderer.color;
             gridColor.a = alpha;
-
-            frontGrid.color = gridColor;
-            leftGrid.color = gridColor;
-            rightGrid.color = gridColor;
+            spriteRenderer.color = gridColor;
         }
     }
 }

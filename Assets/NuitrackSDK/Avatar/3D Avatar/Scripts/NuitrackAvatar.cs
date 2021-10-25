@@ -254,6 +254,7 @@ namespace NuitrackSDK.Avatar
         void OnSuccessCalib(Quaternion rotation)
         {
             CalculateOffset();
+            if (needBorderGrid) spawnedBorderGrid.position = jointsRigged[rootJoint].bone.position + basePivotOffset;
         }
 
         void CalculateOffset()
