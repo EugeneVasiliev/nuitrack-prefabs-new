@@ -648,23 +648,6 @@ public class NuitrackManager : MonoBehaviour
 
     void Update()
     {
-        Users.Clear();
-
-        if(SkeletonData != null)
-            Users.AddData(SkeletonData);
-
-        if(HandTrackerData != null)
-            Users.AddData(HandTrackerData);
-
-        if (useFaceTracking)
-            Users.AddData(NuitrackJson);
-
-        if (gestureData != null)
-        {
-            Users.AddData(gestureData);
-            gestureData = null;
-        }
-
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (IsNuitrackLibrariesInitialized())
 #endif
@@ -675,6 +658,9 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
+                Users.UpdateData(SkeletonData, HandTrackerData, gestureData, NuitrackJson);
+                gestureData = null;
+
                 nuitrack.Nuitrack.Update();
             }
             catch (System.Exception ex)

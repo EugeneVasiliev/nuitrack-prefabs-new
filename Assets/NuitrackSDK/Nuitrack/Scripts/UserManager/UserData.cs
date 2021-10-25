@@ -158,22 +158,22 @@ public class UserData
         get; private set;
     }
 
-    public void SetSkeleton(nuitrack.Skeleton skeleton)
+    internal void SetSkeleton(nuitrack.Skeleton skeleton)
     {
         Skeleton = new SkeletonData(skeleton);
     }
 
-    public void SetUserHands(nuitrack.UserHands userHands)
+    internal void SetUserHands(nuitrack.UserHands userHands)
     {
         rawUserHands = userHands;
     }
 
-    public void SetFace(Face face)
+    internal void SetFace(Face face)
     {
         Face = face;
     }
 
-    public void SetGesture(nuitrack.Gesture? gesture)
+    internal void SetGesture(nuitrack.Gesture? gesture)
     {
         rawGesture = gesture;
     }
