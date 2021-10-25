@@ -13,6 +13,9 @@ public class Users : IEnumerable
         return users.Values.GetEnumerator();
     }
 
+    /// <summary>
+    /// The number of users detected at the moment.
+    /// </summary>
     public int Count
     {
         get
@@ -21,11 +24,22 @@ public class Users : IEnumerable
         }
     }
 
+    /// <summary>
+    /// ID of the current user. <see cref="Current"/>
+    /// </summary>
     public int CurrentUserID
     {
         get; private set;
     }
 
+    /// <summary>
+    /// UserData of the current user. Maybe null.
+    ///
+    /// <para>
+    /// The queue rule is in effect, the current user is considered the first to enter the frame.
+    /// When the current user leaves the frame, control is transferred to the next detected one)
+    /// </para>
+    /// </summary>
     public UserData Current
     {
         get
@@ -34,6 +48,11 @@ public class Users : IEnumerable
         }
     }
 
+    /// <summary>
+    /// Get a user by ID. Maybe null.
+    /// </summary>
+    /// <param name="userID">ID of the required user</param>
+    /// <returns>User data, if the user exists otherwise null.</returns>
     public UserData GetUser(int userID)
     {
         if (users.ContainsKey(userID))
@@ -42,6 +61,10 @@ public class Users : IEnumerable
             return null;
     }
 
+    /// <summary>
+    /// Get a list of all users in the form of a List<UserData>
+    /// </summary>
+    /// <returns>List of all users</returns>
     public List<UserData> GetList()
     {
         return new List<UserData>(users.Values);

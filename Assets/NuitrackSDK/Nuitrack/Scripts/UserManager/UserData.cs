@@ -118,7 +118,7 @@ public class UserData
         }
 
         /// <summary>
-        /// Get a wrapper object for the specified joint
+        /// Get a wrapper object for the specified joint. Maybe null.
         /// </summary>
         /// <param name="jointType">Joint type <see cref="nuitrack.JointType"/></param>
         /// <returns>Shell object <see cref="Joint"/></returns>
@@ -129,7 +129,7 @@ public class UserData
         }
 
         /// <summary>
-        /// Get a wrapper object for the specified joint
+        /// Get a wrapper object for the specified joint. Maybe null.
         /// </summary>
         /// <param name="humanBodyBone">Bone type <see cref="HumanBodyBones"/></param>
         /// <returns>Shell object <see cref="Joint"/></returns>
@@ -220,16 +220,25 @@ public class UserData
         private set;
     }
 
+    /// <summary>
+    /// User skeleton. Maybe null.
+    /// </summary>
     public SkeletonData Skeleton
     {
         get; private set;
     }
 
+    /// <summary>
+    /// User left hand. Maybe null.
+    /// </summary>
     public Hand LeftHand
     {
         get; private set;
     }
 
+    /// <summary>
+    /// User right hand. Maybe null.
+    /// </summary>
     public Hand RightHand
     {
         get; private set;
@@ -246,6 +255,9 @@ public class UserData
         }
     }
 
+    /// <summary>
+    /// User face. Maybe null.
+    /// </summary>
     public Face Face
     {
         get; private set;
