@@ -8,11 +8,11 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] SpriteRenderer frontGrid, leftGrid, rightGrid;
 
         [SerializeField] float warningDistance = 1.5f;
-        [SerializeField] Transform leftHinge, rightHinge;
-        [SerializeField] float XYTrigger = 0.2f;
-        [SerializeField] float ZTrigger = 1700;
-
+        [SerializeField] float fov = 60;
         [SerializeField] bool autoAdjustingFOV = true;
+        [SerializeField] Transform leftHinge, rightHinge;
+        [SerializeField] Transform leftPos, rightPos;
+
         Color gridColor;
 
         float bufferPercent = 10;
@@ -21,18 +21,19 @@ namespace NuitrackSDK.SafetyGrid
         {
             NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
 
+            float angle = fov / 2;
+
             if (autoAdjustingFOV)
-            {
-                nuitrack.OutputMode mode = NuitrackManager.DepthSensor.GetOutputMode();
+                angle = NuitrackManager.DepthSensor.GetOutputMode().HFOV * Mathf.Rad2Deg / 2;
 
-                leftHinge.localEulerAngles = new Vector3(0, mode.HFOV * Mathf.Rad2Deg / 2, 0);
-                rightHinge.localEulerAngles = new Vector3(0, -mode.HFOV * Mathf.Rad2Deg / 2, 0);
-
-                //leftGrid.transform.localPosition = new Vector3(0, 0, warningDistance);
-                //rightGrid.transform.localPosition = new Vector3(0, 0, warningDistance);
-
-                frontGrid.transform.localPosition = new Vector3(frontGrid.transform.localPosition.x, frontGrid.transform.localPosition.y, warningDistance);
-            }
+            leftHinge.localEulerAngles = new Vector3(0, angle, 0);
+            rightHinge.localEulerAngles = new Vector3(0, -angle, 0);
+            frontGrid.transform.localPosition = new Vector3(frontGrid.transform.localPosition.x, frontGrid.transform.localPosition.y, warningDistance);
+            float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);
+            leftPos.transform.localPosition = new Vector3(0, 0, sideDistance);
+            rightPos.transform.localPosition = new Vector3(0, 0, sideDistance);
+            float frontWidth = Mathf.Sqrt(-(warningDistance * warningDistance) + sideDistance * sideDistance);
+            frontGrid.size = new Vector2(frontWidth * 2 / frontGrid.transform.localScale.x, frontGrid.size.y);
         }
 
         void OnDestroy()
@@ -57,46 +58,15 @@ namespace NuitrackSDK.SafetyGrid
             joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftAnkle));
             joints.Add(skeleton.GetJoint(nuitrack.JointType.RightAnkle));
 
-            float min = 1;
-            float max = 0;
             float minZ = float.MaxValue;
             foreach (nuitrack.Joint i in joints)
             {
-                //float xplus = 0;
-                //float zplus = 0;
-                //if (i.Type == nuitrack.JointType.Head || i.Type == nuitrack.JointType.Torso)
-                //{
-                //    xplus = 0.15f;
-                //    zplus = 250f;
-                //}
-
-                //if (i.Proj.X < min)
-                //{
-                //    min = i.Proj.X - xplus;
-                //}
-                //if (i.Proj.X > max)
-                //{
-                //    max = i.Proj.X + xplus;
-                //}
-                //if (i.Proj.Z < minZ)
-                //    minZ = i.Proj.Z - zplus;
-
-                float posZ = i.ToVector3().z / 100 / 10;
+                float posZ = i.ToVector3().z / 1000; //mm into unityunits
                 if (minZ > posZ)
                     minZ = posZ;
             }
 
-            float distance = Mathf.Min(min, 1.0f - max);
-            float alpha = 0;
-            if (distance < XYTrigger)
-                alpha = 1 - distance / XYTrigger;
-
-            if (minZ < warningDistance)
-            {
-                alpha = (warningDistance - minZ) / (warningDistance / 100 * bufferPercent);
-            }
-            else
-                alpha = 0;
+            float alpha = (warningDistance - minZ) / (warningDistance / 100 * bufferPercent);
 
             gridColor = frontGrid.color;
             gridColor.a = alpha;
