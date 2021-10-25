@@ -80,6 +80,9 @@ public class Users : IEnumerable
 
     internal void UpdateData(SkeletonData skeletonData, HandTrackerData handTrackerData, GestureData gestureData, JsonInfo jsonInfo)
     {
+        foreach (UserData user in this)
+            user.Dispose();
+
         users.Clear();
 
         if (skeletonData != null)

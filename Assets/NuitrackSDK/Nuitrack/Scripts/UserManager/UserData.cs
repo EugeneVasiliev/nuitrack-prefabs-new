@@ -1,7 +1,10 @@
 using UnityEngine;
+using System;
+
+using NuitrackSDK.Frame;
 
 
-public class UserData
+public class UserData : IDisposable
 {
     /// <summary>
     /// Wrapper for Nuitrack Skeleton <see cref="nuitrack.Skeleton"/>
@@ -159,8 +162,6 @@ public class UserData
         {
             get
             {
-                Debug.Log(new Vector2(RawHandContent.X, 1 - RawHandContent.Y).ToString());
-                Debug.Log(Position.ToString());
                 return new Vector2(RawHandContent.X, 1 - RawHandContent.Y);
             }
         }
@@ -266,6 +267,67 @@ public class UserData
     public UserData(int id)
     {
         ID = id;
+    }
+
+
+    TextureCache textureCache = null;
+
+    public void Dispose()
+    {
+        if (textureCache != null)
+        {
+            textureCache.Dispose();
+            textureCache = null;
+        }
+    }
+
+    Color[] GetUserColors(Color userColor)
+    {
+        Color[] userColors = new Color[7];
+
+        for (int id = 0; id <= 6; id++)
+            userColors[id] = id == ID ? userColor : Color.clear;
+
+        return userColors;
+    }
+
+    /// <summary>
+    /// Get the Texture2D segment of this user
+    /// </summary>
+    /// <param name="userColor">The color in which the user segment will be colored.</param>
+    /// <returns>Texture <see cref="SegmentToTexture.GetTexture2D(nuitrack.UserFrame, Color[], TextureCache)"/></returns>
+    public Texture2D SegmentTexture2D(Color userColor)
+    {
+        if (textureCache == null)
+            textureCache = new TextureCache();
+
+        return NuitrackManager.UserFrame.ToTexture2D(GetUserColors(userColor), textureCache);
+    }
+
+    /// <summary>
+    /// Get the RenderTexture segment of this user
+    /// </summary>
+    /// <param name="userColor">The color in which the user segment will be colored.</param>
+    /// <returns>Texture <see cref="SegmentToTexture.GetRenderTexture(nuitrack.UserFrame, Color[], TextureCache)"/></returns>
+    public RenderTexture SegmentRenderTexture(Color userColor)
+    {
+        if (textureCache == null)
+            textureCache = new TextureCache();
+
+        return NuitrackManager.UserFrame.ToRenderTexture(GetUserColors(userColor), textureCache);
+    }
+
+    /// <summary>
+    /// Get the Texture (Texture2D or RenderTexture - the fastest way for your platform will be selected) segment of this user
+    /// </summary>
+    /// <param name="userColor">The color in which the user segment will be colored.</param>
+    /// <returns>Texture <see cref="SegmentToTexture.GetTexture(nuitrack.UserFrame, Color[], TextureCache)"/></returns>
+    public Texture SegmentTexture(Color userColor)
+    {
+        if (textureCache == null)
+            textureCache = new TextureCache();
+
+        return NuitrackManager.UserFrame.ToTexture(GetUserColors(userColor), textureCache);
     }
 
     internal void AddData(nuitrack.Skeleton skeleton)
