@@ -542,7 +542,10 @@ public class NuitrackManager : MonoBehaviour
 
     void OnNewGestures(nuitrack.GestureData gestures)
     {
-        gestureData = gestures;
+        if (gestureData != null)
+            gestureData.Dispose();
+
+        gestureData = (nuitrack.GestureData)gestures.Clone();
 
         if (gestures.NumGestures > 0)
         {
@@ -659,7 +662,12 @@ public class NuitrackManager : MonoBehaviour
             try
             {
                 Users.UpdateData(SkeletonData, HandTrackerData, gestureData, NuitrackJson);
-                gestureData = null;
+
+                if (gestureData != null)
+                {
+                    gestureData.Dispose();
+                    gestureData = null;
+                }
 
                 nuitrack.Nuitrack.Update();
             }
