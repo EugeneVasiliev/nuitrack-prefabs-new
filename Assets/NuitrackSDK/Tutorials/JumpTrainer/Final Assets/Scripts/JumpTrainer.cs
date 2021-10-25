@@ -102,10 +102,7 @@ public class JumpTrainer : MonoBehaviour
     
     void Update()
     {
-        if(NuitrackManager.ColorFrame != null)
-            aspectRatioFitter.aspectRatio = (float)NuitrackManager.ColorFrame.Cols / NuitrackManager.ColorFrame.Rows;
-
-        if (NuitrackManager.UserFrame == null || NuitrackManager.Users.Current == null || NuitrackManager.Users.Current.Skeleton == null)
+        if (NuitrackManager.Floor == null || NuitrackManager.Users.Current == null || NuitrackManager.Users.Current.Skeleton == null)
         {
             DisplayLines(false);
             return;
@@ -113,10 +110,7 @@ public class JumpTrainer : MonoBehaviour
 
         DisplayLines(true);
 
-        if (NuitrackManager.Floor == null)
-            return;
-
-        floorPlane = (Plane)NuitrackManager.Floor;
+        floorPlane = NuitrackManager.Floor.Value;
 
         UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
 
