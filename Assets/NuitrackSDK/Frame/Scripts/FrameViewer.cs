@@ -4,6 +4,7 @@ using UnityEngine.Events;
 
 namespace NuitrackSDK.Frame
 {
+    [AddComponentMenu("NuitrackSDK/Frame/FrameViewer")]
     public class FrameViewer : MonoBehaviour
     {
         [System.Serializable]

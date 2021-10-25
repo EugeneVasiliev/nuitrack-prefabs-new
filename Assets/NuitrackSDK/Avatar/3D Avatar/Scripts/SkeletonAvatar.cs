@@ -5,6 +5,7 @@ using JointType = nuitrack.JointType;
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/3D/SkeletonAvatar")]
     public class SkeletonAvatar : BaseAvatar
     {
         [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;

@@ -43,7 +43,8 @@ namespace NuitrackSDK.NuitrackDemos
             NuitrackInitState state = NuitrackLoader.initState;
             if (state != NuitrackInitState.INIT_OK && Application.platform == RuntimePlatform.Android)
             {
-                exceptionsLogger.AddEntry("Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state));
+                string error_message = "Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state);
+                exceptionsLogger.AddEntry(NuitrackErrorSolver.CheckError(error_message));
             }
         }
 
@@ -164,7 +165,7 @@ namespace NuitrackSDK.NuitrackDemos
 
         public void SwitchNuitrackAi()
         {
-            NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.useNuitrackAi);
+            NuitrackManager.Instance.EnableNuitrackAI(!NuitrackManager.Instance.UseNuitrackAi);
         }
     }
 }
