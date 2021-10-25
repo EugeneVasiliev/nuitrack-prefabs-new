@@ -6,6 +6,28 @@ using nuitrack;
 
 public class Users : IEnumerable
 {
+    /// <summary>
+    /// Minimum allowed ID
+    /// </summary>
+    public static int MinID
+    {
+        get
+        {
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Maximum allowed ID
+    /// </summary>
+    public static int MaxID
+    {
+        get
+        {
+            return 6;
+        }
+    }
+
     readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
 
     public IEnumerator GetEnumerator()

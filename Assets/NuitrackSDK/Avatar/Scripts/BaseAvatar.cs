@@ -49,7 +49,7 @@ namespace NuitrackSDK.Avatar
             }
             set
             {
-                if (value >= MinUserID && value <= MaxUserID)
+                if (value >= Users.MinID && value <= Users.MaxID)
                 {
                     userID = value;
 
@@ -59,31 +59,10 @@ namespace NuitrackSDK.Avatar
                     useCurrentUserTracker = false;
                 }
                 else
-                    throw new System.Exception(string.Format("The User ID must be within the bounds of [{0}, {1}]", MinUserID, MaxUserID));
+                    throw new System.Exception(string.Format("The User ID must be within the bounds of [{0}, {1}]", Users.MinID, Users.MaxID));
             }
         }
 
-        /// <summary>
-        /// Minimum allowed ID
-        /// </summary>
-        public int MinUserID
-        {
-            get
-            {
-                return 1;
-            }
-        }
-
-        /// <summary>
-        /// Maximum allowed ID
-        /// </summary>
-        public int MaxUserID
-        {
-            get
-            {
-                return 6;
-            }
-        }
 
         /// <summary>
         /// Confidence threshold for detected joints
