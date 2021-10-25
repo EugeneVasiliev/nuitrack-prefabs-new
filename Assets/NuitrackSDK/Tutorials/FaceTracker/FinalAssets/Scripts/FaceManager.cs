@@ -32,9 +32,6 @@ public class FaceManager : MonoBehaviour
     [SerializeField] GameObject faceController;
     [SerializeField] SkeletonController skeletonController;
     List<FaceController> faceControllers = new List<FaceController>();
-    Instances[] faces;
-
-    JsonInfo faceInfo;
 
     void Start()
     {
@@ -46,38 +43,23 @@ public class FaceManager : MonoBehaviour
 
     void Update()
     {
-        faceInfo = NuitrackManager.NuitrackJson;
-
-        if (faceInfo == null)
-            return;
-
-        faces = faceInfo.Instances;
         for (int i = 0; i < faceControllers.Count; i++)
         {
-            if (faces != null && i < faces.Length)
+            int id = i + 1;
+            UserData user = NuitrackManager.Users.GetUser(id);
+
+            if (user != null && user.Skeleton != null && user.Face != null && user.Face.rectangle != null)
             {
-                int id = 0;
-                Face currentFace = faces[i].face;
                 // Pass the face to FaceController
-                faceControllers[i].SetFace(currentFace);
+                faceControllers[i].SetFace(user.Face);
                 faceControllers[i].gameObject.SetActive(true);
 
-                // IDs of faces and skeletons are the same
-                id = faces[i].id;
+                UserData.SkeletonData.Joint head = user.Skeleton.GetJoint(nuitrack.JointType.Head);
 
-                nuitrack.Skeleton skeleton = null;
-                if (NuitrackManager.SkeletonData != null)
-                    skeleton = NuitrackManager.SkeletonData.GetSkeletonByID(id);
+                faceControllers[i].transform.position = new Vector2(head.Proj.x * Screen.width, Screen.height - head.Proj.y * Screen.height);
+                //stretch the face to fit the rectangle
 
-                if (skeleton != null)
-                {
-                    nuitrack.Joint head = skeleton.GetJoint(nuitrack.JointType.Head);
-
-                    faceControllers[i].transform.position = new Vector2(head.Proj.X * Screen.width, Screen.height - head.Proj.Y * Screen.height);
-                    //stretch the face to fit the rectangle
-                    if (currentFace.rectangle != null)
-                        faceControllers[i].transform.localScale = new Vector2(currentFace.rectangle.width * Screen.width, currentFace.rectangle.height * Screen.height);
-                }
+                faceControllers[i].transform.localScale = new Vector2(user.Face.rectangle.width * Screen.width, user.Face.rectangle.height * Screen.height);
             }
             else
             {
