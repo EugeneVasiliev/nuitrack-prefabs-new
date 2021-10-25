@@ -65,6 +65,14 @@ namespace NuitrackSDK.Face
             faceRect = default;
         }
 
+        Texture2D croppedTexture;
+
+        void OnDestroy()
+        {
+            if (croppedTexture != null)
+                Destroy(croppedTexture);
+        }
+
         void Update()
         {
             UserData userData = ControllerUser;
@@ -102,7 +110,10 @@ namespace NuitrackSDK.Face
             int faceWidth = (int)(frame.width * Mathf.Clamp01(faceRect.width + deltaW));
             int faceHeight = (int)(frame.height * Mathf.Clamp01(faceRect.height + deltaH));
 
-            Texture2D croppedTexture = new Texture2D(faceWidth, faceHeight, TextureFormat.RGBA32, false);
+            if (croppedTexture != null)
+                Destroy(croppedTexture);
+
+            croppedTexture = new Texture2D(faceWidth, faceHeight, TextureFormat.RGBA32, false);
 
             if (useGPUCrop)
                 Graphics.CopyTexture(frame, 0, 0, faceX, faceY, faceWidth, faceHeight, croppedTexture, 0, 0, 0, 0);
