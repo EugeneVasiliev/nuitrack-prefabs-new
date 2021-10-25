@@ -224,9 +224,7 @@ namespace NuitrackSDK.Avatar
         protected virtual void Update()
         {
             nuitrack.Skeleton skeleton = ControllerSkeleton;
-
-            //TODO: ERROR
-            if (skeleton == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
+            if (skeleton == null || NuitrackManager.SkeletonData == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
                 return;
 
             lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
