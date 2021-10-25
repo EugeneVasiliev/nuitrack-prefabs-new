@@ -14,7 +14,7 @@ namespace NuitrackSDK.NuitrackDemos
             {
                 if (user != null && user.GestureType != null)
                 {
-                    nuitrack.GestureType gesture = (nuitrack.GestureType)user.GestureType;
+                    nuitrack.GestureType gesture = user.GestureType.Value;
 
                     string newEntry =
                         "User " + user.ID + ": " +

@@ -126,7 +126,7 @@ public class GalleryControl : MonoBehaviour
         UserData user = NuitrackManager.Users.Current;
 
         if (user != null && user.GestureType != null)
-            NuitrackManager_onNewGesture((nuitrack.GestureType)user.GestureType);
+            NuitrackManager_onNewGesture(user.GestureType.Value);
 
         switch (currentViewMode)
         {
