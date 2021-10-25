@@ -52,18 +52,19 @@ namespace NuitrackSDK.NuitrackDemos
             hands[userID].Add(image);
         }
 
-        void ControllHand(int userID, int sideID, nuitrack.HandContent? handContent)
+        void ControllHand(int userID, int sideID, UserData.Hand hand)
         {
-            if (handContent == null || handContent.Value.X == -1f)
+            if (hand == null)
                 hands[userID][sideID].enabled = false;
             else
             {
                 hands[userID][sideID].enabled = true;
 
-                Vector2 pos = new Vector2(handContent.Value.X, 1f - handContent.Value.Y);
+                Vector2 pos = hand.ProjPosition;
+
                 hands[userID][sideID].rectTransform.anchorMin = pos;
                 hands[userID][sideID].rectTransform.anchorMax = pos;
-                hands[userID][sideID].rectTransform.sizeDelta = handContent.Value.Click ? new Vector2(sizeClick, sizeClick) : new Vector2(sizeNormal, sizeNormal);
+                hands[userID][sideID].rectTransform.sizeDelta = hand.Click ? new Vector2(sizeClick, sizeClick) : new Vector2(sizeNormal, sizeNormal);
             }
         }
     }

@@ -51,18 +51,19 @@ public class Pointer : MonoBehaviour
 
         if (user != null)
         {
-            nuitrack.HandContent? handContent = currentHand == Hands.right ? user.RightHand : user.LeftHand;
+            UserData.Hand handContent = currentHand == Hands.right ? user.RightHand : user.LeftHand;
 
             if (handContent != null)
             {
-                Vector2 pageSize = parentRectTransform.rect.size;
                 Vector3 lastPosition = baseRect.position;
-                baseRect.anchoredPosition = new Vector2(handContent.Value.X * pageSize.x, -handContent.Value.Y * pageSize.y);
+                Vector2 handPosition = handContent.ProjPosition * parentRectTransform.rect.size;
+                handPosition.y = -(parentRectTransform.rect.height - handPosition.y);
+                baseRect.anchoredPosition = handPosition;
 
                 float velocity = (baseRect.position - lastPosition).magnitude / Time.deltaTime;
 
                 if (velocity < minVelocityInteractivePoint)
-                    Press = handContent.Value.Click;
+                    Press = handContent.Click;
 
                 active = true;
             }

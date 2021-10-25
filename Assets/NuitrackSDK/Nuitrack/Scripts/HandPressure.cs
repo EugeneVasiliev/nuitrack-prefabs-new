@@ -29,18 +29,12 @@ public class HandPressure : MonoBehaviour
                 if (rightHand)
                 {
                     if (user.RightHand != null)
-                    {
-                        nuitrack.HandContent hand = (nuitrack.HandContent)user.RightHand;
-                        pressure = Mathf.Lerp(pressure, hand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
-                    }
+                        pressure = Mathf.Lerp(pressure, user.RightHand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
                 }
                 else
                 {
                     if (user.LeftHand != null)
-                    {
-                        nuitrack.HandContent hand = (nuitrack.HandContent)user.LeftHand;
-                        pressure = Mathf.Lerp(pressure, hand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
-                    }
+                        pressure = Mathf.Lerp(pressure, user.LeftHand.Pressure / 100.0f, pressSpeed * Time.deltaTime);
                 }
             }
         }
