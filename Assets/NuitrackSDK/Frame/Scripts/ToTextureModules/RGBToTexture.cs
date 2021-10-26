@@ -18,6 +18,7 @@ namespace NuitrackSDK.Frame
     {
         Texture2D dstRgbTexture2D;
         byte[] colorDataArray = null;
+        byte[] mirrorArray = null;
 
         protected override void OnDestroy()
         {
@@ -26,6 +27,7 @@ namespace NuitrackSDK.Frame
             Destroy(dstRgbTexture2D);
 
             colorDataArray = null;
+            mirrorArray = null;
         }
 
         Texture2D GetCPUTexture(ColorFrame frame, TextureCache textureCache)
@@ -39,29 +41,32 @@ namespace NuitrackSDK.Frame
                 int datasize = frame.DataSize;
 
                 if (colorDataArray == null)
-                    colorDataArray = new byte[frame.Cols * frame.Rows * 4];
+                    colorDataArray = new byte[datasize];
+
+                if (mirrorArray == null)
+                    mirrorArray = new byte[frame.Cols * frame.Rows * 4];
 
                 Marshal.Copy(frame.Data, colorDataArray, 0, datasize);
 
-                //The conversion can be performed without an additional array, 
-                //since after copying, the bytes are clumped at the beginning of the array.
-                //Let's start the crawl from the end of the array by "stretching" the source data.
-                for (int i = datasize - 1, ptr = colorDataArray.Length - 1; i > 0; i -= 3, ptr -= 4)
+                //The transformation is performed with the image reflected vertically.
+                for (int i = 0, pxl = 0; i < datasize; i+=3, pxl++)
                 {
-                    byte r = colorDataArray[i - 2];
-                    byte g = colorDataArray[i - 1];
                     byte b = colorDataArray[i];
+                    byte g = colorDataArray[i + 1];
+                    byte r = colorDataArray[i + 2];
 
-                    colorDataArray[ptr - 3] = 255;
-                    colorDataArray[ptr - 2] = b;
-                    colorDataArray[ptr - 1] = g;
-                    colorDataArray[ptr] = r;
+                    int ptr = (frame.Cols * (frame.Rows - 1 - (pxl / frame.Cols)) + pxl % frame.Cols) * 4;
+
+                    mirrorArray[ptr] = 255;     // a
+                    mirrorArray[ptr + 1] = r;   // r
+                    mirrorArray[ptr + 2] = g;   // g
+                    mirrorArray[ptr + 3] = b;   // b
                 }
   
                 if(destTexture == null)
                     destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                destTexture.LoadRawTextureData(colorDataArray);
+                destTexture.LoadRawTextureData(mirrorArray);
                 destTexture.Apply();
 
                 textureCache.timeStamp = frame.Timestamp;
@@ -92,6 +97,7 @@ namespace NuitrackSDK.Frame
                 if (destTexture == null)
                     destTexture = InitRenderTexture(frame.Cols, frame.Rows);
 
+                instanceShader.SetInt("textureHeigth", destTexture.height);
                 instanceShader.SetTexture(kernelIndex, "Result", destTexture);
 
                 dstRgbTexture2D.LoadRawTextureData(frame.Data, frame.DataSize);
