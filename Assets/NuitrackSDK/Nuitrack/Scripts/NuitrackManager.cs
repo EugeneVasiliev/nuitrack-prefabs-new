@@ -94,11 +94,27 @@ public class NuitrackManager : MonoBehaviour
     public static nuitrack.ColorFrame ColorFrame { get; private set; }
     public static nuitrack.UserFrame UserFrame { get; private set; }
 
+    static nuitrack.SkeletonData skeletonData = null;
+
     [Obsolete("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
-    public static nuitrack.SkeletonData SkeletonData { get; private set; }
+    public static nuitrack.SkeletonData SkeletonData
+    {
+        get
+        {
+            return skeletonData;
+        }
+    }
+
+    static nuitrack.HandTrackerData handTrackerData = null;
 
     [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
-    public static nuitrack.HandTrackerData HandTrackerData { get; private set; }
+    public static nuitrack.HandTrackerData HandTrackerData
+    {
+        get
+        {
+            return handTrackerData;
+        }
+    }
 
     public static event nuitrack.DepthSensor.OnUpdate onDepthUpdate;
     public static event nuitrack.ColorSensor.OnUpdate onColorUpdate;
@@ -115,8 +131,16 @@ public class NuitrackManager : MonoBehaviour
     [Obsolete("Use NuitrackManager.Users.GetUser(userID).GestureType or NuitrackManager.Users.Current.GestureType", false)]
     public static event OnNewGestureHandler onNewGesture;
 
+    static nuitrack.UserHands currentHands = null;
+
     [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
-    public static nuitrack.UserHands СurrentHands { get; private set; }
+    public static nuitrack.UserHands СurrentHands
+    {
+        get
+        {
+            return currentHands;
+        }
+    }
 
     nuitrack.GestureData gestureData = null;
 
@@ -310,7 +334,7 @@ public class NuitrackManager : MonoBehaviour
             return;
         if (prevSkel != skel)
         {
-            SkeletonData = null;
+            skeletonData = null;
             prevSkel = skel;
             if (skel)
             {
@@ -324,7 +348,7 @@ public class NuitrackManager : MonoBehaviour
 
         if (prevHand != hand)
         {
-            HandTrackerData = null;
+            handTrackerData = null;
             prevHand = hand;
             if (hand)
                 HandTracker.OnUpdateEvent += HandleOnHandsUpdateEvent;
@@ -533,11 +557,12 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
     {
-        if (SkeletonData != null)
-            SkeletonData.Dispose();
-        SkeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
+        if (skeletonData != null)
+            skeletonData.Dispose();
+
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         sensorConnected = true;
-        onSkeletonTrackerUpdate?.Invoke(SkeletonData);
+        onSkeletonTrackerUpdate?.Invoke(skeletonData);
     }
 
     void OnNewGestures(nuitrack.GestureData gestures)
@@ -559,18 +584,19 @@ public class NuitrackManager : MonoBehaviour
 
     void HandleOnHandsUpdateEvent(nuitrack.HandTrackerData _handTrackerData)
     {
-        if (HandTrackerData != null)
-            HandTrackerData.Dispose();
-        HandTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
-        onHandsTrackerUpdate?.Invoke(HandTrackerData);
+        if (handTrackerData != null)
+            handTrackerData.Dispose();
 
-        if (HandTrackerData == null)
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
+        onHandsTrackerUpdate?.Invoke(handTrackerData);
+
+        if (handTrackerData == null)
             return;
 
         if (Users.CurrentUserID != 0)
-            СurrentHands = HandTrackerData.GetUserHandsByID(Users.CurrentUserID);
+            currentHands = handTrackerData.GetUserHandsByID(Users.CurrentUserID);
         else
-            СurrentHands = null;
+            currentHands = null;
     }
 
     void OnApplicationPause(bool pauseStatus)
@@ -661,7 +687,7 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
-                Users.UpdateData(SkeletonData, HandTrackerData, gestureData, NuitrackJson);
+                Users.UpdateData(skeletonData, handTrackerData, gestureData, NuitrackJson);
 
                 if (gestureData != null)
                 {
@@ -770,8 +796,8 @@ public class NuitrackManager : MonoBehaviour
             DepthFrame = null;
             ColorFrame = null;
             UserFrame = null;
-            SkeletonData = null;
-            HandTrackerData = null;
+            skeletonData = null;
+            handTrackerData = null;
 
             DepthSensor = null;
             ColorSensor = null;
