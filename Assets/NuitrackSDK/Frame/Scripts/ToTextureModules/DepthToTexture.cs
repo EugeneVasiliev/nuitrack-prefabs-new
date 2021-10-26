@@ -22,7 +22,8 @@ namespace NuitrackSDK.Frame
         ComputeBuffer sourceDataBuffer;
 
         byte[] depthDataArray = null;
-        byte[] outDepth = null;
+        byte[] depthArray = null;
+        byte[] mirrorArray = null;
 
         public float MaxSensorDepth
         {
@@ -70,7 +71,8 @@ namespace NuitrackSDK.Frame
             }
 
             depthDataArray = null;
-            outDepth = null;
+            depthArray = null;
+            mirrorArray = null;
         }
 
         Texture2D GetCPUTexture(DepthFrame frame, TextureCache textureCache)
@@ -81,31 +83,36 @@ namespace NuitrackSDK.Frame
                 return localCache.texture2D;
             else
             {
-                if (outDepth == null)
-                    outDepth = new byte[(frame.Cols * frame.Rows) * 4];
+                int datasize = frame.DataSize;
 
-                Marshal.Copy(frame.Data, outDepth, 0, frame.DataSize);
+                if (depthArray == null)
+                    depthArray = new byte[datasize];
+
+                if(mirrorArray == null)
+                    mirrorArray = new byte[frame.Cols * frame.Rows * 4];
+
+                Marshal.Copy(frame.Data, depthArray, 0, frame.DataSize);
 
                 float depthDivisor = 1f / (1000 * maxDepthSensor);
 
-                //The conversion can be performed without an additional array, 
-                //since after copying, the bytes are clumped at the beginning of the array.
-                //Let's start the crawl from the end of the array by "stretching" the source data.
-                for (int i = frame.DataSize - 1, ptr = outDepth.Length - 1; i > 0; i -= 2, ptr -= 4)
+                //The transformation is performed with the image reflected vertically.
+                for (int i = 0, pxl = 0; i < datasize; i += 2, pxl++)
                 {
-                    float uDepth = outDepth[i] << 8 | outDepth[i - 1];
+                    float uDepth = depthArray[i + 1] << 8 | depthArray[i];
                     byte depth = (byte)(255f * uDepth * depthDivisor);
 
-                    outDepth[ptr - 3] = 255;    // a
-                    outDepth[ptr - 2] = depth;  // r
-                    outDepth[ptr - 1] = depth;  // g
-                    outDepth[ptr] = depth;      // b
+                    int ptr = (frame.Cols * (frame.Rows - (pxl / frame.Cols) - 1) + pxl % frame.Cols) * 4;
+
+                    mirrorArray[ptr] = 255;          // a
+                    mirrorArray[ptr + 1] = depth;    // r
+                    mirrorArray[ptr + 2] = depth;    // g
+                    mirrorArray[ptr + 3] = depth;    // b
                 }
 
                 if (destTexture == null)
                     destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                destTexture.LoadRawTextureData(outDepth);
+                destTexture.LoadRawTextureData(mirrorArray);
                 destTexture.Apply();
 
                 textureCache.timeStamp = frame.Timestamp;
@@ -128,6 +135,7 @@ namespace NuitrackSDK.Frame
                 {
                     InitShader("Depth2Texture");
                     instanceShader.SetInt("textureWidth", frame.Cols);
+                    instanceShader.SetInt("textureHeigth", frame.Rows);
 
                     /*
                          We put the source data in the buffer, but the buffer does not support types 

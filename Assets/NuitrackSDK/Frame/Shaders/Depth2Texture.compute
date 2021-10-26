@@ -4,6 +4,7 @@ RWTexture2D<float4> Result;
 uniform StructuredBuffer<uint> DepthFrame;
 
 int textureWidth;
+int textureHeigth;
 float maxDepthSensor = 10.0F;
 
 [numthreads(8,8,1)]
@@ -22,5 +23,6 @@ void Depth2Texture (uint3 id : SV_DispatchThreadID)
 
 	depth = depth / (1000 * maxDepthSensor);
 
-	Result[id.xy] = float4(depth, depth, depth, 1.0F);
+	float2 mirrorPos = float2(id.x, textureHeigth - id.y);
+	Result[mirrorPos] = float4(depth, depth, depth, 1.0F);
 }
