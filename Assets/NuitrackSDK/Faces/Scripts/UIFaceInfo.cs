@@ -74,6 +74,5 @@ public class UIFaceInfo : MonoBehaviour
             image.enabled = false;
             infoPanel.SetActive(false);
         }
-
     }
 }
