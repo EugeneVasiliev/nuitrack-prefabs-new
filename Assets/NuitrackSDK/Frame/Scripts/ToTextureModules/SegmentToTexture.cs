@@ -33,7 +33,8 @@ namespace NuitrackSDK.Frame
         ComputeBuffer sourceDataBuffer;
 
         byte[] segmentDataArray = null;
-        byte[] outSegment = null;
+        byte[] segmentArray = null;
+        byte[] mirrorArray = null;
 
         protected override void OnDestroy()
         {
@@ -52,7 +53,8 @@ namespace NuitrackSDK.Frame
             }
 
             segmentDataArray = null;
-            outSegment = null;
+            segmentArray = null;
+            mirrorArray = null;
         }
 
         Texture2D GetCPUTexture(UserFrame frame, TextureCache textureCache, Color[] userColors = null)
@@ -66,29 +68,34 @@ namespace NuitrackSDK.Frame
                 if (userColors == null)
                     userColors = defaultColors;
 
-                if (outSegment == null)
-                    outSegment = new byte[frame.Cols * frame.Rows * 4];
+                int datasize = frame.DataSize;
 
-                Marshal.Copy(frame.Data, outSegment, 0, frame.DataSize);
+                if (segmentArray == null)
+                    segmentArray = new byte[datasize];
 
-                //The conversion can be performed without an additional array, 
-                //since after copying, the bytes are clumped at the beginning of the array.
-                //Let's start the crawl from the end of the array by "stretching" the source data.
-                for (int i = frame.DataSize - 1, ptr = outSegment.Length - 1; i > 0; i -= 2, ptr -= 4)
+                if (mirrorArray == null)
+                    mirrorArray = new byte[frame.Cols * frame.Rows * 4];
+
+                Marshal.Copy(frame.Data, segmentArray, 0, frame.DataSize);
+
+                //The transformation is performed with the image reflected vertically.
+                for (int i = 0, pxl = 0; i < datasize; i += 2, pxl++)
                 {
-                    int userIndex = outSegment[i] << 8 | outSegment[i - 1];
+                    int userIndex = segmentArray[i + 1] << 8 | segmentArray[i];
                     Color currentColor = userColors[userIndex];
 
-                    outSegment[ptr - 3] = (byte)(255f * currentColor.a);
-                    outSegment[ptr - 2] = (byte)(255f * currentColor.r);
-                    outSegment[ptr - 1] = (byte)(255f * currentColor.g);
-                    outSegment[ptr] = (byte)(255f * currentColor.b);
+                    int ptr = (frame.Cols * (frame.Rows - (pxl / frame.Cols) - 1) + pxl % frame.Cols) * 4;
+
+                    mirrorArray[ptr] = (byte)(255f * currentColor.a);
+                    mirrorArray[ptr + 1] = (byte)(255f * currentColor.r);
+                    mirrorArray[ptr + 2] = (byte)(255f * currentColor.g);
+                    mirrorArray[ptr + 3] = (byte)(255f * currentColor.b);
                 }
 
                 if (destTexture == null)
                     destTexture = new Texture2D(frame.Cols, frame.Rows, TextureFormat.ARGB32, false);
 
-                destTexture.LoadRawTextureData(outSegment);
+                destTexture.LoadRawTextureData(mirrorArray);
                 destTexture.Apply();
 
 
@@ -112,6 +119,7 @@ namespace NuitrackSDK.Frame
                 {
                     InitShader("Segment2Texture");
                     instanceShader.SetInt("textureWidth", frame.Cols);
+                    instanceShader.SetInt("textureHeigth", frame.Rows);
 
                     /*
                        We put the source data in the buffer, but the buffer does not support types 
