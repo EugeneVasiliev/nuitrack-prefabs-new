@@ -51,7 +51,7 @@ public class UIFaceInfo : MonoBehaviour
             image.enabled = true;
             infoPanel.SetActive(showInfo);
 
-            Rect faceRect = currentFace.rectangle.Rect;
+            Rect faceRect = currentFace.Rect;
 
             Vector2 newPosition = new Vector2(
                 spawnTransform.rect.width * (faceRect.x - 0.5f) + frameTransform.rect.width / 2,
@@ -60,14 +60,14 @@ public class UIFaceInfo : MonoBehaviour
             frameTransform.sizeDelta = new Vector2(faceRect.width * spawnTransform.rect.width, faceRect.height * spawnTransform.rect.height);
             frameTransform.anchoredPosition = newPosition;
 
-            ageText.text = currentFace.age.type;
+            ageText.text = currentFace.AgeType.ToString();
             yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);
-            genderText.text = currentFace.gender;
+            genderText.text = currentFace.Gender.ToString();
 
-            neutral.value = currentFace.emotions.neutral;
-            angry.value = currentFace.emotions.angry;
-            surprise.value = currentFace.emotions.surprise;
-            happy.value = currentFace.emotions.happy;
+            neutral.value = currentFace.GetEmotionValue(Emotions.Type.neutral);
+            angry.value = currentFace.GetEmotionValue(Emotions.Type.angry);
+            surprise.value = currentFace.GetEmotionValue(Emotions.Type.surprise);
+            happy.value = currentFace.GetEmotionValue(Emotions.Type.happy);
         }
         else
         {

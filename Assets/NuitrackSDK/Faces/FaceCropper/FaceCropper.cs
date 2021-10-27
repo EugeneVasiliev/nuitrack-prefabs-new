@@ -97,7 +97,7 @@ namespace NuitrackSDK.Face
                 return;
             }
 
-            targerRect = userData.Face.rectangle.Rect;
+            targerRect = userData.Face.Rect;
 
             if (faceRect.Equals(default))
                 faceRect = targerRect;

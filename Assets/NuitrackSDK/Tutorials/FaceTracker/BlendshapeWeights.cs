@@ -69,8 +69,8 @@ public class BlendshapeWeights
 
     public float GetSmile(Face face)
     {
-        float smileParam = Mathf.Lerp(smile, face.emotions.happy, lerpSpeed * Time.deltaTime);
-        smile = face.emotions.happy;
+        float smileParam = Mathf.Lerp(smile, face.GetEmotionValue(Emotions.Type.happy), lerpSpeed * Time.deltaTime);
+        smile = face.GetEmotionValue(Emotions.Type.happy);
         return smileParam * 100;
     }
 

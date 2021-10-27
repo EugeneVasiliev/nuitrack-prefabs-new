@@ -69,7 +69,7 @@ public class FaceAnimController : MonoBehaviour
         faceMeshRenderer.SetBlendShapeWeight(browUpRight, blendshapeWeights.GetBrowUpRight(face));
 
         //Head rotation
-        newRotation = baseRotation * Quaternion.Euler(face.angles.yaw, -face.angles.pitch, face.angles.roll);
+        newRotation = baseRotation * face.Rotation;
     }
 
     void OnDisable()

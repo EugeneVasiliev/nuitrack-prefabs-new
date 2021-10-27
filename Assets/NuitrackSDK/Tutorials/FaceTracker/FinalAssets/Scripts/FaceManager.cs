@@ -1,30 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public enum Gender
-{
-    any,
-    male,
-    female
-}
-
-public enum AgeType
-{
-    any,
-    kid,
-    young,
-    adult,
-    senior
-}
-
-public enum EmotionType
-{
-    any,
-    happy,
-    surprise,
-    neutral,
-    angry
-}
 
 public class FaceManager : MonoBehaviour
 {
@@ -59,7 +35,7 @@ public class FaceManager : MonoBehaviour
                 faceControllers[i].transform.position = new Vector2(head.Proj.x * Screen.width, Screen.height - head.Proj.y * Screen.height);
                 //stretch the face to fit the rectangle
 
-                faceControllers[i].transform.localScale = new Vector2(user.Face.rectangle.width * Screen.width, user.Face.rectangle.height * Screen.height);
+                faceControllers[i].transform.localScale = new Vector2(user.Face.Rect.width * Screen.width, user.Face.Rect.height * Screen.height);
             }
             else
             {
