@@ -110,6 +110,9 @@ public class Users : IEnumerable
 
     internal void UpdateData(SkeletonData skeletonData, HandTrackerData handTrackerData, GestureData gestureData, JsonInfo jsonInfo)
     {
+        foreach (UserData user in this)
+            user.Reset();
+
         List<int> oldUsersIDs = new List<int>(users.Keys);
         List<int> newUsersIDs = new List<int>();
 
