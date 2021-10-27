@@ -144,18 +144,18 @@ public class JumpTrainer : MonoBehaviour
         nuitrack.Vector3 jointPosition = skeleton.GetJoint(lowerJoint).Real;
         Vector3 currentJumpScreenPoint = FrameSpaceProjPoint(jointPosition, NuitrackManager.DepthFrame);
 
-        currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * currentJumpScreenPoint.y);
+        currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * currentJumpScreenPoint.y);
         currentJumpLabel.text = string.Format("Current: {0:F2}", CurrentJumpHeight);
 
         Vector3 waistPosition = skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3();
         Vector3 floorWaistPosition = floorPlane.ClosestPointOnPlane(waistPosition);
         Vector3 screenFloorWaistPoint = FrameSpaceProjPoint(NuitrackVector(floorWaistPosition), NuitrackManager.DepthFrame);
 
-        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenFloorWaistPoint.y);
+        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * screenFloorWaistPoint.y);
 
         Vector3 bestJumpPosition = floorWaistPosition + floorNormal * BestJumpHeight * 1000;
         Vector3 screenBestJumpPoint = FrameSpaceProjPoint(NuitrackVector(bestJumpPosition), NuitrackManager.DepthFrame);
 
-        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenBestJumpPoint.y);
+        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * screenBestJumpPoint.y);
     }
 }
