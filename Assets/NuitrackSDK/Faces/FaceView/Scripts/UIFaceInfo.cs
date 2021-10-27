@@ -46,7 +46,7 @@ public class UIFaceInfo : MonoBehaviour
 
         Face currentFace = userData.Face;
 
-        if (currentFace != null && currentFace.rectangle != null && spawnTransform)
+        if (currentFace != null && spawnTransform)
         {
             image.enabled = true;
             infoPanel.SetActive(showInfo);

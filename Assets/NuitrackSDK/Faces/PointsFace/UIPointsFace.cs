@@ -47,7 +47,7 @@ namespace NuitrackSDK.Face
 
             foreach (UserData user in NuitrackManager.Users)
             {
-                if (user.Face != null && user.Face.landmark != null)
+                if (user.Face != null)
                 {
                     DisplayPoints(facePoints[user.ID], true);
 

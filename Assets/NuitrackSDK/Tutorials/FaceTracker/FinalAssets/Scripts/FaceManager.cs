@@ -48,7 +48,7 @@ public class FaceManager : MonoBehaviour
             int id = i + 1;
             UserData user = NuitrackManager.Users.GetUser(id);
 
-            if (user != null && user.Skeleton != null && user.Face != null && user.Face.rectangle != null)
+            if (user != null && user.Skeleton != null && user.Face != null)
             {
                 // Pass the face to FaceController
                 faceControllers[i].SetFace(user.Face);
