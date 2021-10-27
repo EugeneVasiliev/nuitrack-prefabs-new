@@ -6,7 +6,34 @@ using nuitrack;
 
 public class Users : IEnumerable
 {
-    readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
+    public delegate void UserHandler(UserData user);
+
+    public event UserHandler OnUserEnter;
+    public event UserHandler OnUserExit;
+
+    /// <summary>
+    /// Minimum allowed ID
+    /// </summary>
+    public static int MinID
+    {
+        get
+        {
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Maximum allowed ID
+    /// </summary>
+    public static int MaxID
+    {
+        get
+        {
+            return 6;
+        }
+    }
+
+    Dictionary<int, UserData> users = new Dictionary<int, UserData>();
 
     public IEnumerator GetEnumerator()
     {
@@ -70,32 +97,29 @@ public class Users : IEnumerable
         return new List<UserData>(users.Values);
     }
 
-    UserData TryGetUser(int id)
+    UserData TryGetUser(int id, ref Dictionary<int, UserData> usersDict)
     {
-        if (!users.ContainsKey(id))
-            users.Add(id, new UserData(id));
+        if (!usersDict.ContainsKey(id))
+            usersDict.Add(id, new UserData(id));
 
-        return users[id];
+        return usersDict[id];
     }
 
     internal void UpdateData(SkeletonData skeletonData, HandTrackerData handTrackerData, GestureData gestureData, JsonInfo jsonInfo)
     {
-        foreach (UserData user in this)
-            user.Dispose();
-
-        users.Clear();
+        Dictionary<int, UserData> newUsers = new Dictionary<int, UserData>();
 
         if (skeletonData != null)
         {
             foreach (Skeleton skeleton in skeletonData.Skeletons)
-                TryGetUser(skeleton.ID).AddData(skeleton);
+                TryGetUser(skeleton.ID, ref newUsers).AddData(skeleton);
 
             if (skeletonData == null || skeletonData.NumUsers == 0)
                 CurrentUserID = 0;
             else
             {
                 if (CurrentUserID != 0)
-                    CurrentUserID = (GetUser(CurrentUserID) == null) ? 0 : CurrentUserID;
+                    CurrentUserID = newUsers.ContainsKey(CurrentUserID) ? 0 : CurrentUserID;
 
                 if (CurrentUserID == 0)
                     CurrentUserID = skeletonData.Skeletons[0].ID;
@@ -103,22 +127,32 @@ public class Users : IEnumerable
         }
 
         if (handTrackerData != null)
-        {
             foreach (UserHands hands in handTrackerData.UsersHands)
-                TryGetUser(hands.UserId).AddData(hands);
-        }
+                TryGetUser(hands.UserId, ref newUsers).AddData(hands);
 
         if (gestureData != null)
-        {
             foreach (Gesture gesture in gestureData.Gestures)
-                TryGetUser(gesture.UserID).AddDtata(gesture);
-        }
+                TryGetUser(gesture.UserID, ref newUsers).AddDtata(gesture);
 
         if (jsonInfo != null && jsonInfo.Instances != null)
-        {
             foreach (Instances instances in jsonInfo.Instances)
-                if (instances.face != null)
-                    TryGetUser(instances.id).AddData(instances.face);
-        }
+                if (!instances.face.IsEmpty)
+                    TryGetUser(instances.id, ref newUsers).AddData(instances.face);
+
+        foreach (UserData user in this)
+            if (!newUsers.ContainsKey(user.ID))
+                OnUserExit?.Invoke(user);
+
+        Dictionary<int, UserData> oldUsers = users;
+        users = newUsers;
+
+        foreach (UserData user in this)
+            if (!oldUsers.ContainsKey(user.ID))
+                OnUserEnter?.Invoke(user);
+
+        foreach (UserData user in oldUsers.Values)
+            user.Dispose();
+
+        oldUsers.Clear();
     }
 }

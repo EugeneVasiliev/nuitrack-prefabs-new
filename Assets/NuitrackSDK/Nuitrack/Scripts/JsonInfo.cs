@@ -27,6 +27,14 @@ public class Face
     public Emotions emotions;
     public Age age;
     public string gender;
+
+    public bool IsEmpty
+    {
+        get
+        {
+            return rectangle == null && landmark == null && angles == null && emotions == null && age == null;
+        }
+    }
 }
 
 [System.Serializable]
