@@ -282,9 +282,9 @@ public class UserData : IDisposable
 
     Color[] GetUserColors(Color userColor)
     {
-        Color[] userColors = new Color[7];
+        Color[] userColors = new Color[Users.MaxID];
 
-        for (int id = 0; id <= 6; id++)
+        for (int id = 0; id <= userColors.Length; id++)
             userColors[id] = id == ID ? userColor : Color.clear;
 
         return userColors;
