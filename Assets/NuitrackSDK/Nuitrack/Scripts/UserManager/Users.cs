@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 using nuitrack;
 
@@ -110,21 +111,8 @@ public class Users : IEnumerable
         Dictionary<int, UserData> newUsers = new Dictionary<int, UserData>();
 
         if (skeletonData != null)
-        {
             foreach (Skeleton skeleton in skeletonData.Skeletons)
                 TryGetUser(skeleton.ID, ref newUsers).AddData(skeleton);
-
-            if (skeletonData == null || skeletonData.NumUsers == 0)
-                CurrentUserID = 0;
-            else
-            {
-                if (CurrentUserID != 0)
-                    CurrentUserID = newUsers.ContainsKey(CurrentUserID) ? 0 : CurrentUserID;
-
-                if (CurrentUserID == 0)
-                    CurrentUserID = skeletonData.Skeletons[0].ID;
-            }
-        }
 
         if (handTrackerData != null)
             foreach (UserHands hands in handTrackerData.UsersHands)
@@ -145,6 +133,17 @@ public class Users : IEnumerable
 
         Dictionary<int, UserData> oldUsers = users;
         users = newUsers;
+
+        if (users.Count == 0)
+            CurrentUserID = 0;
+        else
+        {
+            if (CurrentUserID != 0 && !users.ContainsKey(CurrentUserID))
+                CurrentUserID = 0;
+
+            if (CurrentUserID == 0)
+                CurrentUserID = users.Keys.First();
+        }
 
         foreach (UserData user in this)
             if (!oldUsers.ContainsKey(user.ID))
