@@ -115,7 +115,7 @@ public class TPoseCalibration : MonoBehaviour
         }
         else
         {
-            if (NuitrackManager.Users.CurrentUserID != 0)
+            if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
             {
                 if (!calibrationStarted)
                 {
