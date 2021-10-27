@@ -10,7 +10,6 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] float warningDistance = 1.5f;
         [SerializeField] float fov = 60;
         [SerializeField] bool autoAdjustingFOV = true;
-        [SerializeField] Transform leftHinge, rightHinge;
 
         [Range(0, 1)]
         [SerializeField] float sensitivity = 0.15f;
@@ -19,23 +18,33 @@ namespace NuitrackSDK.SafetyGrid
         {
             NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
 
+            SetTransform();
+
+            ChangeAlpha(frontGrid, 0);
+            ChangeAlpha(leftGrid, 0);
+            ChangeAlpha(rightGrid, 0);
+        }
+
+        void SetTransform()
+        {
             float angle = fov / 2;
 
             if (autoAdjustingFOV)
                 angle = NuitrackManager.DepthSensor.GetOutputMode().HFOV * Mathf.Rad2Deg / 2;
 
-            leftHinge.localEulerAngles = new Vector3(0, angle, 0);
-            rightHinge.localEulerAngles = new Vector3(0, -angle, 0);
+            leftGrid.transform.localEulerAngles = new Vector3(0, angle + 90, 0);
+            rightGrid.transform.localEulerAngles = new Vector3(0, -angle + 90, 0);
             frontGrid.transform.localPosition = new Vector3(frontGrid.transform.localPosition.x, frontGrid.transform.localPosition.y, warningDistance);
-            float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);
-            leftGrid.transform.localPosition = new Vector3(0, 0, leftGrid.size.x * leftGrid.transform.localScale.x / 2 + sideDistance);
-            rightGrid.transform.localPosition = new Vector3(0, 0, rightGrid.size.x * rightGrid.transform.localScale.x / 2 + sideDistance);
+            float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);            
+
             float frontWidth = Mathf.Sqrt(-(warningDistance * warningDistance) + sideDistance * sideDistance);
             frontGrid.size = new Vector2(frontWidth * 2 / frontGrid.transform.localScale.x, frontGrid.size.y);
 
-            ChangeAlpha(frontGrid, 0);
-            ChangeAlpha(leftGrid, 0);
-            ChangeAlpha(rightGrid, 0);
+            float sideWidth = leftGrid.size.x * leftGrid.transform.localScale.x;
+            float x = frontWidth + Mathf.Sin(angle * Mathf.Deg2Rad) * sideWidth / 2;
+            float z = warningDistance + Mathf.Cos(angle * Mathf.Deg2Rad) * sideWidth / 2;
+            leftGrid.transform.localPosition = new Vector3(x, leftGrid.transform.localPosition.y, z);
+            rightGrid.transform.localPosition = new Vector3(-x, rightGrid.transform.localPosition.y, z);
         }
 
         void OnDestroy()
@@ -84,7 +93,7 @@ namespace NuitrackSDK.SafetyGrid
 
             ChangeAlpha(frontGrid, (warningDistance - minZ) / (warningDistance * sensitivity));
             ChangeAlpha(leftGrid, 1.0f - (1.0f - proximityLeft) / sensitivity);
-            ChangeAlpha(rightGrid, 1.0f - (1.0f - (-proximityRight)) / sensitivity);
+            ChangeAlpha(rightGrid, 1.0f - (1.0f + proximityRight) / sensitivity);
         }
 
         void ChangeAlpha(SpriteRenderer spriteRenderer, float alpha)
