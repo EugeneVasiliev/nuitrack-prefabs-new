@@ -196,6 +196,14 @@ namespace NuitrackSDK.Avatar
                 spawnedHead.position = headTransform.position;
         }
 
+        Vector3 GetJointLocalPos(Vector3 jointPosition)
+        {
+            Vector3 jointPos = jointPosition - basePivotOffset;
+            Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
+
+            return SpaceTransform.TransformPoint(localPos); ;
+        }
+
         /// <summary>
         /// Getting skeleton data from thr sensor and updating transforms of the model bones
         /// </summary>
@@ -203,11 +211,7 @@ namespace NuitrackSDK.Avatar
         {
             if (!alignmentBoneLength)
             {
-                Vector3 jointPos = GetJoint(rootJoint).Position - basePivotOffset;
-                Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
-                
-                Vector3 newPos = SpaceTransform.TransformPoint(localPos);
-                jointsRigged[rootJoint].bone.position = newPos;
+                jointsRigged[rootJoint].bone.position = GetJointLocalPos(GetJoint(rootJoint).Position);
             }
 
             foreach (var riggedJoint in jointsRigged)
@@ -227,10 +231,7 @@ namespace NuitrackSDK.Avatar
 
                     if (alignmentBoneLength)
                     {
-                        Vector3 jointPos = jointTransform.Position - basePivotOffset;
-                        Vector3 localPos = IsTransformSpace ? Quaternion.Euler(0, 180, 0) * jointPos : jointPos;
-
-                        Vector3 newPos = SpaceTransform.TransformPoint(localPos);
+                        Vector3 newPos = GetJointLocalPos(jointTransform.Position);
 
                         modelJoint.bone.position = newPos;
 
@@ -253,20 +254,23 @@ namespace NuitrackSDK.Avatar
 
         void OnSuccessCalib(Quaternion rotation)
         {
+            if (!recenterOnSuccess || !IsTransformSpace)
+                return;
+
             CalculateOffset();
-            if (needBorderGrid) spawnedBorderGrid.position = jointsRigged[rootJoint].bone.position + basePivotOffset;
+            if (needBorderGrid)
+                spawnedBorderGrid.position = GetJointLocalPos(GetJoint(rootJoint).Position) + basePivotOffset;
         }
 
         void CalculateOffset()
         {
-            if (!recenterOnSuccess || !IsTransformSpace)
-                return;
-
             if (jointsRigged.ContainsKey(rootJoint))
             {
                 Vector3 rootPosition = jointsRigged[rootJoint].bone.position;
 
                 Vector3 rootSpacePosition = SpaceTransform.InverseTransformPoint(rootPosition);
+
+                basePivotOffset.y = -basePivotOffset.y;
                 Vector3 newPivotOffset = startPoint - rootSpacePosition + basePivotOffset;
                 newPivotOffset.x = 0;
 
@@ -277,7 +281,7 @@ namespace NuitrackSDK.Avatar
         void OnDisable()
         {
             if(TPoseCalibration.Instance != null)
-                TPoseCalibration.Instance.onSuccess  -= OnSuccessCalib;
+                TPoseCalibration.Instance.onSuccess -= OnSuccessCalib;
         }
     }
 }

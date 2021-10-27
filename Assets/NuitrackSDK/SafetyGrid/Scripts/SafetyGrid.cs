@@ -32,6 +32,10 @@ namespace NuitrackSDK.SafetyGrid
             rightGrid.transform.localPosition = new Vector3(0, 0, rightGrid.size.x * rightGrid.transform.localScale.x / 2 + sideDistance);
             float frontWidth = Mathf.Sqrt(-(warningDistance * warningDistance) + sideDistance * sideDistance);
             frontGrid.size = new Vector2(frontWidth * 2 / frontGrid.transform.localScale.x, frontGrid.size.y);
+
+            ChangeAlpha(frontGrid, 0);
+            ChangeAlpha(leftGrid, 0);
+            ChangeAlpha(rightGrid, 0);
         }
 
         void OnDestroy()
