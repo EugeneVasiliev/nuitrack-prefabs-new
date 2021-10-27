@@ -98,41 +98,50 @@ public class Users : IEnumerable
         return new List<UserData>(users.Values);
     }
 
-    UserData TryGetUser(int id, ref Dictionary<int, UserData> usersDict)
+    UserData TryGetUser(int id, ref List<int> usersID)
     {
-        if (!usersDict.ContainsKey(id))
-            usersDict.Add(id, new UserData(id));
+        if (!users.ContainsKey(id))
+            users.Add(id, new UserData(id));
 
-        return usersDict[id];
+        usersID.Add(id);
+
+        return users[id];
     }
 
     internal void UpdateData(SkeletonData skeletonData, HandTrackerData handTrackerData, GestureData gestureData, JsonInfo jsonInfo)
     {
-        Dictionary<int, UserData> newUsers = new Dictionary<int, UserData>();
+        List<int> oldUsersIDs = new List<int>(users.Keys);
+        List<int> newUsersIDs = new List<int>();
 
         if (skeletonData != null)
             foreach (Skeleton skeleton in skeletonData.Skeletons)
-                TryGetUser(skeleton.ID, ref newUsers).AddData(skeleton);
+                TryGetUser(skeleton.ID, ref newUsersIDs).AddData(skeleton);
 
         if (handTrackerData != null)
             foreach (UserHands hands in handTrackerData.UsersHands)
-                TryGetUser(hands.UserId, ref newUsers).AddData(hands);
+                TryGetUser(hands.UserId, ref newUsersIDs).AddData(hands);
 
         if (gestureData != null)
             foreach (Gesture gesture in gestureData.Gestures)
-                TryGetUser(gesture.UserID, ref newUsers).AddDtata(gesture);
+                TryGetUser(gesture.UserID, ref newUsersIDs).AddDtata(gesture);
 
         if (jsonInfo != null && jsonInfo.Instances != null)
             foreach (Instances instances in jsonInfo.Instances)
                 if (!instances.face.IsEmpty)
-                    TryGetUser(instances.id, ref newUsers).AddData(instances.face);
+                    TryGetUser(instances.id, ref newUsersIDs).AddData(instances.face);
 
-        foreach (UserData user in this)
-            if (!newUsers.ContainsKey(user.ID))
-                OnUserExit?.Invoke(user);
+        foreach (int userID in newUsersIDs)
+            if (!oldUsersIDs.Contains(userID))
+                OnUserEnter?.Invoke(users[userID]);
 
-        Dictionary<int, UserData> oldUsers = users;
-        users = newUsers;
+        foreach (int userID in oldUsersIDs)
+            if (!newUsersIDs.Contains(userID))
+            {
+                OnUserExit?.Invoke(users[userID]);
+
+                users[userID].Dispose();
+                users.Remove(userID);
+            }
 
         if (users.Count == 0)
             CurrentUserID = 0;
@@ -144,14 +153,5 @@ public class Users : IEnumerable
             if (CurrentUserID == 0)
                 CurrentUserID = users.Keys.First();
         }
-
-        foreach (UserData user in this)
-            if (!oldUsers.ContainsKey(user.ID))
-                OnUserEnter?.Invoke(user);
-
-        foreach (UserData user in oldUsers.Values)
-            user.Dispose();
-
-        oldUsers.Clear();
     }
 }
