@@ -269,7 +269,6 @@ public class UserData : IDisposable
         ID = id;
     }
 
-
     TextureCache textureCache = null;
 
     public void Dispose()
@@ -354,5 +353,16 @@ public class UserData : IDisposable
     internal void AddDtata(nuitrack.Gesture? gesture)
     {
         RawGesture = gesture;
+    }
+
+    internal void Reset()
+    {
+        Skeleton = null;
+        RawUserHands = null;
+        RawGesture = null;
+        Face = null;
+
+        RightHand = null;
+        LeftHand = null;
     }
 }
