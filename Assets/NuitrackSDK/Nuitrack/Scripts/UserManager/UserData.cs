@@ -348,7 +348,7 @@ public class UserData : IDisposable
 
     internal void AddData(Face face)
     {
-        Face = face;
+        Face = (face != null && face.IsEmpty) ? null : face;
     }
 
     internal void AddDtata(nuitrack.Gesture? gesture)
