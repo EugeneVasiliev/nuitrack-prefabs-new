@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace NuitrackSDK.Tutorials.FirstProject
 {
-    [AddComponentMenu("NuitrackSDK/Tutorials/First Project/NativeAvatar")]
+    [AddComponentMenu("NuitrackSDK/Tutorials/First Project/Native Avatar")]
     public class NativeAvatar : MonoBehaviour
     {
         string message = "";
