@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+
 
 public class CalibrationInfo : MonoBehaviour
 {
@@ -18,14 +18,15 @@ public class CalibrationInfo : MonoBehaviour
     //floor height requires UserTracker module to work at the moment, 
     [Tooltip("Floor height tracking requires enabled UserTracker module (in NuitrackManager component)")]
     [SerializeField] bool trackFloorHeight = false;
-    nuitrack.UserFrame userFrame = null;
 
-    static float floorHeight = 1f;
-    public static float FloorHeight { get { return floorHeight; } }
+    public static float FloorHeight
+    {
+        get; private set;
+    } = 1;
 
     public static void SetSensorHeightManually(float newHeight) //may be used when floor is not tracked / UserTracker not enabled
     {
-        floorHeight = newHeight;
+        FloorHeight = newHeight;
     }
 
     void Start()
@@ -35,8 +36,9 @@ public class CalibrationInfo : MonoBehaviour
         if (useCalibrationSensorOrientation)
         {
             calibration = FindObjectOfType<TPoseCalibration>();
-            if (calibration != null) calibration.onSuccess += Calibration_onSuccess;
-            NuitrackManager.onUserTrackerUpdate += OnUserTrackerUpdate; //needed for floor info
+
+            if (calibration != null)
+                calibration.onSuccess += Calibration_onSuccess;
         }
 
 #if NUITRACK_MARKER
@@ -48,32 +50,24 @@ public class CalibrationInfo : MonoBehaviour
 #endif
     }
 
-    void OnUserTrackerUpdate(nuitrack.UserFrame frame)
-    {
-        userFrame = frame;
-    }
-
     //can be used for sensor (angles, floor distance, maybe?) / user calibration (height, lengths)
     void Calibration_onSuccess(Quaternion rotation)
     {
         //sensor orientation:
-        Vector3 torso = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Torso).ToVector3();
-        Vector3 neck = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.Neck).ToVector3();
+        UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
+
+        Vector3 torso = skeleton.GetJoint(nuitrack.JointType.Torso).Position;
+        Vector3 neck = skeleton.GetJoint(nuitrack.JointType.Neck).Position;
         Vector3 diff = neck - torso;
         sensorOrientation = Quaternion.Euler(-Mathf.Atan2(diff.z, diff.y) * Mathf.Rad2Deg, 0f, 0f);
 
         //floor height:
-        if (trackFloorHeight && (userFrame != null))
+        if (trackFloorHeight && NuitrackManager.Floor != null)
         {
+            Plane floorPlane = (Plane)NuitrackManager.Floor;
 
-            Vector3 floor = 0.001f * userFrame.Floor.ToVector3();
-            Vector3 normal = userFrame.FloorNormal.ToVector3();
-            //Debug.Log("Floor: " + floor.ToString("0.00") + "; normal: " + normal.ToString("0.00"));
-            if (normal.sqrMagnitude > 0.01f) //
-            {
-                Plane floorPlane = new Plane(normal, floor);
-                floorHeight = floorPlane.GetDistanceToPoint(Vector3.zero);
-            }
+            if (floorPlane.normal.sqrMagnitude > 0.01f) //
+                FloorHeight = floorPlane.GetDistanceToPoint(Vector3.zero);
         }
     }
 

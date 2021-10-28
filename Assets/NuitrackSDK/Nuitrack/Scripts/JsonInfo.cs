@@ -3,7 +3,7 @@
 [System.Serializable]
 public class JsonInfo
 {
-    public string Timestamp;
+    public ulong Timestamp;
     public Instances[] Instances;
 }
 
@@ -13,16 +13,7 @@ public class Instances
     public int id;
     public string @class;
     public Face face;
-    public bbox bbox;
-}
-
-[System.Serializable]
-public class bbox
-{
-    public float left;
-    public float top;
-    public float width;
-    public float height;
+    public Rectangle bbox;
 }
 
 [System.Serializable]
@@ -36,6 +27,14 @@ public class Face
     public Emotions emotions;
     public Age age;
     public string gender;
+
+    public bool IsEmpty
+    {
+        get
+        {
+            return rectangle == null && landmark == null && angles == null && emotions == null && age == null;
+        }
+    }
 }
 
 [System.Serializable]
@@ -45,6 +44,14 @@ public class Rectangle
     public float top;
     public float width;
     public float height;
+
+    public Rect Rect
+    {
+        get
+        {
+            return new Rect(Mathf.Clamp01(left), Mathf.Clamp01(top), Mathf.Clamp01(width), Mathf.Clamp01(height));
+        }
+    }
 }
 
 [System.Serializable]

@@ -1,66 +1,33 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 
 //logic (and number of tracked users) may change from app to app
 //for developer's needs
 //in current case it's an ID of first found skeleton from skeleton tracker
 //and reset only if we have a frame with no current skeleton ID
 
-public class CurrentUserTracker : MonoBehaviour
+[Obsolete ("This class will be removed in the future. The functionality has been moved to Use NuitrackManager.Users")]
+public class CurrentUserTracker
 {
-    static int currentUser;
-    public static int CurrentUser { get { return currentUser; } }
-
-    static nuitrack.Skeleton currentSkeleton;
-    public static nuitrack.Skeleton CurrentSkeleton { get { return currentSkeleton; } }
-
-    static CurrentUserTracker instance;
-
-    public static CurrentUserTracker Instance
+    [Obsolete("Use NuitrackManager.Users.CurrentUserID", false)]
+    public static int CurrentUser
     {
         get
         {
-            if (instance == null)
-            {
-                instance = FindObjectOfType<CurrentUserTracker>();
-                if (instance == null)
-                {
-                    GameObject container = new GameObject();
-                    container.name = "CurrentUserTracker";
-                    instance = container.AddComponent<CurrentUserTracker>();
-                }
-
-                DontDestroyOnLoad(instance);
-            }
-            return instance;
+            return NuitrackManager.Users.CurrentUserID;
         }
     }
 
-    void Start()
+    [Obsolete("Use NuitrackManager.Users.Current.Skeleton", false)]
+    public static nuitrack.Skeleton CurrentSkeleton
     {
-        DontDestroyOnLoad(this);
-        NuitrackManager.onSkeletonTrackerUpdate += NuitrackManager_onSkeletonTrackerUpdate;
-    }
-
-    void NuitrackManager_onSkeletonTrackerUpdate(nuitrack.SkeletonData skeletonData)
-    {
-        if ((skeletonData == null) || (skeletonData.NumUsers == 0))
+        get
         {
-            currentUser = 0;
-            currentSkeleton = null;
-            return;
-        }
+            UserData user = NuitrackManager.Users.Current;
 
-        if (currentUser != 0)
-        {
-            currentSkeleton = skeletonData.GetSkeletonByID(currentUser);
-            currentUser = (currentSkeleton == null) ? 0 : currentUser;
-        }
-
-        if (currentUser == 0)
-        {
-            currentUser = skeletonData.Skeletons[0].ID;
-            currentSkeleton = skeletonData.Skeletons[0];
+            if (user != null && user.Skeleton != null)
+                return user.Skeleton.RawSkeleton;
+            else
+                return null;
         }
     }
 }
