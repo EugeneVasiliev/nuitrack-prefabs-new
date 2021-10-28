@@ -126,7 +126,7 @@ public class Users : IEnumerable
 
         if (gestureData != null)
             foreach (Gesture gesture in gestureData.Gestures)
-                TryGetUser(gesture.UserID, ref newUsersIDs).AddDtata(gesture);
+                TryGetUser(gesture.UserID, ref newUsersIDs).AddData(gesture);
 
         if (jsonInfo != null && jsonInfo.Instances != null)
             foreach (Instances instances in jsonInfo.Instances)
