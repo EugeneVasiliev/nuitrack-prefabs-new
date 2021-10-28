@@ -139,6 +139,9 @@ namespace NuitrackSDK.Frame
 
                 if (userColorsBuffer == null || userColorsBuffer.count != userColors.Length)
                 {
+                    if (userColorsBuffer != null)
+                        userColorsBuffer.Release();
+
                     userColorsBuffer = new ComputeBuffer(userColors.Length, sizeof(float) * 4);
                     instanceShader.SetBuffer(kernelIndex, "UserColors", userColorsBuffer);
                 }
@@ -184,10 +187,10 @@ namespace NuitrackSDK.Frame
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(frame, textureCache != null ? textureCache : localCache, userColors);
+                return GetGPUTexture(frame, textureCache ?? localCache, userColors);
             else
             {
-                TextureCache cache = textureCache != null ? textureCache : localCache;
+                TextureCache cache = textureCache ?? localCache;
 
                 cache.texture2D = GetCPUTexture(frame, cache, userColors);
                 FrameUtils.TextureUtils.Copy(cache.texture2D, ref cache.renderTexture);
@@ -219,14 +222,14 @@ namespace NuitrackSDK.Frame
 
             if (GPUSupported)
             {
-                TextureCache cache = textureCache != null ? textureCache : localCache;
+                TextureCache cache = textureCache ?? localCache;
 
                 cache.renderTexture = GetGPUTexture(frame, cache, userColors);
                 FrameUtils.TextureUtils.Copy(cache.renderTexture, ref cache.texture2D);
                 return cache.texture2D;
             }
             else
-                return GetCPUTexture(frame, textureCache != null ? textureCache : localCache);
+                return GetCPUTexture(frame, textureCache ?? localCache);
         }
 
         /// <summary>

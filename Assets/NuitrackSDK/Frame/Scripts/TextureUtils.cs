@@ -118,8 +118,7 @@ namespace NuitrackSDK.Frame
                 return;
 
             int kernelIndex = ComputeShader.FindKernel(kernelName);
-            uint x, y, z;
-            instanceShader.GetKernelThreadGroupSizes(kernelIndex, out x, out y, out z);
+            instanceShader.GetKernelThreadGroupSizes(kernelIndex, out uint x, out uint y, out uint z);
 
             instanceShader.SetTexture(kernelIndex, "Texture", texture);
             instanceShader.SetTexture(kernelIndex, "Mask", mask);

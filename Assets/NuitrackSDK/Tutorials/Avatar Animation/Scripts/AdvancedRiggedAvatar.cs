@@ -46,18 +46,19 @@ public class AdvancedRiggedAvatar : MonoBehaviour
     void Update()
     {
         //If a skeleton is detected, process the model
-        if (CurrentUserTracker.CurrentSkeleton != null) ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+        if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
+            ProcessSkeleton(NuitrackManager.Users.Current.Skeleton);
     }
 
     /// <summary>
     /// Getting skeleton data from thr sensor and updating transforms of the model bones
     /// </summary>
-    void ProcessSkeleton(nuitrack.Skeleton skeleton)
+    void ProcessSkeleton(UserData.SkeletonData skeleton)
     {
         foreach (var riggedJoint in jointsRigged)
         {
             //Get joint from the Nuitrack
-            nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
+            UserData.SkeletonData.Joint joint = skeleton.GetJoint(riggedJoint.Key);
 
             //Get modelJoint
             ModelJoint modelJoint = riggedJoint.Value;
@@ -65,11 +66,11 @@ public class AdvancedRiggedAvatar : MonoBehaviour
             if (joint.Confidence > 0.1f)
             {
                 //Bone position
-                Vector3 newPos = Quaternion.Euler(0f, 180f, 0f) * (0.001f * joint.ToVector3());
+                Vector3 newPos = Quaternion.Euler(0f, 180f, 0f) * joint.Position;
                 modelJoint.bone.position = newPos;
 
                 //Bone rotation
-                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * (joint.ToQuaternionMirrored()) * modelJoint.baseRotOffset;
+                Quaternion jointOrient = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.RotationMirrored * modelJoint.baseRotOffset;
                 modelJoint.bone.rotation = jointOrient;
 
                 //Bone scale

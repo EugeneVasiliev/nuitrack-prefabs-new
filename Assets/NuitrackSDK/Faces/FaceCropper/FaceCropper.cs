@@ -77,7 +77,7 @@ namespace NuitrackSDK.Face
         {
             UserData userData = ControllerUser;
 
-            if (userData == null || userData.Face == null || userData.Face.rectangle == null)
+            if (userData == null || userData.Face == null)
             {
                 if (t > loseTime)
                     ResetFrame();
@@ -97,7 +97,7 @@ namespace NuitrackSDK.Face
                 return;
             }
 
-            targerRect = userData.Face.rectangle.Rect;
+            targerRect = userData.Face.Rect;
 
             if (faceRect.Equals(default))
                 faceRect = targerRect;

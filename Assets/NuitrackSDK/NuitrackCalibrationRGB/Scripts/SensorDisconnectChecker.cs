@@ -9,27 +9,21 @@ namespace NuitrackSDK.VicoVRCalibration
         static public event ConnectionStatusChange SensorConnectionTimeOut;
         static public event ConnectionStatusChange SensorReconnected;
 
-        bool connection = true;
         bool connectionProblem = false;
 
         void OnEnable()
         {
-            NuitrackManager.onSkeletonTrackerUpdate += SkeletonUpdate;
+            NuitrackManager.onDepthUpdate += SunsorUpdate;
             Nuitrack.onIssueUpdateEvent += NoConnectionIssue;
         }
 
-        void SkeletonUpdate(SkeletonData skeletonData)
+        void SunsorUpdate(DepthFrame frame)
         {
-            if (connection)
+            if (frame != null)
             {
                 if (connectionProblem && SensorReconnected != null)
                     SensorReconnected();
                 connectionProblem = false;
-            }
-            else
-            {
-                connection = true;
-                SensorReconnected?.Invoke();
             }
         }
 
@@ -51,13 +45,13 @@ namespace NuitrackSDK.VicoVRCalibration
 
         void OnDisable()
         {
-            NuitrackManager.onSkeletonTrackerUpdate -= SkeletonUpdate;
+            NuitrackManager.onDepthUpdate -= SunsorUpdate;
             Nuitrack.onIssueUpdateEvent -= NoConnectionIssue;
         }
 
         void OnDestroy()
         {
-            NuitrackManager.onSkeletonTrackerUpdate -= SkeletonUpdate;
+            NuitrackManager.onDepthUpdate -= SunsorUpdate;
         }
     }
 }

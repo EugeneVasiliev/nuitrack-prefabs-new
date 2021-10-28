@@ -36,7 +36,7 @@ namespace NuitrackSDK.Frame
         /// <summary>
         /// Get the hFOV of the DepthFrame in degrees
         /// </summary>
-        public float hFOV
+        public float HFOV
         {
             get
             {
@@ -48,7 +48,7 @@ namespace NuitrackSDK.Frame
         /// <summary>
         /// Get the vFOV of the DepthFrame in degrees
         /// </summary>
-        public float vFOV
+        public float VFOV
         {
             get
             {
@@ -178,10 +178,10 @@ namespace NuitrackSDK.Frame
                 return null;
 
             if (GPUSupported)
-                return GetGPUTexture(frame, textureCache != null ? textureCache : localCache);
+                return GetGPUTexture(frame, textureCache ?? localCache);
             else
             {
-                TextureCache cache = textureCache != null ? textureCache : localCache;
+                TextureCache cache = textureCache ?? localCache;
 
                 cache.texture2D = GetCPUTexture(frame, cache);
                 FrameUtils.TextureUtils.Copy(cache.texture2D, ref cache.renderTexture);
@@ -201,14 +201,14 @@ namespace NuitrackSDK.Frame
 
             if (GPUSupported)
             {
-                TextureCache cache = textureCache != null ? textureCache : localCache;
+                TextureCache cache = textureCache ?? localCache;
 
                 cache.renderTexture = GetGPUTexture(frame, cache);
                 FrameUtils.TextureUtils.Copy(cache.renderTexture, ref cache.texture2D);
                 return cache.texture2D;
             }
             else
-                return GetCPUTexture(frame, textureCache != null ? textureCache : localCache);
+                return GetCPUTexture(frame, textureCache ?? localCache);
         }
     }
 }

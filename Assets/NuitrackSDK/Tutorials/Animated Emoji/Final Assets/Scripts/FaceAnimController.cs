@@ -42,18 +42,15 @@ public class FaceAnimController : MonoBehaviour
         faceRaw.gameObject.SetActive(false);
     }
 
-    public void UpdateFace(Instances instance, nuitrack.Joint headJoint)
+    public void UpdateFace(Face face, UserData.SkeletonData.Joint headJoint)
     {
-        Vector3 headProjPosition = headJoint.Proj.ToVector3();
-        faceRaw.transform.position = new Vector2(headProjPosition.x * Screen.width, Screen.height - headProjPosition.y * Screen.height);
+        faceRaw.transform.position = new Vector2(headJoint.Proj.x * Screen.width, Screen.height - headJoint.Proj.y * Screen.height);
 
-        headRoot.localPosition = new Vector3(0, 0, -headJoint.Real.Z * 0.001f);
-        
-        Face face = instance.face;
+        headRoot.localPosition = new Vector3(0, 0, -headJoint.Position.z);
 
         newRotation = baseRotation;
 
-        if (instance.face.landmark == null)
+        if (face.landmark == null)
             return;
 
         //Mouth
@@ -72,7 +69,7 @@ public class FaceAnimController : MonoBehaviour
         faceMeshRenderer.SetBlendShapeWeight(browUpRight, blendshapeWeights.GetBrowUpRight(face));
 
         //Head rotation
-        newRotation = baseRotation * Quaternion.Euler(face.angles.yaw, -face.angles.pitch, face.angles.roll);
+        newRotation = baseRotation * face.Rotation;
     }
 
     void OnDisable()

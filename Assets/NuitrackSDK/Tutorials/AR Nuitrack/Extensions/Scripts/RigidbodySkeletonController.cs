@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 
-public class RigidbodySkeletonController : MonoBehaviour
+using NuitrackSDK.Avatar;
+
+public class RigidbodySkeletonController : BaseAvatar
 {
     [Header ("Rigidbody")]
     [SerializeField] List<nuitrack.JointType> targetJoints;
@@ -10,47 +12,55 @@ public class RigidbodySkeletonController : MonoBehaviour
 
     [SerializeField, Range(0.1f, 64f)] float smoothSpeed = 24f;
 
-    Transform space;
+    [SerializeField] Transform space;
 
     Dictionary<nuitrack.JointType, Rigidbody> rigidbodyObj;
 
-    public int ID
+    public void SetSpace(Transform newSpace)
     {
-        get;
-        private set;
+        space = newSpace;
     }
 
-
-    public void Initialize(int id, Transform space)
+    void Awake()
     {
-        ID = id;
-        this.space = space;
-
         rigidbodyObj = new Dictionary<nuitrack.JointType, Rigidbody>();
 
         foreach (nuitrack.JointType jointType in targetJoints)
         {
             GameObject jointObj = Instantiate(rigidBodyJoint, transform);
-            jointObj.name = string.Format("{0}_rigidbody_{1}", jointType.ToString(), id);
+            jointObj.name = string.Format("{0}_rigidbody", jointType.ToString());
 
             Rigidbody rigidbody = jointObj.GetComponent<Rigidbody>();
             rigidbodyObj.Add(jointType, rigidbody);
         }
     }
 
+    protected override void Update()
+    {
+        // pass
+    }
+
     void FixedUpdate()
     {
-        if (NuitrackManager.SkeletonData == null)
+        UserData userData = ControllerUser;
+
+        if (userData == null)
             return;
 
-        nuitrack.Skeleton skeleton = NuitrackManager.SkeletonData.GetSkeletonByID(ID);
+        if (userData != null)
+            Process(userData);
+    }
 
-        if (skeleton == null)
+    protected override void Process(UserData userData)
+    {
+        UserData user = NuitrackManager.Users.GetUser(UserID);
+
+        if (user == null || user.Skeleton == null)
             return;
 
-        foreach(KeyValuePair<nuitrack.JointType, Rigidbody> rigidbodyJoint in rigidbodyObj)
+        foreach (KeyValuePair<nuitrack.JointType, Rigidbody> rigidbodyJoint in rigidbodyObj)
         {
-            Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.Key).Real.ToVector3() * 0.001f;
+            Vector3 newPosition = user.Skeleton.GetJoint(rigidbodyJoint.Key).Position;
 
             Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
             Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothSpeed);

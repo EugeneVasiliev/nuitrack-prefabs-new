@@ -124,8 +124,11 @@ namespace NuitrackSDK.Frame
             if (instanceShader != null)
                 Destroy(instanceShader);
 
-            localCache.Dispose();
-            localCache = null;
+            if (localCache != null)
+            {
+                localCache.Dispose();
+                localCache = null;
+            }
         }
     }
 }
