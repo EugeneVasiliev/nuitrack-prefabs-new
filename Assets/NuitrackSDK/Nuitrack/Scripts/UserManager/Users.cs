@@ -34,7 +34,7 @@ public class Users : IEnumerable
         }
     }
 
-    Dictionary<int, UserData> users = new Dictionary<int, UserData>();
+    readonly Dictionary<int, UserData> users = new Dictionary<int, UserData>();
 
     public IEnumerator GetEnumerator()
     {

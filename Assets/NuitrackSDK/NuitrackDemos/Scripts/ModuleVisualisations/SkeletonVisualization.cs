@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace NuitrackSDK.NuitrackDemos
 {
+    // TODO switch to Skeleton prefab
     public class SkeletonVisualization : MonoBehaviour
     {
         [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
@@ -65,7 +66,7 @@ namespace NuitrackSDK.NuitrackDemos
 
         void Update()
         {
-            ProcessSkeletons(NuitrackManager.SkeletonData);
+            ProcessSkeletons();
         }
 
         void HideAllSkeletons()
@@ -80,9 +81,9 @@ namespace NuitrackSDK.NuitrackDemos
             }
         }
 
-        void ProcessSkeletons(nuitrack.SkeletonData skeletonData)
+        void ProcessSkeletons()
         {
-            if (skeletonData == null)
+            if (NuitrackManager.Users.Count == 0)
             {
                 HideAllSkeletons();
                 return;
@@ -94,20 +95,24 @@ namespace NuitrackSDK.NuitrackDemos
 
             for (int i = 0; i < skelIds.Length; i++)
             {
-                if (skeletonData.GetSkeletonByID(skelIds[i]) == null)
+                UserData user = NuitrackManager.Users.GetUser(skelIds[i]);
+                if (user == null || user.Skeleton == null)
                 {
                     skeletonsRoots[skelIds[i]].SetActive(false);
                 }
             }
 
-            foreach (nuitrack.Skeleton skeleton in skeletonData.Skeletons)
+            foreach (UserData user in NuitrackManager.Users)
             {
-                if (!skeletonsRoots.ContainsKey(skeleton.ID)) // if don't have gameObjects for skeleton ID, create skeleton gameobjects (root, joints and connections)
+                if (user.Skeleton == null)
+                    continue;
+
+                if (!skeletonsRoots.ContainsKey(user.ID)) // if don't have gameObjects for skeleton ID, create skeleton gameobjects (root, joints and connections)
                 {
                     GameObject skelRoot = new GameObject();
-                    skelRoot.name = "Root_" + skeleton.ID.ToString();
+                    skelRoot.name = "Root_" + user.ID.ToString();
 
-                    skeletonsRoots.Add(skeleton.ID, skelRoot);
+                    skeletonsRoots.Add(user.ID, skelRoot);
 
                     Dictionary<nuitrack.JointType, GameObject> skelJoints = new Dictionary<nuitrack.JointType, GameObject>();
 
@@ -120,7 +125,7 @@ namespace NuitrackSDK.NuitrackDemos
                         joint.SetActive(false);
                     }
 
-                    joints.Add(skeleton.ID, skelJoints);
+                    joints.Add(user.ID, skelJoints);
 
                     GameObject[] skelConnections = new GameObject[connectionsInfo.GetLength(0)];
 
@@ -132,19 +137,21 @@ namespace NuitrackSDK.NuitrackDemos
                         conn.SetActive(false);
                     }
 
-                    connections.Add(skeleton.ID, skelConnections);
+                    connections.Add(user.ID, skelConnections);
                 }
 
-                if (!skeletonsRoots[skeleton.ID].activeSelf) skeletonsRoots[skeleton.ID].SetActive(true);
+                if (!skeletonsRoots[user.ID].activeSelf) 
+                    skeletonsRoots[user.ID].SetActive(true);
 
                 for (int i = 0; i < jointsInfo.Length; i++)
                 {
-                    nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
+                    UserData.SkeletonData.Joint j = user.Skeleton.GetJoint(jointsInfo[i]);
                     if (j.Confidence > 0.01f)
                     {
-                        if (!joints[skeleton.ID][jointsInfo[i]].activeSelf) joints[skeleton.ID][jointsInfo[i]].SetActive(true);
+                        if (!joints[user.ID][jointsInfo[i]].activeSelf) 
+                            joints[user.ID][jointsInfo[i]].SetActive(true);
 
-                        joints[skeleton.ID][jointsInfo[i]].transform.position = 0.001f * new Vector3(j.Real.X, j.Real.Y, j.Real.Z);
+                        joints[user.ID][jointsInfo[i]].transform.position = j.Position;
 
                         //skel.Joints[i].Orient.Matrix:
                         // 0,       1,      2, 
@@ -153,32 +160,31 @@ namespace NuitrackSDK.NuitrackDemos
                         // -------
                         // right(X),  up(Y),    forward(Z)
 
-                        //Vector3 jointRight =  new Vector3(  j.Orient.Matrix[0],  j.Orient.Matrix[3],  j.Orient.Matrix[6] );
-                        Vector3 jointUp = new Vector3(j.Orient.Matrix[1], j.Orient.Matrix[4], j.Orient.Matrix[7]);
-                        Vector3 jointForward = new Vector3(j.Orient.Matrix[2], j.Orient.Matrix[5], j.Orient.Matrix[8]);
-                        joints[skeleton.ID][jointsInfo[i]].transform.rotation = Quaternion.LookRotation(jointForward, jointUp);
+                        joints[user.ID][jointsInfo[i]].transform.rotation = j.Rotation;
                     }
                     else
                     {
-                        if (joints[skeleton.ID][jointsInfo[i]].activeSelf) joints[skeleton.ID][jointsInfo[i]].SetActive(false);
+                        if (joints[user.ID][jointsInfo[i]].activeSelf)
+                            joints[user.ID][jointsInfo[i]].SetActive(false);
                     }
                 }
 
                 for (int i = 0; i < connectionsInfo.GetLength(0); i++)
                 {
-                    if (joints[skeleton.ID][connectionsInfo[i, 0]].activeSelf && joints[skeleton.ID][connectionsInfo[i, 1]].activeSelf)
+                    if (joints[user.ID][connectionsInfo[i, 0]].activeSelf && joints[user.ID][connectionsInfo[i, 1]].activeSelf)
                     {
-                        if (!connections[skeleton.ID][i].activeSelf) connections[skeleton.ID][i].SetActive(true);
+                        if (!connections[user.ID][i].activeSelf) connections[user.ID][i].SetActive(true);
 
-                        Vector3 diff = joints[skeleton.ID][connectionsInfo[i, 1]].transform.position - joints[skeleton.ID][connectionsInfo[i, 0]].transform.position;
+                        Vector3 diff = joints[user.ID][connectionsInfo[i, 1]].transform.position - joints[user.ID][connectionsInfo[i, 0]].transform.position;
 
-                        connections[skeleton.ID][i].transform.position = joints[skeleton.ID][connectionsInfo[i, 0]].transform.position;
-                        connections[skeleton.ID][i].transform.rotation = Quaternion.LookRotation(diff);
-                        connections[skeleton.ID][i].transform.localScale = new Vector3(1f, 1f, diff.magnitude);
+                        connections[user.ID][i].transform.position = joints[user.ID][connectionsInfo[i, 0]].transform.position;
+                        connections[user.ID][i].transform.rotation = Quaternion.LookRotation(diff);
+                        connections[user.ID][i].transform.localScale = new Vector3(1f, 1f, diff.magnitude);
                     }
                     else
                     {
-                        if (connections[skeleton.ID][i].activeSelf) connections[skeleton.ID][i].SetActive(false);
+                        if (connections[user.ID][i].activeSelf) 
+                            connections[user.ID][i].SetActive(false);
                     }
                 }
             }
@@ -198,7 +204,8 @@ namespace NuitrackSDK.NuitrackDemos
             joints = new Dictionary<int, Dictionary<nuitrack.JointType, GameObject>>();
             connections = new Dictionary<int, GameObject[]>();
 
-            if (issuesProcessor != null) Destroy(issuesProcessor.gameObject);
+            if (issuesProcessor != null) 
+                Destroy(issuesProcessor.gameObject);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-using System.Linq;
 using System.Collections.Generic;
 
 public class RigidbodySkeletonManager : MonoBehaviour
@@ -10,36 +9,23 @@ public class RigidbodySkeletonManager : MonoBehaviour
 
     Dictionary<int, RigidbodySkeletonController> skeletons = new Dictionary<int, RigidbodySkeletonController>();
 
-    ulong lastTimeStamp = 0;
-
     void Update()
     {
-        if (NuitrackManager.SkeletonData == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
-            return;
-
-        lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
-
-        NuitrackManager_onSkeletonTrackerUpdate(NuitrackManager.SkeletonData);
-    }
-
-    void NuitrackManager_onSkeletonTrackerUpdate(nuitrack.SkeletonData skeletonData)
-    {
-        Dictionary<int, nuitrack.Skeleton> nuitrackSkeletons = NuitrackManager.SkeletonData.Skeletons.ToDictionary(k => k.ID, v => v);
-
-        foreach (KeyValuePair<int, nuitrack.Skeleton> skeleton in nuitrackSkeletons)
-            if (!skeletons.ContainsKey(skeleton.Key))
+        foreach (UserData user in NuitrackManager.Users)
+            if (!skeletons.ContainsKey(user.ID))
             {
                 RigidbodySkeletonController rigidbodySkeleton = Instantiate(rigidBodySkeletonPrefab, space).GetComponent<RigidbodySkeletonController>();
-                rigidbodySkeleton.Initialize(skeleton.Key, space);
+                rigidbodySkeleton.UserID = user.ID;
+                rigidbodySkeleton.SetSpace(space);
 
-                skeletons.Add(skeleton.Key, rigidbodySkeleton);
+                skeletons.Add(user.ID, rigidbodySkeleton);
             }
 
-        foreach (KeyValuePair<int, RigidbodySkeletonController> sk in new Dictionary<int, RigidbodySkeletonController>(skeletons))
-            if (!nuitrackSkeletons.ContainsKey(sk.Key))
+        foreach (int skeletonID in new List<int>(skeletons.Keys))
+            if (NuitrackManager.Users.GetUser(skeletonID) == null)
             {
-                Destroy(skeletons[sk.Key].gameObject);
-                skeletons.Remove(sk.Key);
+                Destroy(skeletons[skeletonID].gameObject);
+                skeletons.Remove(skeletonID);
             }
     }
 }

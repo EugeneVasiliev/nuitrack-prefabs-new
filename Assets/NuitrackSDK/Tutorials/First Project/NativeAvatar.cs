@@ -7,7 +7,7 @@
 
 
 using UnityEngine;
-using System.Collections.Generic;
+
 
 [AddComponentMenu("NuitrackSDK/Tutorials/First Project/NativeAvatar")]
 public class NativeAvatar : MonoBehaviour
@@ -31,16 +31,14 @@ public class NativeAvatar : MonoBehaviour
 
     void Update()
     {
-        if (CurrentUserTracker.CurrentUser != 0)
+        if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
         {
-            nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
             message = "Skeleton found";
 
             for (int q = 0; q < typeJoint.Length; q++)
             {
-                nuitrack.Joint joint = skeleton.GetJoint(typeJoint[q]);
-                Vector3 newPosition = 0.001f * joint.ToVector3();
-                CreatedJoint[q].transform.localPosition = newPosition;
+                UserData.SkeletonData.Joint joint = NuitrackManager.Users.Current.Skeleton.GetJoint(typeJoint[q]);
+                CreatedJoint[q].transform.localPosition = joint.Position;
             }
         }
         else

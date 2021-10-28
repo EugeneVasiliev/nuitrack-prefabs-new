@@ -1,5 +1,4 @@
-﻿using nuitrack;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 public class SkeletonController : MonoBehaviour
@@ -21,28 +20,24 @@ public class SkeletonController : MonoBehaviour
         }
 
         NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
-
-        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
     }
 
-    void OnSkeletonUpdate(SkeletonData skeletonData)
+    void Update()
     {
         for (int i = 0; i < avatars.Count; i++)
         {
-            if (i < skeletonData.Skeletons.Length)
+            int id = i + 1;
+            UserData user = NuitrackManager.Users.GetUser(id);
+
+            if (user != null && user.Skeleton != null)
             {
                 avatars[i].gameObject.SetActive(true);
-                avatars[i].ProcessSkeleton(skeletonData.Skeletons[i]);
+                avatars[i].ProcessSkeleton(user);
             }
             else
             {
                 avatars[i].gameObject.SetActive(false);
             }
         }
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
     }
 }
