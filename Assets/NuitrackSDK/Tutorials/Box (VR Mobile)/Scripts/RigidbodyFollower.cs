@@ -1,19 +1,24 @@
 ﻿using UnityEngine;
 
-public class RigidbodyFollower : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.BoxVR
 {
-    [SerializeField] Transform target;
-
-    Rigidbody rb;
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/Box (VR Mobile)/Rigidbody Follower")]
+    public class RigidbodyFollower : MonoBehaviour
     {
-        rb = GetComponent<Rigidbody>();
-    }
+        [SerializeField] Transform target;
 
-    void FixedUpdate()
-    {
-        rb.MovePosition(target.position);
-        rb.MoveRotation(target.rotation);
+        Rigidbody rb;
+
+        void Start()
+        {
+            rb = GetComponent<Rigidbody>();
+        }
+
+        void FixedUpdate()
+        {
+            rb.MovePosition(target.position);
+            rb.MoveRotation(target.rotation);
+        }
     }
 }
