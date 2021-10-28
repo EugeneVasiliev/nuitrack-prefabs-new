@@ -1,20 +1,25 @@
 ﻿using UnityEngine;
 
-public class FaceController : MonoBehaviour 
+
+namespace NuitrackSDK.Tutorials.FaceTracker
 {
-    public Face.GenderType genderType;
-    public Emotions.Type emotionType;
-    public Age.Type ageType;
-
-    public void SetFace(Face newFace)
+    [AddComponentMenu("NuitrackSDK/Tutorials/Face Tracker/Face Controller")]
+    public class FaceController : MonoBehaviour
     {
-        //Gender
-        genderType = newFace.Gender;
+        public nuitrack.Face.GenderType genderType;
+        public nuitrack.Emotions.Type emotionType;
+        public nuitrack.Age.Type ageType;
 
-        //Age
-        ageType = newFace.AgeType;
+        public void SetFace(nuitrack.Face newFace)
+        {
+            //Gender
+            genderType = newFace.Gender;
 
-        //Emotion
-        emotionType = newFace.PrevailingEmotion;
+            //Age
+            ageType = newFace.AgeType;
+
+            //Emotion
+            emotionType = newFace.PrevailingEmotion;
+        }
     }
 }
