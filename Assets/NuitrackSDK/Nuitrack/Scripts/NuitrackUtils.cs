@@ -5,43 +5,46 @@ using System.Text.RegularExpressions;
 
 using JointType = nuitrack.JointType;
 
-public static class NuitrackUtils
+
+namespace NuitrackSDK
 {
-    #region Transform
-    public static Vector3 ToVector3(this nuitrack.Vector3 v)
+    public static class NuitrackUtils
     {
-        return new Vector3(v.X, v.Y, v.Z);
-    }
+        #region Transform
+        public static Vector3 ToVector3(this nuitrack.Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
+        }
 
-    public static Vector3 ToVector3(this nuitrack.Joint joint)
-    {
-        return new Vector3(joint.Real.X, joint.Real.Y, joint.Real.Z);
-    }
+        public static Vector3 ToVector3(this nuitrack.Joint joint)
+        {
+            return new Vector3(joint.Real.X, joint.Real.Y, joint.Real.Z);
+        }
 
-    public static Quaternion ToQuaternion(this nuitrack.Joint joint)
-    {
-        Vector3 jointUp = new Vector3(joint.Orient.Matrix[1], joint.Orient.Matrix[4], joint.Orient.Matrix[7]);   //Y(Up)
-        Vector3 jointForward = new Vector3(joint.Orient.Matrix[2], joint.Orient.Matrix[5], joint.Orient.Matrix[8]);   //Z(Forward)
+        public static Quaternion ToQuaternion(this nuitrack.Joint joint)
+        {
+            Vector3 jointUp = new Vector3(joint.Orient.Matrix[1], joint.Orient.Matrix[4], joint.Orient.Matrix[7]);   //Y(Up)
+            Vector3 jointForward = new Vector3(joint.Orient.Matrix[2], joint.Orient.Matrix[5], joint.Orient.Matrix[8]);   //Z(Forward)
 
-        return Quaternion.LookRotation(jointForward, jointUp);
-    }
+            return Quaternion.LookRotation(jointForward, jointUp);
+        }
 
-    public static Quaternion ToQuaternionMirrored(this nuitrack.Joint joint)
-    {
-        Vector3 jointUp = new Vector3(-joint.Orient.Matrix[1], joint.Orient.Matrix[4], -joint.Orient.Matrix[7]);   //Y(Up)
-        Vector3 jointForward = new Vector3(joint.Orient.Matrix[2], -joint.Orient.Matrix[5], joint.Orient.Matrix[8]);   //Z(Forward)
+        public static Quaternion ToQuaternionMirrored(this nuitrack.Joint joint)
+        {
+            Vector3 jointUp = new Vector3(-joint.Orient.Matrix[1], joint.Orient.Matrix[4], -joint.Orient.Matrix[7]);   //Y(Up)
+            Vector3 jointForward = new Vector3(joint.Orient.Matrix[2], -joint.Orient.Matrix[5], joint.Orient.Matrix[8]);   //Z(Forward)
 
-        if (jointForward.magnitude < 0.01f)
-            return Quaternion.identity; //should not happen
+            if (jointForward.magnitude < 0.01f)
+                return Quaternion.identity; //should not happen
 
-        return Quaternion.LookRotation(jointForward, jointUp);
-    }
+            return Quaternion.LookRotation(jointForward, jointUp);
+        }
 
-    #endregion
+        #endregion
 
-    #region SkeletonUltils
+        #region SkeletonUltils
 
-    static readonly Dictionary<JointType, HumanBodyBones> nuitrackToUnity = new Dictionary<JointType, HumanBodyBones>()
+        static readonly Dictionary<JointType, HumanBodyBones> nuitrackToUnity = new Dictionary<JointType, HumanBodyBones>()
     {
         {JointType.Head,                HumanBodyBones.Head},
         {JointType.Neck,                HumanBodyBones.Neck},
@@ -73,20 +76,20 @@ public static class NuitrackUtils
         {JointType.RightHip,            HumanBodyBones.RightUpperLeg},
     };
 
-    /// <summary>
-    /// Returns the appropriate HumanBodyBones  for nuitrack.JointType
-    /// </summary>
-    /// <param name="nuitrackJoint">nuitrack.JointType</param>
-    /// <returns>HumanBodyBones</returns>
-    public static HumanBodyBones ToUnityBones(this JointType nuitrackJoint)
-    {
-        if (nuitrackToUnity.ContainsKey(nuitrackJoint))
-            return nuitrackToUnity[nuitrackJoint];
-        else
-            return HumanBodyBones.LastBone;
-    }
+        /// <summary>
+        /// Returns the appropriate HumanBodyBones  for nuitrack.JointType
+        /// </summary>
+        /// <param name="nuitrackJoint">nuitrack.JointType</param>
+        /// <returns>HumanBodyBones</returns>
+        public static HumanBodyBones ToUnityBones(this JointType nuitrackJoint)
+        {
+            if (nuitrackToUnity.ContainsKey(nuitrackJoint))
+                return nuitrackToUnity[nuitrackJoint];
+            else
+                return HumanBodyBones.LastBone;
+        }
 
-    static readonly Dictionary<HumanBodyBones, JointType> unityToNuitrack = new Dictionary<HumanBodyBones, JointType>()
+        static readonly Dictionary<HumanBodyBones, JointType> unityToNuitrack = new Dictionary<HumanBodyBones, JointType>()
     {
         {HumanBodyBones.Head,                   JointType.Head},
         {HumanBodyBones.Neck,                   JointType.Neck},
@@ -118,23 +121,23 @@ public static class NuitrackUtils
         {HumanBodyBones.RightUpperLeg,          JointType.RightHip},
     };
 
-    /// <summary>
-    /// Returns the appropriate nuitrack.JointType for HumanBodyBones
-    /// <para>
-    /// If the mapping does not exist, nuitrack.JointType.None will be returned
-    /// </para>
-    /// </summary>
-    /// <param name="humanBodyBone">HumanBodyBones from unity</param>
-    /// <returns>nuitrack.JointType</returns>
-    public static JointType ToNuitrackJoint(this HumanBodyBones humanBodyBone)
-    {
-        if (unityToNuitrack.ContainsKey(humanBodyBone))
-            return unityToNuitrack[humanBodyBone];
-        else
-            return JointType.None;
-    }
+        /// <summary>
+        /// Returns the appropriate nuitrack.JointType for HumanBodyBones
+        /// <para>
+        /// If the mapping does not exist, nuitrack.JointType.None will be returned
+        /// </para>
+        /// </summary>
+        /// <param name="humanBodyBone">HumanBodyBones from unity</param>
+        /// <returns>nuitrack.JointType</returns>
+        public static JointType ToNuitrackJoint(this HumanBodyBones humanBodyBone)
+        {
+            if (unityToNuitrack.ContainsKey(humanBodyBone))
+                return unityToNuitrack[humanBodyBone];
+            else
+                return JointType.None;
+        }
 
-    static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
+        static readonly Dictionary<JointType, JointType> mirroredJoints = new Dictionary<JointType, JointType>() {
         {JointType.LeftShoulder, JointType.RightShoulder},
         {JointType.RightShoulder, JointType.LeftShoulder},
         {JointType.LeftElbow, JointType.RightElbow},
@@ -152,23 +155,23 @@ public static class NuitrackUtils
         {JointType.RightAnkle, JointType.LeftAnkle},
     };
 
-    public static JointType TryGetMirrored(this JointType joint)
-    {
-        JointType mirroredJoint = joint;
-        if (NuitrackManager.DepthSensor.IsMirror() && mirroredJoints.ContainsKey(joint))
+        public static JointType TryGetMirrored(this JointType joint)
         {
-            mirroredJoints.TryGetValue(joint, out mirroredJoint);
+            JointType mirroredJoint = joint;
+            if (NuitrackManager.DepthSensor.IsMirror() && mirroredJoints.ContainsKey(joint))
+            {
+                mirroredJoints.TryGetValue(joint, out mirroredJoint);
+            }
+
+            return mirroredJoint;
         }
 
-        return mirroredJoint;
-    }
-
-    static readonly Dictionary<JointType, JointType> parentJoints = new Dictionary<JointType, JointType>()
+        static readonly Dictionary<JointType, JointType> parentJoints = new Dictionary<JointType, JointType>()
     {
         {JointType.Head,                JointType.Neck},
         {JointType.Neck,                JointType.LeftCollar},
         {JointType.LeftCollar,          JointType.Torso},
-        {JointType.RightCollar,         JointType.Torso},     
+        {JointType.RightCollar,         JointType.Torso},
         {JointType.Torso,               JointType.Waist},
         {JointType.Waist,               JointType.None},
 
@@ -193,48 +196,49 @@ public static class NuitrackUtils
         {JointType.RightFoot,           JointType.RightAnkle},
     };
 
-    public static JointType GetParent(this JointType jointType)
-    {
-        if (parentJoints.ContainsKey(jointType))
-            return parentJoints[jointType];
-        else
-            return JointType.None;
-    }
-
-    #endregion
-
-    #region JsonUtils
-
-    static Regex regex = null;
-
-    // A pattern for detecting any numbers, including exponential notation
-    static string pattern = "\"-?[\\d]*\\.?[\\d]+(e[-+][\\d]+)?\"";
-
-    public static T FromJson<T>(string json)
-    {
-        try
+        public static JointType GetParent(this JointType jointType)
         {
-            json = json.Replace("\"\"", "[]");
+            if (parentJoints.ContainsKey(jointType))
+                return parentJoints[jointType];
+            else
+                return JointType.None;
+        }
 
-            if (regex == null)
-                regex = new Regex(pattern);
+        #endregion
 
-            foreach (Match match in regex.Matches(json))
+        #region JsonUtils
+
+        static Regex regex = null;
+
+        // A pattern for detecting any numbers, including exponential notation
+        static string pattern = "\"-?[\\d]*\\.?[\\d]+(e[-+][\\d]+)?\"";
+
+        public static T FromJson<T>(string json)
+        {
+            try
             {
-                string withot_quotation_marks = match.Value.Replace("\"", "");
-                json = json.Replace(match.Value, withot_quotation_marks);
+                json = json.Replace("\"\"", "[]");
+
+                if (regex == null)
+                    regex = new Regex(pattern);
+
+                foreach (Match match in regex.Matches(json))
+                {
+                    string withot_quotation_marks = match.Value.Replace("\"", "");
+                    json = json.Replace(match.Value, withot_quotation_marks);
+                }
+
+                T outData = JsonUtility.FromJson<T>(json);
+
+                return outData;
             }
-
-            T outData = JsonUtility.FromJson<T>(json);
-
-            return outData;
+            catch (System.Exception e)
+            {
+                Debug.Log(string.Format("Json parsing failure\n{0}", e.Message));
+                return default(T);
+            }
         }
-        catch (System.Exception e)
-        {
-            Debug.Log(string.Format("Json parsing failure\n{0}", e.Message));
-            return default(T);
-        }
+
+        #endregion
     }
-
-    #endregion
 }

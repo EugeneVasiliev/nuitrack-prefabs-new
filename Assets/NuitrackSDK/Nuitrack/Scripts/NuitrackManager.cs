@@ -7,6 +7,7 @@ using System.Collections;
 using System.Threading;
 
 using NuitrackSDK;
+using NuitrackSDK.ErrorSolver;
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
@@ -746,7 +747,7 @@ public class NuitrackManager : MonoBehaviour
         StartNuitrack();
     }
 
-    public static JsonInfo NuitrackJson 
+    public static nuitrack.JsonInfo NuitrackJson 
     { 
         get
         {
@@ -759,7 +760,7 @@ public class NuitrackManager : MonoBehaviour
                 else
                 {
                     string json = nuitrack.Nuitrack.GetInstancesJson();
-                    return NuitrackUtils.FromJson<JsonInfo>(json);
+                    return NuitrackUtils.FromJson<nuitrack.JsonInfo>(json);
                 }
             }
             catch (System.Exception ex)
