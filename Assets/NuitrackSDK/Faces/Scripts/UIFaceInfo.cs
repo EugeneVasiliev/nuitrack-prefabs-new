@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+
 public class UIFaceInfo : MonoBehaviour
 {
     [Header("Info")]
@@ -19,10 +20,6 @@ public class UIFaceInfo : MonoBehaviour
     RectTransform frameTransform;
     Image image;
 
-    Instances[] instances;
-
-    JsonInfo jsonInfo;
-
     public void Initialize(RectTransform spawnTransform)
     {
         this.spawnTransform = spawnTransform;
@@ -35,54 +32,48 @@ public class UIFaceInfo : MonoBehaviour
     {
         if (autoProcessing)
         {
-            ProcessFace(CurrentUserTracker.CurrentSkeleton);
+            ProcessFace(NuitrackManager.Users.Current);
         }
     }
 
-    public void ProcessFace(nuitrack.Skeleton skeleton)
+    public void ProcessFace(UserData userData)
     {
-        jsonInfo = NuitrackManager.NuitrackJson;
-
-        if (jsonInfo == null)
-            return;
-
         if (!NuitrackManager.Instance.UseFaceTracking)
             Debug.Log("Attention: Face tracking disabled! Enable it on the Nuitrack Manager component");
 
-        instances = jsonInfo.Instances;
-        for (int i = 0; i < instances.Length; i++)
+        if (userData == null)
+            return;
+
+        Face currentFace = userData.Face;
+
+        if (currentFace != null && currentFace.rectangle != null && spawnTransform)
         {
-            if (instances != null && i < instances.Length && skeleton.ID == instances[i].id)
-            {
-                Face currentFace = instances[i].face;
+            image.enabled = true;
+            infoPanel.SetActive(showInfo);
 
-                if (skeleton != null && currentFace.rectangle != null && spawnTransform)
-                {
-                    image.enabled = true;
-                    infoPanel.SetActive(showInfo);
+            Rect faceRect = currentFace.rectangle.Rect;
 
-                    Vector2 newPosition = new Vector2(
-                        spawnTransform.rect.width * (Mathf.Clamp01(currentFace.rectangle.left) - 0.5f) + frameTransform.rect.width / 2,
-                        spawnTransform.rect.height * (0.5f - Mathf.Clamp01(currentFace.rectangle.top)) - frameTransform.rect.height / 2);
+            Vector2 newPosition = new Vector2(
+                spawnTransform.rect.width * (faceRect.x - 0.5f) + frameTransform.rect.width / 2,
+                spawnTransform.rect.height * (0.5f - faceRect.y) - frameTransform.rect.height / 2);
 
-                    frameTransform.sizeDelta = new Vector2(currentFace.rectangle.width * spawnTransform.rect.width, currentFace.rectangle.height * spawnTransform.rect.height);
-                    frameTransform.anchoredPosition = newPosition;
+            frameTransform.sizeDelta = new Vector2(faceRect.width * spawnTransform.rect.width, faceRect.height * spawnTransform.rect.height);
+            frameTransform.anchoredPosition = newPosition;
 
-                    ageText.text = currentFace.age.type;
-                    yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);
-                    genderText.text = currentFace.gender;
+            ageText.text = currentFace.age.type;
+            yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);
+            genderText.text = currentFace.gender;
 
-                    neutral.value = currentFace.emotions.neutral;
-                    angry.value = currentFace.emotions.angry;
-                    surprise.value = currentFace.emotions.surprise;
-                    happy.value = currentFace.emotions.happy;
-                }
-                else
-                {
-                    image.enabled = false;
-                    infoPanel.SetActive(false);
-                }
-            }
+            neutral.value = currentFace.emotions.neutral;
+            angry.value = currentFace.emotions.angry;
+            surprise.value = currentFace.emotions.surprise;
+            happy.value = currentFace.emotions.happy;
         }
+        else
+        {
+            image.enabled = false;
+            infoPanel.SetActive(false);
+        }
+
     }
 }

@@ -337,11 +337,8 @@ namespace NuitrackSDK.NuitrackDemos
             if (rgbRenderTexture != null)
                 Destroy(rgbRenderTexture);
 
-            if (textureCache.renderTexture != null)
-                Destroy(textureCache.renderTexture);
-
-            if (textureCache.texture2D != null)
-                Destroy(textureCache.texture2D);
+            textureCache.Dispose();
+            textureCache = null;
 
             if (visualizationParts != null)
             {

@@ -35,8 +35,8 @@ namespace NuitrackSDKEditor.Avatar
 
             if (!useCurrentUserTracker.boolValue)
             {
-                SerializedProperty skeletonID = serializedObject.FindProperty("skeletonID");
-                skeletonID.intValue = EditorGUILayout.IntSlider("Skeleton ID", skeletonID.intValue, baseAvatar.MinSkeletonID, baseAvatar.MaxSkeletonID);
+                SerializedProperty userID = serializedObject.FindProperty("userID");
+                userID.intValue = EditorGUILayout.IntSlider("User ID", userID.intValue, baseAvatar.MinUserID, baseAvatar.MaxUserID);
                 serializedObject.ApplyModifiedProperties();
             }
 

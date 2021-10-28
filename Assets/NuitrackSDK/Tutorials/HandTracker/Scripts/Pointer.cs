@@ -28,19 +28,7 @@ public class Pointer : MonoBehaviour
     [Range(0, 50)]
     float minVelocityInteractivePoint = 2f;
 
-    float lastTime = 0;
     bool active = false;
-
-    private void Start()
-    {
-        NuitrackManager.onHandsTrackerUpdate += NuitrackManager_onHandsTrackerUpdate;
-        lastTime = Time.time;
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onHandsTrackerUpdate -= NuitrackManager_onHandsTrackerUpdate;
-    }
 
     public Vector3 Position
     {
@@ -55,26 +43,27 @@ public class Pointer : MonoBehaviour
         get; private set;
     }
 
-    private void NuitrackManager_onHandsTrackerUpdate(nuitrack.HandTrackerData handTrackerData)
+    void Update()
     {
         active = false;
 
-        nuitrack.UserHands userHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);    
+        UserData user = NuitrackManager.Users.Current;
 
-        if (userHands != null)
+        if (user != null)
         {
-            nuitrack.HandContent? handContent = currentHand == Hands.right ? userHands.RightHand : userHands.LeftHand;
+            UserData.Hand handContent = currentHand == Hands.right ? user.RightHand : user.LeftHand;
 
             if (handContent != null)
             {
-                Vector2 pageSize = parentRectTransform.rect.size;
                 Vector3 lastPosition = baseRect.position;
-                baseRect.anchoredPosition = new Vector2(handContent.Value.X * pageSize.x, -handContent.Value.Y * pageSize.y);
+                Vector2 handPosition = handContent.ProjPosition * parentRectTransform.rect.size;
+                handPosition.y = -(parentRectTransform.rect.height - handPosition.y);
+                baseRect.anchoredPosition = handPosition;
 
-                float velocity = (baseRect.position - lastPosition).magnitude / (Time.time - lastTime);
+                float velocity = (baseRect.position - lastPosition).magnitude / Time.deltaTime;
 
                 if (velocity < minVelocityInteractivePoint)
-                    Press = handContent.Value.Click;
+                    Press = handContent.Click;
 
                 active = true;
             }
@@ -82,7 +71,6 @@ public class Pointer : MonoBehaviour
 
         Press = Press && active;
 
-        lastTime = Time.time;
         background.enabled = active;
         background.sprite = active && Press ? pressSprite : defaultSprite;
     }
