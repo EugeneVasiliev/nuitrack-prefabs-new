@@ -6,6 +6,9 @@ using System;
 using UnityEngine.Android;
 #endif
 
+using NuitrackSDK.ErrorSolver;
+
+
 namespace NuitrackSDK.NuitrackDemos
 {
     public class NuitrackModules : MonoBehaviour
