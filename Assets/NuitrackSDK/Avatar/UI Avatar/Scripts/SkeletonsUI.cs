@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using nuitrack;
+﻿using UnityEngine;
+
+using System.Collections.Generic;
+
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/UI/Skeletons UI")]
     public class SkeletonsUI : MonoBehaviour
     {
         [SerializeField] RectTransform spawnRectTransform;
@@ -19,24 +21,17 @@ namespace NuitrackSDK.Avatar
             {
                 GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, spawnRectTransform);
                 UIAvatar skeleton = newAvatar.GetComponent<UIAvatar>();
-                skeleton.SkeletonID = i + 1;
+                skeleton.UserID = i + 1;
                 avatars.Add(skeleton);
             }
 
             NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
-
-            NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
         }
 
-        void OnSkeletonUpdate(SkeletonData skeletonData)
+        void Update()
         {
-            for (int i = 0; i < avatars.Count; i++)
-                avatars[i].gameObject.SetActive(i < skeletonData.Skeletons.Length);
-        }
-
-        private void OnDestroy()
-        {
-            NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
+            foreach(UIAvatar uIAvatar in avatars)
+                uIAvatar.gameObject.SetActive(NuitrackManager.Users.GetUser(uIAvatar.UserID) != null);
         }
     }
 }

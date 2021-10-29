@@ -1,61 +1,75 @@
 ﻿using UnityEngine;
-
 using System.Collections.Generic;
 
-public class RigidbodySkeletonController : MonoBehaviour
+using NuitrackSDK.Avatar;
+
+
+namespace NuitrackSDK.Tutorials.ARNuitrack.Extensions
 {
-    [Header ("Rigidbody")]
-    [SerializeField] List<nuitrack.JointType> targetJoints;
-    [SerializeField] GameObject rigidBodyJoint;
-
-    [SerializeField, Range(0.1f, 64f)] float smoothSpeed = 24f;
-
-    Transform space;
-
-    Dictionary<nuitrack.JointType, Rigidbody> rigidbodyObj;
-
-    public int ID
+    [AddComponentMenu("NuitrackSDK/Tutorials/AR Nuitrack/Extensions/Rigidbody Skeleton Controller")]
+    public class RigidbodySkeletonController : BaseAvatar
     {
-        get;
-        private set;
-    }
+        [Header("Rigidbody")]
+        [SerializeField] List<nuitrack.JointType> targetJoints;
+        [SerializeField] GameObject rigidBodyJoint;
 
+        [SerializeField, Range(0.1f, 64f)] float smoothSpeed = 24f;
 
-    public void Initialize(int id, Transform space)
-    {
-        ID = id;
-        this.space = space;
+        [SerializeField] Transform space;
 
-        rigidbodyObj = new Dictionary<nuitrack.JointType, Rigidbody>();
+        Dictionary<nuitrack.JointType, Rigidbody> rigidbodyObj;
 
-        foreach (nuitrack.JointType jointType in targetJoints)
+        public void SetSpace(Transform newSpace)
         {
-            GameObject jointObj = Instantiate(rigidBodyJoint, transform);
-            jointObj.name = string.Format("{0}_rigidbody_{1}", jointType.ToString(), id);
-
-            Rigidbody rigidbody = jointObj.GetComponent<Rigidbody>();
-            rigidbodyObj.Add(jointType, rigidbody);
+            space = newSpace;
         }
-    }
 
-    void FixedUpdate()
-    {
-        if (NuitrackManager.SkeletonData == null)
-            return;
-
-        nuitrack.Skeleton skeleton = NuitrackManager.SkeletonData.GetSkeletonByID(ID);
-
-        if (skeleton == null)
-            return;
-
-        foreach(KeyValuePair<nuitrack.JointType, Rigidbody> rigidbodyJoint in rigidbodyObj)
+        void Awake()
         {
-            Vector3 newPosition = skeleton.GetJoint(rigidbodyJoint.Key).Real.ToVector3() * 0.001f;
+            rigidbodyObj = new Dictionary<nuitrack.JointType, Rigidbody>();
 
-            Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
-            Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothSpeed);
+            foreach (nuitrack.JointType jointType in targetJoints)
+            {
+                GameObject jointObj = Instantiate(rigidBodyJoint, transform);
+                jointObj.name = string.Format("{0}_rigidbody", jointType.ToString());
 
-            rigidbodyJoint.Value.MovePosition(lerpPosition);
+                Rigidbody rigidbody = jointObj.GetComponent<Rigidbody>();
+                rigidbodyObj.Add(jointType, rigidbody);
+            }
+        }
+
+        protected override void Update()
+        {
+            // pass
+        }
+
+        void FixedUpdate()
+        {
+            UserData userData = ControllerUser;
+
+            if (userData == null)
+                return;
+
+            if (userData != null)
+                Process(userData);
+        }
+
+        protected override void Process(UserData userData)
+        {
+            UserData user = NuitrackManager.Users.GetUser(UserID);
+
+            if (user == null || user.Skeleton == null)
+                return;
+
+            foreach (KeyValuePair<nuitrack.JointType, Rigidbody> rigidbodyJoint in rigidbodyObj)
+            {
+                Vector3 newPosition = user.Skeleton.GetJoint(rigidbodyJoint.Key).Position;
+
+                Vector3 spacePostion = space == null ? newPosition : space.TransformPoint(newPosition);
+                Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothSpeed);
+
+                rigidbodyJoint.Value.MovePosition(lerpPosition);
+            }
         }
     }
 }

@@ -3,12 +3,16 @@ using UnityEditor;
 using System.IO;
 using System;
 
+using NuitrackSDKEditor.ErrorSolver;
+using NuitrackSDKEditor.Documentation;
+
+
 namespace NuitrackSDKEditor
 {
     [InitializeOnLoad]
-    public class NuitrackMenu : MonoBehaviour
+    public static class NuitrackMenu
     {
-        static string nuitrackScriptsPath = "Assets/NuitrackSDK/Nuitrack/Prefabs/NuitrackScripts.prefab";
+        static readonly string nuitrackScriptsPath = "Assets/NuitrackSDK/Nuitrack/Prefabs/NuitrackScripts.prefab";
 
         [MenuItem("Nuitrack/Prepare The Scene")]
         public static void AddNuitrackToScene()
@@ -19,7 +23,7 @@ namespace NuitrackSDKEditor
                 Debug.LogAssertion(string.Format("Prefab NuitrackScripts was not found at {0}", nuitrackScriptsPath));
             else
             {
-                NuitrackManager nuitrackManager = FindObjectOfType<NuitrackManager>();
+                NuitrackManager nuitrackManager = UnityEngine.Object.FindObjectOfType<NuitrackManager>();
 
                 if (nuitrackManager != null)
                 {
@@ -41,10 +45,10 @@ namespace NuitrackSDKEditor
             Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/");
         }
 
-        [MenuItem("Nuitrack/Help/Open Tutorials Page", priority = 21)]
-        public static void GoToDocsPage()
+        [MenuItem("Nuitrack/Help/Open tutorials list", priority = 21)]
+        public static void OpenTutoralList()
         {
-            Application.OpenURL("https://github.com/3DiVi/nuitrack-sdk/blob/master/doc/");
+            NuitrackTutorialsEditorWindow.Open();
         }
 
         [MenuItem("Nuitrack/Help/Open Troubleshooting Page", priority = 22)]

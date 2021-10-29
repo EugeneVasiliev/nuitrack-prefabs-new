@@ -1,87 +1,51 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public enum Gender
+using NuitrackSDK.Tutorials.RGBandSkeletons;
+
+
+namespace NuitrackSDK.Tutorials.FaceTracker
 {
-    any,
-    male,
-    female
-}
-
-public enum AgeType
-{
-    any,
-    kid,
-    young,
-    adult,
-    senior
-}
-
-public enum EmotionType
-{
-    any,
-    happy,
-    surprise,
-    neutral,
-    angry
-}
-
-public class FaceManager : MonoBehaviour
-{
-    [SerializeField] Canvas canvas;
-    [SerializeField] GameObject faceController;
-    [SerializeField] SkeletonController skeletonController;
-    List<FaceController> faceControllers = new List<FaceController>();
-    Instances[] faces;
-
-    JsonInfo faceInfo;
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/Face Tracker/Face Manager")]
+    public class FaceManager : MonoBehaviour
     {
-        for (int i = 0; i < skeletonController.skeletonCount; i++)
+        [SerializeField] Canvas canvas;
+        [SerializeField] GameObject faceController;
+        [SerializeField] SkeletonController skeletonController;
+        List<FaceController> faceControllers = new List<FaceController>();
+
+        void Start()
         {
-            faceControllers.Add(Instantiate(faceController, canvas.transform).GetComponent<FaceController>());
-        }
-    }
-
-    void Update()
-    {
-        faceInfo = NuitrackManager.NuitrackJson;
-
-        if (faceInfo == null)
-            return;
-
-        faces = faceInfo.Instances;
-        for (int i = 0; i < faceControllers.Count; i++)
-        {
-            if (faces != null && i < faces.Length)
+            for (int i = 0; i < skeletonController.skeletonCount; i++)
             {
-                int id = 0;
-                Face currentFace = faces[i].face;
-                // Pass the face to FaceController
-                faceControllers[i].SetFace(currentFace);
-                faceControllers[i].gameObject.SetActive(true);
-
-                // IDs of faces and skeletons are the same
-                id = faces[i].id;
-
-                nuitrack.Skeleton skeleton = null;
-                if (NuitrackManager.SkeletonData != null)
-                    skeleton = NuitrackManager.SkeletonData.GetSkeletonByID(id);
-
-                if (skeleton != null)
-                {
-                    nuitrack.Joint head = skeleton.GetJoint(nuitrack.JointType.Head);
-
-                    faceControllers[i].transform.position = new Vector2(head.Proj.X * Screen.width, Screen.height - head.Proj.Y * Screen.height);
-                    //stretch the face to fit the rectangle
-                    if (currentFace.rectangle != null)
-                        faceControllers[i].transform.localScale = new Vector2(currentFace.rectangle.width * Screen.width, currentFace.rectangle.height * Screen.height);
-                }
+                faceControllers.Add(Instantiate(faceController, canvas.transform).GetComponent<FaceController>());
             }
-            else
+        }
+
+        void Update()
+        {
+            for (int i = 0; i < faceControllers.Count; i++)
             {
-                faceControllers[i].gameObject.SetActive(false);
+                int id = i + 1;
+                UserData user = NuitrackManager.Users.GetUser(id);
+
+                if (user != null && user.Skeleton != null && user.Face != null)
+                {
+                    // Pass the face to FaceController
+                    faceControllers[i].SetFace(user.Face);
+                    faceControllers[i].gameObject.SetActive(true);
+
+                    UserData.SkeletonData.Joint head = user.Skeleton.GetJoint(nuitrack.JointType.Head);
+
+                    faceControllers[i].transform.position = new Vector2(head.Proj.x * Screen.width, Screen.height - head.Proj.y * Screen.height);
+                    //stretch the face to fit the rectangle
+
+                    faceControllers[i].transform.localScale = new Vector2(user.Face.Rect.width * Screen.width, user.Face.Rect.height * Screen.height);
+                }
+                else
+                {
+                    faceControllers[i].gameObject.SetActive(false);
+                }
             }
         }
     }

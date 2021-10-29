@@ -1,16 +1,26 @@
 ﻿using UnityEngine;
+using System;
 
 using nuitrack;
 
 namespace NuitrackSDK.Frame
 {
     [System.Serializable]
-    public class TextureCache
+    public class TextureCache : IDisposable
     {
         public RenderTexture renderTexture;
         public Texture2D texture2D;
 
         public ulong timeStamp;
+
+        public void Dispose()
+        {
+            if (renderTexture != null)
+                UnityEngine.Object.Destroy(renderTexture);
+
+            if(texture2D != null)
+                UnityEngine.Object.Destroy(texture2D);
+        }
     }
 
     public abstract class FrameToTexture<T, U> : MonoBehaviour
@@ -114,11 +124,11 @@ namespace NuitrackSDK.Frame
             if (instanceShader != null)
                 Destroy(instanceShader);
 
-            if (localCache.renderTexture != null)
-                Destroy(localCache.renderTexture);
-
-            if (localCache.texture2D != null)
-                Destroy(localCache.texture2D);
+            if (localCache != null)
+            {
+                localCache.Dispose();
+                localCache = null;
+            }
         }
     }
 }

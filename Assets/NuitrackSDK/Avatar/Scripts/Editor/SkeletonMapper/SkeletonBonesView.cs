@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using NuitrackSDK;
 
 
 namespace NuitrackSDKEditor.Avatar
@@ -114,7 +115,7 @@ namespace NuitrackSDKEditor.Avatar
             GUIContent assignBonesContent = EditorGUIUtility.IconContent("AvatarSelector");
             assignBonesContent.text = "Assigned bones";
 
-            GUIContent noneContent = EditorGUIUtility.IconContent("d_animationvisibilitytoggleoff");
+            GUIContent noneContent = EditorGUIUtility.IconContent("animationvisibilitytoggleoff");
 
             skeletonModeGuiContent = new GUIContent[] { modelBonesContent, assignBonesContent, noneContent };
         }

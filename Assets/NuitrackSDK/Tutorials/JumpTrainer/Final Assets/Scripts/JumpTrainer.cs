@@ -3,159 +3,158 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class JumpTrainer : MonoBehaviour
+namespace NuitrackSDK.Tutorials.JumpTrainer
 {
-    [SerializeField] AspectRatioFitter aspectRatioFitter;
-    Plane floorPlane;
-
-    [SerializeField] float jumpStartHeight = 0.1f;
-    [SerializeField] RectTransform baseRect;
-
-    [Header("Current jump UI")]
-    [SerializeField] RectTransform currentJumpLine;
-    [SerializeField] Text currentJumpLabel;
-
-    bool lefOnFloorLastFrame = true;
-
-    [Header ("Floor UI")]
-    [SerializeField] RectTransform floorLine;
-
-    [Header ("Best jump UI")]
-    [SerializeField] RectTransform bestJumpLine;
-    [SerializeField] Text bestJumpLabel;
-
-    public float BestJumpHeight
+    [AddComponentMenu("NuitrackSDK/Tutorials/Jump Trainer/Jump Trainer")]
+    public class JumpTrainer : MonoBehaviour
     {
-        get;
-        private set;
-    }
+        [SerializeField] AspectRatioFitter aspectRatioFitter;
+        Plane floorPlane;
 
-    public float CurrentJumpHeight
-    {
-        get;
-        private set;
-    }
+        [SerializeField] float jumpStartHeight = 0.1f;
+        [SerializeField] RectTransform baseRect;
 
-    bool LegOnFloor(nuitrack.Skeleton skeleton)
-    {
-        Vector3 leftAnkle = skeleton.GetJoint(nuitrack.JointType.LeftAnkle).ToVector3();
-        Vector3 rightAnkle = skeleton.GetJoint(nuitrack.JointType.RightAnkle).ToVector3();
+        [Header("Current jump UI")]
+        [SerializeField] RectTransform currentJumpLine;
+        [SerializeField] Text currentJumpLabel;
 
-        Vector3 floorLeftAnkle = floorPlane.ClosestPointOnPlane(leftAnkle);
-        Vector3 floorRightAnkle = floorPlane.ClosestPointOnPlane(rightAnkle);
+        bool lefOnFloorLastFrame = true;
 
-        return Vector3.Distance(leftAnkle, floorLeftAnkle) <= jumpStartHeight * 1000 || 
-            Vector3.Distance(rightAnkle, floorRightAnkle) <= jumpStartHeight * 1000;
-    }
+        [Header("Floor UI")]
+        [SerializeField] RectTransform floorLine;
 
-    float JumpHeight(nuitrack.Skeleton skeleton, out nuitrack.JointType lowerJointType)
-    {
-        lowerJointType = nuitrack.JointType.Head;
-        float jumpHeight = float.MaxValue;
+        [Header("Best jump UI")]
+        [SerializeField] RectTransform bestJumpLine;
+        [SerializeField] Text bestJumpLabel;
 
-        foreach (nuitrack.JointType jointType in Enum.GetValues(typeof(nuitrack.JointType)))
+        public float BestJumpHeight
         {
-            Vector3 jointPoint = skeleton.GetJoint(jointType).ToVector3();
-            Vector3 floorPoint = floorPlane.ClosestPointOnPlane(jointPoint);
-
-            float floorDistance = Vector3.Distance(jointPoint, floorPoint);
-
-            if (floorDistance < jumpHeight)
-            {
-                lowerJointType = jointType;
-                jumpHeight = floorDistance;
-            }
+            get;
+            private set;
         }
 
-        return jumpHeight * 0.001f;
-    }
+        public float CurrentJumpHeight
+        {
+            get;
+            private set;
+        }
 
-    Vector3 FrameSpaceProjPoint(nuitrack.Vector3 realPoint, nuitrack.DepthFrame frame)
-    {
-        nuitrack.Vector3 point = NuitrackManager.DepthSensor.ConvertRealToProjCoords(realPoint);
+        bool LegOnFloor(UserData.SkeletonData skeleton)
+        {
+            Vector3 leftAnkle = skeleton.GetJoint(nuitrack.JointType.LeftAnkle).Position;
+            Vector3 rightAnkle = skeleton.GetJoint(nuitrack.JointType.RightAnkle).Position;
 
-        point.X /= frame.Cols;
-        point.Y /= frame.Rows;
+            Vector3 floorLeftAnkle = floorPlane.ClosestPointOnPlane(leftAnkle);
+            Vector3 floorRightAnkle = floorPlane.ClosestPointOnPlane(rightAnkle);
 
-        return point.ToVector3();
-    }
+            return Vector3.Distance(leftAnkle, floorLeftAnkle) <= jumpStartHeight ||
+                Vector3.Distance(rightAnkle, floorRightAnkle) <= jumpStartHeight;
+        }
 
-    nuitrack.Vector3 NuitrackVector(Vector3 vector)
-    {
-        return new nuitrack.Vector3(vector.x, vector.y, vector.z);
-    }
+        float JumpHeight(UserData.SkeletonData skeleton, out nuitrack.JointType lowerJointType)
+        {
+            lowerJointType = nuitrack.JointType.Head;
+            float jumpHeight = float.MaxValue;
 
-    void Start()
-    {
-        DisplayLines(false);
-    }
+            foreach (nuitrack.JointType jointType in Enum.GetValues(typeof(nuitrack.JointType)))
+            {
+                Vector3 jointPoint = skeleton.GetJoint(jointType).Position;
+                Vector3 floorPoint = floorPlane.ClosestPointOnPlane(jointPoint);
 
-    void DisplayLines(bool visible)
-    {
-        currentJumpLine.gameObject.SetActive(visible);
-        floorLine.gameObject.SetActive(visible);
-        bestJumpLine.gameObject.SetActive(visible);
-    }
-    
-    void Update()
-    {
-        if(NuitrackManager.ColorFrame != null)
-            aspectRatioFitter.aspectRatio = (float)NuitrackManager.ColorFrame.Cols / NuitrackManager.ColorFrame.Rows;
+                float floorDistance = Vector3.Distance(jointPoint, floorPoint);
 
-        if (NuitrackManager.UserFrame == null || CurrentUserTracker.CurrentSkeleton == null)
+                if (floorDistance < jumpHeight)
+                {
+                    lowerJointType = jointType;
+                    jumpHeight = floorDistance;
+                }
+            }
+
+            return jumpHeight;
+        }
+
+        Vector3 FrameSpaceProjPoint(Vector3 realPoint, nuitrack.DepthFrame frame)
+        {
+            realPoint *= 1000;
+            nuitrack.Vector3 nuitrackPoint = NuitrackVector(realPoint);
+            nuitrack.Vector3 point = NuitrackManager.DepthSensor.ConvertRealToProjCoords(nuitrackPoint);
+
+            point.X /= frame.Cols;
+            point.Y /= frame.Rows;
+
+            return point.ToVector3();
+        }
+
+        nuitrack.Vector3 NuitrackVector(Vector3 vector)
+        {
+            return new nuitrack.Vector3(vector.x, vector.y, vector.z);
+        }
+
+        void Start()
         {
             DisplayLines(false);
-            return;
         }
 
-        DisplayLines(true);   
-
-        Vector3 floorPoint = NuitrackManager.UserFrame.Floor.ToVector3();
-        Vector3 floorNormal = NuitrackManager.UserFrame.FloorNormal.ToVector3().normalized;
-
-        floorPlane = new Plane(floorNormal, floorPoint);
-
-        nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-
-        nuitrack.JointType lowerJoint;
-        float jumpHeight = JumpHeight(skeleton, out lowerJoint);
-
-        if (!LegOnFloor(skeleton))
+        void DisplayLines(bool visible)
         {
-            if (lefOnFloorLastFrame)
-            {
-                CurrentJumpHeight = 0;
-                lefOnFloorLastFrame = false;
-            }
-
-            if (jumpHeight > CurrentJumpHeight)
-                CurrentJumpHeight = jumpHeight;
-
-            if (CurrentJumpHeight > BestJumpHeight)
-            {
-                BestJumpHeight = CurrentJumpHeight;
-                bestJumpLabel.text = string.Format("Best: {0:F2}", BestJumpHeight);
-            }
+            currentJumpLine.gameObject.SetActive(visible);
+            floorLine.gameObject.SetActive(visible);
+            bestJumpLine.gameObject.SetActive(visible);
         }
-        else
-            lefOnFloorLastFrame = true;
 
-        nuitrack.Vector3 jointPosition = skeleton.GetJoint(lowerJoint).Real;
-        Vector3 currentJumpScreenPoint = FrameSpaceProjPoint(jointPosition, NuitrackManager.DepthFrame);
+        void Update()
+        {
+            if (NuitrackManager.Floor == null || NuitrackManager.Users.Current == null || NuitrackManager.Users.Current.Skeleton == null)
+            {
+                DisplayLines(false);
+                return;
+            }
 
-        currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * currentJumpScreenPoint.y);
-        currentJumpLabel.text = string.Format("Current: {0:F2}", CurrentJumpHeight);
+            DisplayLines(true);
 
-        Vector3 waistPosition = skeleton.GetJoint(nuitrack.JointType.Waist).ToVector3();
-        Vector3 floorWaistPosition = floorPlane.ClosestPointOnPlane(waistPosition);
-        Vector3 screenFloorWaistPoint = FrameSpaceProjPoint(NuitrackVector(floorWaistPosition), NuitrackManager.DepthFrame);
+            floorPlane = NuitrackManager.Floor.Value;
 
-        floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenFloorWaistPoint.y);
+            UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
 
-        Vector3 bestJumpPosition = floorWaistPosition + floorNormal * BestJumpHeight * 1000;
-        Vector3 screenBestJumpPoint = FrameSpaceProjPoint(NuitrackVector(bestJumpPosition), NuitrackManager.DepthFrame);
+            nuitrack.JointType lowerJoint;
+            float jumpHeight = JumpHeight(skeleton, out lowerJoint);
 
-        bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height * screenBestJumpPoint.y);
+            if (!LegOnFloor(skeleton))
+            {
+                if (lefOnFloorLastFrame)
+                {
+                    CurrentJumpHeight = 0;
+                    lefOnFloorLastFrame = false;
+                }
+
+                if (jumpHeight > CurrentJumpHeight)
+                    CurrentJumpHeight = jumpHeight;
+
+                if (CurrentJumpHeight > BestJumpHeight)
+                {
+                    BestJumpHeight = CurrentJumpHeight;
+                    bestJumpLabel.text = string.Format("Best: {0:F2}", BestJumpHeight);
+                }
+            }
+            else
+                lefOnFloorLastFrame = true;
+
+            Vector3 jointPosition = skeleton.GetJoint(lowerJoint).Position;
+            Vector3 currentJumpScreenPoint = FrameSpaceProjPoint(jointPosition, NuitrackManager.DepthFrame);
+
+            currentJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * currentJumpScreenPoint.y);
+            currentJumpLabel.text = string.Format("Current: {0:F2}", CurrentJumpHeight);
+
+            Vector3 waistPosition = skeleton.GetJoint(nuitrack.JointType.Waist).Position;
+            Vector3 floorWaistPosition = floorPlane.ClosestPointOnPlane(waistPosition);
+            Vector3 screenFloorWaistPoint = FrameSpaceProjPoint(floorWaistPosition, NuitrackManager.DepthFrame);
+
+            floorLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * screenFloorWaistPoint.y);
+
+            Vector3 bestJumpPosition = floorWaistPosition + floorPlane.normal * BestJumpHeight;
+            Vector3 screenBestJumpPoint = FrameSpaceProjPoint(bestJumpPosition, NuitrackManager.DepthFrame);
+
+            bestJumpLine.anchoredPosition = new Vector2(0, baseRect.rect.height - baseRect.rect.height * screenBestJumpPoint.y);
+        }
     }
 }

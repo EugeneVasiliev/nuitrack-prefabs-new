@@ -5,6 +5,7 @@ using System;
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/UI/UI Avatar")]
     public class UIAvatar : BaseAvatar
     {
         [Header("Skeleton")]
@@ -59,9 +60,9 @@ namespace NuitrackSDK.Avatar
             }
         }
 
-        protected override void ProcessSkeleton(UserData.SkeletonData skeleton)
+        protected override void Process(UserData user)
         {
-            if (skeleton == null)
+            if (user.Skeleton == null)
                 return;
 
             if (!initialized)
@@ -72,7 +73,7 @@ namespace NuitrackSDK.Avatar
                 nuitrack.JointType jointType = jointsInfo.Key;
                 RectTransform rectTransform = jointsInfo.Value;
 
-                UserData.SkeletonData.Joint j = skeleton.GetJoint(jointType);
+                UserData.SkeletonData.Joint j = user.Skeleton.GetJoint(jointType);
                 if (j.Confidence > JointConfidence)
                 {
                     rectTransform.gameObject.SetActive(true);

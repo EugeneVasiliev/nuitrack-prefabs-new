@@ -58,7 +58,7 @@ Shader "NuitrackSDK/NuitrackDemos/CustomMesh"
 
 				float z = depthCol.r * _maxSensorDepth;
 				float x =  z * (v.depthPos.x - 0.5) / fX;
-				float y = -z * (v.depthPos.y - 0.5) / fY;
+				float y = -z * ((1 - v.depthPos.y) - 0.5) / fY;
 
             	float4 newVertexPos = float4(x, y, z, 1);
             	float4 rgbCol = tex2Dlod(_RGBTex, float4(v.depthPos, 0, 0));

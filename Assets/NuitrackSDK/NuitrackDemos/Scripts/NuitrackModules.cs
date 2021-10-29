@@ -6,6 +6,10 @@ using System;
 using UnityEngine.Android;
 #endif
 
+using NuitrackSDK.ErrorSolver;
+using NuitrackSDK.Loader;
+
+
 namespace NuitrackSDK.NuitrackDemos
 {
     public class NuitrackModules : MonoBehaviour
@@ -40,7 +44,7 @@ namespace NuitrackSDK.NuitrackDemos
         void Awake()
         {
             exceptionsLogger = GameObject.FindObjectOfType<ExceptionsLogger>();
-            NuitrackInitState state = NuitrackLoader.initState;
+            NuitrackInitState state = NuitrackManager.Instance.InitState;
             if (state != NuitrackInitState.INIT_OK && Application.platform == RuntimePlatform.Android)
             {
                 string error_message = "Nuitrack native libraries initialization error: " + Enum.GetName(typeof(NuitrackInitState), state);

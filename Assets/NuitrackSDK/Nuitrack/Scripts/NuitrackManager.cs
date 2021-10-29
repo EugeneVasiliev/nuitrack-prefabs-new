@@ -1,11 +1,14 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+
+using System;
+using System.IO;
+using System.Collections;
 using System.Threading;
 
-using System.IO;
-
 using NuitrackSDK;
+using NuitrackSDK.ErrorSolver;
+using NuitrackSDK.Loader;
 
 #if UNITY_ANDROID && UNITY_2018_1_OR_NEWER && !UNITY_EDITOR
 using UnityEngine.Android;
@@ -92,18 +95,56 @@ public class NuitrackManager : MonoBehaviour
     public static nuitrack.DepthFrame DepthFrame { get; private set; }
     public static nuitrack.ColorFrame ColorFrame { get; private set; }
     public static nuitrack.UserFrame UserFrame { get; private set; }
-    public static nuitrack.SkeletonData SkeletonData { get; private set; }
-    public static nuitrack.HandTrackerData HandTrackerData { get; private set; }
+
+    static nuitrack.SkeletonData skeletonData = null;
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
+    public static nuitrack.SkeletonData SkeletonData
+    {
+        get
+        {
+            return skeletonData;
+        }
+    }
+
+    static nuitrack.HandTrackerData handTrackerData = null;
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
+    public static nuitrack.HandTrackerData HandTrackerData
+    {
+        get
+        {
+            return handTrackerData;
+        }
+    }
 
     public static event nuitrack.DepthSensor.OnUpdate onDepthUpdate;
     public static event nuitrack.ColorSensor.OnUpdate onColorUpdate;
     public static event nuitrack.UserTracker.OnUpdate onUserTrackerUpdate;
+
+    [Obsolete ("Use NuitrackManager.Users.GetUser(userID).Skeleton or NuitrackManager.Users.Current.Selection", false)]
     public static event nuitrack.SkeletonTracker.OnSkeletonUpdate onSkeletonTrackerUpdate;
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).RightHand (or LeftHand) or NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
     public static event nuitrack.HandTracker.OnUpdate onHandsTrackerUpdate;
 
     public delegate void OnNewGestureHandler(nuitrack.Gesture gesture);
+
+    [Obsolete("Use NuitrackManager.Users.GetUser(userID).GestureType or NuitrackManager.Users.Current.GestureType", false)]
     public static event OnNewGestureHandler onNewGesture;
-    public static nuitrack.UserHands СurrentHands { get; private set; }
+
+    static nuitrack.UserHands currentHands = null;
+
+    [Obsolete("Use NuitrackManager.Users.Current.RightHand (or LeftHand)", false)]
+    public static nuitrack.UserHands СurrentHands
+    {
+        get
+        {
+            return currentHands;
+        }
+    }
+
+    nuitrack.GestureData gestureData = null;
 
     static NuitrackManager instance;
     NuitrackInitState initState = NuitrackInitState.INIT_NUITRACK_MANAGER_NOT_INSTALLED;
@@ -136,6 +177,18 @@ public class NuitrackManager : MonoBehaviour
             return useNuitrackAi;
         }
     }
+
+
+    public static Plane? Floor
+    {
+        get; private set;
+    } = null;
+
+    public static Users Users
+    {
+        get;
+    } = new Users();
+
 
 #if UNITY_ANDROID && !UNITY_EDITOR
     static int GetAndroidAPILevel()
@@ -283,7 +336,7 @@ public class NuitrackManager : MonoBehaviour
             return;
         if (prevSkel != skel)
         {
-            SkeletonData = null;
+            skeletonData = null;
             prevSkel = skel;
             if (skel)
             {
@@ -297,7 +350,7 @@ public class NuitrackManager : MonoBehaviour
 
         if (prevHand != hand)
         {
-            HandTrackerData = null;
+            handTrackerData = null;
             prevHand = hand;
             if (hand)
                 HandTracker.OnUpdateEvent += HandleOnHandsUpdateEvent;
@@ -500,47 +553,52 @@ public class NuitrackManager : MonoBehaviour
             UserFrame.Dispose();
         UserFrame = (nuitrack.UserFrame)frame.Clone();
         onUserTrackerUpdate?.Invoke(UserFrame);
+
+        Floor = new Plane(UserFrame.FloorNormal.ToVector3().normalized, UserFrame.Floor.ToVector3() * 0.001f);
     }
 
     void HandleOnSkeletonUpdateEvent(nuitrack.SkeletonData _skeletonData)
     {
-        if (SkeletonData != null)
-            SkeletonData.Dispose();
-        SkeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
+        if (skeletonData != null)
+            skeletonData.Dispose();
+
+        skeletonData = (nuitrack.SkeletonData)_skeletonData.Clone();
         sensorConnected = true;
-        onSkeletonTrackerUpdate?.Invoke(SkeletonData);
+        onSkeletonTrackerUpdate?.Invoke(skeletonData);
     }
 
-    private void OnNewGestures(nuitrack.GestureData gestures)
+    void OnNewGestures(nuitrack.GestureData gestures)
     {
+        if (gestureData != null)
+            gestureData.Dispose();
+
+        gestureData = (nuitrack.GestureData)gestures.Clone();
+
         if (gestures.NumGestures > 0)
         {
             if (onNewGesture != null)
             {
                 for (int i = 0; i < gestures.Gestures.Length; i++)
-                {
                     onNewGesture(gestures.Gestures[i]);
-                }
             }
         }
     }
 
     void HandleOnHandsUpdateEvent(nuitrack.HandTrackerData _handTrackerData)
     {
-        if (HandTrackerData != null)
-            HandTrackerData.Dispose();
-        HandTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
-        onHandsTrackerUpdate?.Invoke(HandTrackerData);
+        if (handTrackerData != null)
+            handTrackerData.Dispose();
 
-        if (HandTrackerData == null) return;
-        if (CurrentUserTracker.CurrentUser != 0)
-        {
-            СurrentHands = HandTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);
-        }
+        handTrackerData = (nuitrack.HandTrackerData)_handTrackerData.Clone();
+        onHandsTrackerUpdate?.Invoke(handTrackerData);
+
+        if (handTrackerData == null)
+            return;
+
+        if (Users.CurrentUserID != 0)
+            currentHands = handTrackerData.GetUserHandsByID(Users.CurrentUserID);
         else
-        {
-            СurrentHands = null;
-        }
+            currentHands = null;
     }
 
     void OnApplicationPause(bool pauseStatus)
@@ -631,6 +689,14 @@ public class NuitrackManager : MonoBehaviour
         {
             try
             {
+                Users.UpdateData(skeletonData, handTrackerData, gestureData, NuitrackJson);
+
+                if (gestureData != null)
+                {
+                    gestureData.Dispose();
+                    gestureData = null;
+                }
+
                 nuitrack.Nuitrack.Update();
             }
             catch (System.Exception ex)
@@ -682,7 +748,7 @@ public class NuitrackManager : MonoBehaviour
         StartNuitrack();
     }
 
-    public static JsonInfo NuitrackJson 
+    public static nuitrack.JsonInfo NuitrackJson 
     { 
         get
         {
@@ -695,7 +761,7 @@ public class NuitrackManager : MonoBehaviour
                 else
                 {
                     string json = nuitrack.Nuitrack.GetInstancesJson();
-                    return NuitrackUtils.FromJson<JsonInfo>(json);
+                    return NuitrackUtils.FromJson<nuitrack.JsonInfo>(json);
                 }
             }
             catch (System.Exception ex)
@@ -711,18 +777,29 @@ public class NuitrackManager : MonoBehaviour
     {
         try
         {
-            if (DepthSensor != null) DepthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
-            if (ColorSensor != null) ColorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
-            if (UserTracker != null) UserTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
-            if (SkeletonTracker != null) SkeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
-            if (GestureRecognizer != null) GestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
-            if (HandTracker != null) HandTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
+            if (DepthSensor != null) 
+                DepthSensor.OnUpdateEvent -= HandleOnDepthSensorUpdateEvent;
+
+            if (ColorSensor != null) 
+                ColorSensor.OnUpdateEvent -= HandleOnColorSensorUpdateEvent;
+
+            if (UserTracker != null) 
+                UserTracker.OnUpdateEvent -= HandleOnUserTrackerUpdateEvent;
+
+            if (SkeletonTracker != null) 
+                SkeletonTracker.OnSkeletonUpdateEvent -= HandleOnSkeletonUpdateEvent;
+
+            if (GestureRecognizer != null)
+                GestureRecognizer.OnNewGesturesEvent -= OnNewGestures;
+
+            if (HandTracker != null) 
+                HandTracker.OnUpdateEvent -= HandleOnHandsUpdateEvent;
 
             DepthFrame = null;
             ColorFrame = null;
             UserFrame = null;
-            SkeletonData = null;
-            HandTrackerData = null;
+            skeletonData = null;
+            handTrackerData = null;
 
             DepthSensor = null;
             ColorSensor = null;

@@ -1,45 +1,35 @@
 ﻿using UnityEngine;
-
-using System.Linq;
 using System.Collections.Generic;
 
-public class RigidbodySkeletonManager : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.ARNuitrack.Extensions
 {
-    [SerializeField] GameObject rigidBodySkeletonPrefab;
-    [SerializeField] Transform space;
-
-    Dictionary<int, RigidbodySkeletonController> skeletons = new Dictionary<int, RigidbodySkeletonController>();
-
-    ulong lastTimeStamp = 0;
-
-    void Update()
+    [AddComponentMenu("NuitrackSDK/Tutorials/AR Nuitrack/Extensions/Rigidbody Skeleton Manager")]
+    public class RigidbodySkeletonManager : MonoBehaviour
     {
-        if (NuitrackManager.SkeletonData == null || NuitrackManager.SkeletonData.Timestamp == lastTimeStamp)
-            return;
+        [SerializeField] GameObject rigidBodySkeletonPrefab;
+        [SerializeField] Transform space;
 
-        lastTimeStamp = NuitrackManager.SkeletonData.Timestamp;
+        Dictionary<int, RigidbodySkeletonController> skeletons = new Dictionary<int, RigidbodySkeletonController>();
 
-        NuitrackManager_onSkeletonTrackerUpdate(NuitrackManager.SkeletonData);
-    }
+        void Update()
+        {
+            foreach (UserData user in NuitrackManager.Users)
+                if (!skeletons.ContainsKey(user.ID))
+                {
+                    RigidbodySkeletonController rigidbodySkeleton = Instantiate(rigidBodySkeletonPrefab, space).GetComponent<RigidbodySkeletonController>();
+                    rigidbodySkeleton.UserID = user.ID;
+                    rigidbodySkeleton.SetSpace(space);
 
-    void NuitrackManager_onSkeletonTrackerUpdate(nuitrack.SkeletonData skeletonData)
-    {
-        Dictionary<int, nuitrack.Skeleton> nuitrackSkeletons = NuitrackManager.SkeletonData.Skeletons.ToDictionary(k => k.ID, v => v);
+                    skeletons.Add(user.ID, rigidbodySkeleton);
+                }
 
-        foreach (KeyValuePair<int, nuitrack.Skeleton> skeleton in nuitrackSkeletons)
-            if (!skeletons.ContainsKey(skeleton.Key))
-            {
-                RigidbodySkeletonController rigidbodySkeleton = Instantiate(rigidBodySkeletonPrefab, space).GetComponent<RigidbodySkeletonController>();
-                rigidbodySkeleton.Initialize(skeleton.Key, space);
-
-                skeletons.Add(skeleton.Key, rigidbodySkeleton);
-            }
-
-        foreach (KeyValuePair<int, RigidbodySkeletonController> sk in new Dictionary<int, RigidbodySkeletonController>(skeletons))
-            if (!nuitrackSkeletons.ContainsKey(sk.Key))
-            {
-                Destroy(skeletons[sk.Key].gameObject);
-                skeletons.Remove(sk.Key);
-            }
+            foreach (int skeletonID in new List<int>(skeletons.Keys))
+                if (NuitrackManager.Users.GetUser(skeletonID) == null)
+                {
+                    Destroy(skeletons[skeletonID].gameObject);
+                    skeletons.Remove(skeletonID);
+                }
+        }
     }
 }

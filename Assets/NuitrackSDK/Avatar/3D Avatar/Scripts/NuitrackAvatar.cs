@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+
 using JointType = nuitrack.JointType;
+
+using NuitrackSDK.Calibration;
+
 
 namespace NuitrackSDK.Avatar
 {
+    [AddComponentMenu("NuitrackSDK/Avatar/3D/NuitrackAvatar")]
     public class NuitrackAvatar : BaseAvatar
     {
         [Header("Body")]
@@ -186,8 +190,11 @@ namespace NuitrackSDK.Avatar
         /// <summary>
         /// Getting skeleton data from thr sensor and updating transforms of the model bones
         /// </summary>
-        protected override void ProcessSkeleton(UserData.SkeletonData skeleton)
+        protected override void Process(UserData user)
         {
+            if (user.Skeleton == null)
+                return;
+
             if (!alignmentBoneLength)
             {
                 Vector3 jointPos = GetJoint(rootJoint).Position - basePivotOffset;
@@ -201,7 +208,7 @@ namespace NuitrackSDK.Avatar
             {
                 //Get joint from the Nuitrack
                 //nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                UserData.SkeletonData.Joint jointTransform = skeleton.GetJoint(riggedJoint.Key);
+                UserData.SkeletonData.Joint jointTransform = user.Skeleton.GetJoint(riggedJoint.Key);
 
                 if (jointTransform.Confidence > JointConfidence)
                 {

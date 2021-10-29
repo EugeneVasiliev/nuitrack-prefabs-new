@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using NuitrackSDK.Calibration;
+
 
 namespace NuitrackSDK.Pointer
 {
@@ -39,17 +41,18 @@ namespace NuitrackSDK.Pointer
 
         void Update()
         {
-            if (attachToSkelJoint)
+            if (attachToSkelJoint && NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
             {
-                nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
+                UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
+
                 if (hand % 2 == 0)
                 {
-                    Vector3 rightHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.RightHand).ToVector3());
+                    Vector3 rightHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * skeleton.GetJoint(nuitrack.JointType.RightHand).Position;
                     pointerObject.position = rightHandPos;
                 }
                 else
                 {
-                    Vector3 leftHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * (0.001f * skeleton.GetJoint(nuitrack.JointType.LeftHand).ToVector3());
+                    Vector3 leftHandPos = Vector3.up * CalibrationInfo.FloorHeight + CalibrationInfo.SensorOrientation * skeleton.GetJoint(nuitrack.JointType.LeftHand).Position;
                     pointerObject.position = leftHandPos;
                 }
             }

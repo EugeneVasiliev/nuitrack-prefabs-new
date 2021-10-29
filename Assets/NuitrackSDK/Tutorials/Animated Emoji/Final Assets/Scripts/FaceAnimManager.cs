@@ -2,65 +2,53 @@
 using System.Collections.Generic;
 using nuitrack;
 
-public class FaceAnimManager : MonoBehaviour
+namespace NuitrackSDK.Tutorials.AnimatedEmoji
 {
-    [SerializeField] Canvas canvas;
-    [SerializeField] FaceAnimController facePrefab;
-
-    [Range(0, 6)]
-    [SerializeField] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
-
-    public JsonInfo faceInfo;
-    List<FaceAnimController> faceAnimControllers = new List<FaceAnimController>();
-    float headsDistance = 100;
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/Animated Emoji/Face Anim Manager")]
+    public class FaceAnimManager : MonoBehaviour
     {
-        for (int i = 0; i < faceCount; i++)
+        [SerializeField] Canvas canvas;
+        [SerializeField] FaceAnimController facePrefab;
+
+        [Range(0, 6)]
+        [SerializeField] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
+
+        List<FaceAnimController> faceAnimControllers = new List<FaceAnimController>();
+        float headsDistance = 100;
+
+        void Start()
         {
-            GameObject newFace = Instantiate(facePrefab.gameObject, new UnityEngine.Vector3(i*headsDistance,0,0), Quaternion.identity);
-            newFace.SetActive(false);
-            FaceAnimController faceAnimController = newFace.GetComponent<FaceAnimController>();
-            faceAnimController.Init(canvas);
-            faceAnimControllers.Add(faceAnimController);
+            for (int i = 0; i < faceCount; i++)
+            {
+                GameObject newFace = Instantiate(facePrefab.gameObject, new UnityEngine.Vector3(i * headsDistance, 0, 0), Quaternion.identity);
+                newFace.SetActive(false);
+                FaceAnimController faceAnimController = newFace.GetComponent<FaceAnimController>();
+                faceAnimController.Init(canvas);
+                faceAnimControllers.Add(faceAnimController);
+            }
+
+            NuitrackManager.SkeletonTracker.SetNumActiveUsers(faceCount);
         }
 
-        NuitrackManager.SkeletonTracker.SetNumActiveUsers(faceCount);
-        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
-    }
-
-    void OnSkeletonUpdate(SkeletonData skeletonData)
-    {
-        if (faceInfo == null || faceInfo.Instances.Length == 0)
-            return;
-
-        for (int i = 0; i < faceAnimControllers.Count; i++)
+        void Update()
         {
-            if (i < skeletonData.Skeletons.Length)
+            for (int i = 0; i < faceAnimControllers.Count; i++)
             {
-                Skeleton skeleton = skeletonData.GetSkeletonByID(faceInfo.Instances[i].id);
-                if(skeleton != null)
+                int id = i + 1;
+                UserData user = NuitrackManager.Users.GetUser(id);
+
+                if (user != null && user.Skeleton != null && user.Face != null)
                 {
-                    nuitrack.Joint headJoint = skeleton.GetJoint(JointType.Head);
+                    UserData.SkeletonData.Joint headJoint = user.Skeleton.GetJoint(JointType.Head);
 
                     faceAnimControllers[i].gameObject.SetActive(headJoint.Confidence > 0.5f);
-                    faceAnimControllers[i].UpdateFace(faceInfo.Instances[i], headJoint);
+                    faceAnimControllers[i].UpdateFace(user.Face, headJoint);
+                }
+                else
+                {
+                    faceAnimControllers[i].gameObject.SetActive(false);
                 }
             }
-            else
-            {
-                faceAnimControllers[i].gameObject.SetActive(false);
-            }
         }
-    }
-
-    private void Update()
-    {
-        faceInfo = NuitrackManager.NuitrackJson;
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
     }
 }

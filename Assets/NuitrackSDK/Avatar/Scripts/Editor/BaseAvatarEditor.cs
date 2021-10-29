@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 
 using nuitrack;
+using NuitrackSDK;
 using NuitrackSDK.Avatar;
 
 
@@ -24,8 +25,6 @@ namespace NuitrackSDKEditor.Avatar
         /// </summary>
         protected void DrawSkeletonSettings()
         {
-            BaseAvatar baseAvatar = serializedObject.targetObject as BaseAvatar;
-
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Skeleton settings", EditorStyles.boldLabel);
 
@@ -35,8 +34,8 @@ namespace NuitrackSDKEditor.Avatar
 
             if (!useCurrentUserTracker.boolValue)
             {
-                SerializedProperty skeletonID = serializedObject.FindProperty("skeletonID");
-                skeletonID.intValue = EditorGUILayout.IntSlider("Skeleton ID", skeletonID.intValue, baseAvatar.MinSkeletonID, baseAvatar.MaxSkeletonID);
+                SerializedProperty userID = serializedObject.FindProperty("userID");
+                userID.intValue = EditorGUILayout.IntSlider("User ID", userID.intValue, Users.MinID, Users.MaxID);
                 serializedObject.ApplyModifiedProperties();
             }
 

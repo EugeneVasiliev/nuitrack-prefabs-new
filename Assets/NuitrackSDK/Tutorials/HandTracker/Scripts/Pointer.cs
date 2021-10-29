@@ -1,89 +1,82 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class Pointer : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.HandTracker
 {
-    public enum Hands { left = 0, right = 1 };
-
-    [SerializeField]
-    Hands currentHand;
-
-    [Header ("Visualization")]
-    [SerializeField]
-    RectTransform parentRectTransform;
-
-    [SerializeField]
-    RectTransform baseRect;
-
-    [SerializeField]
-    Image background;
-
-    [SerializeField]
-    Sprite defaultSprite;
-
-    [SerializeField]
-    Sprite pressSprite;
-
-    [SerializeField]
-    [Range(0, 50)]
-    float minVelocityInteractivePoint = 2f;
-
-    float lastTime = 0;
-    bool active = false;
-
-    private void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/Hand Tracker/Pointer")]
+    public class Pointer : MonoBehaviour
     {
-        NuitrackManager.onHandsTrackerUpdate += NuitrackManager_onHandsTrackerUpdate;
-        lastTime = Time.time;
-    }
+        public enum Hands { left = 0, right = 1 };
 
-    private void OnDestroy()
-    {
-        NuitrackManager.onHandsTrackerUpdate -= NuitrackManager_onHandsTrackerUpdate;
-    }
+        [SerializeField]
+        Hands currentHand;
 
-    public Vector3 Position
-    {
-        get
+        [Header("Visualization")]
+        [SerializeField]
+        RectTransform parentRectTransform;
+
+        [SerializeField]
+        RectTransform baseRect;
+
+        [SerializeField]
+        Image background;
+
+        [SerializeField]
+        Sprite defaultSprite;
+
+        [SerializeField]
+        Sprite pressSprite;
+
+        [SerializeField]
+        [Range(0, 50)]
+        float minVelocityInteractivePoint = 2f;
+
+        bool active = false;
+
+        public Vector3 Position
         {
-            return transform.position;
-        }
-    }
-
-    public bool Press
-    {
-        get; private set;
-    }
-
-    private void NuitrackManager_onHandsTrackerUpdate(nuitrack.HandTrackerData handTrackerData)
-    {
-        active = false;
-
-        nuitrack.UserHands userHands = handTrackerData.GetUserHandsByID(CurrentUserTracker.CurrentUser);    
-
-        if (userHands != null)
-        {
-            nuitrack.HandContent? handContent = currentHand == Hands.right ? userHands.RightHand : userHands.LeftHand;
-
-            if (handContent != null)
+            get
             {
-                Vector2 pageSize = parentRectTransform.rect.size;
-                Vector3 lastPosition = baseRect.position;
-                baseRect.anchoredPosition = new Vector2(handContent.Value.X * pageSize.x, -handContent.Value.Y * pageSize.y);
-
-                float velocity = (baseRect.position - lastPosition).magnitude / (Time.time - lastTime);
-
-                if (velocity < minVelocityInteractivePoint)
-                    Press = handContent.Value.Click;
-
-                active = true;
+                return transform.position;
             }
         }
 
-        Press = Press && active;
+        public bool Press
+        {
+            get; private set;
+        }
 
-        lastTime = Time.time;
-        background.enabled = active;
-        background.sprite = active && Press ? pressSprite : defaultSprite;
+        void Update()
+        {
+            active = false;
+
+            UserData user = NuitrackManager.Users.Current;
+
+            if (user != null)
+            {
+                UserData.Hand handContent = currentHand == Hands.right ? user.RightHand : user.LeftHand;
+
+                if (handContent != null)
+                {
+                    Vector3 lastPosition = baseRect.position;
+                    Vector2 handPosition = handContent.ProjPosition * parentRectTransform.rect.size;
+                    handPosition.y = -(parentRectTransform.rect.height - handPosition.y);
+                    baseRect.anchoredPosition = handPosition;
+
+                    float velocity = (baseRect.position - lastPosition).magnitude / Time.deltaTime;
+
+                    if (velocity < minVelocityInteractivePoint)
+                        Press = handContent.Click;
+
+                    active = true;
+                }
+            }
+
+            Press = Press && active;
+
+            background.enabled = active;
+            background.sprite = active && Press ? pressSprite : defaultSprite;
+        }
     }
 }
