@@ -159,7 +159,7 @@ public class NuitrackManager : MonoBehaviour
 
     [HideInInspector] public bool nuitrackInitialized = false;
 
-    [HideInInspector] public System.Exception initException;
+    [HideInInspector] public Exception initException;
 
     public bool UseFaceTracking
     {
@@ -431,7 +431,7 @@ public class NuitrackManager : MonoBehaviour
                         else
                             Debug.LogError(string.Format("Check the path to the recording file! File path: {0}", path));
                     }
-                    catch (System.Exception)
+                    catch (Exception)
                     {
                         Debug.LogError("File " + path + "  Cannot be loaded!");
                     }
@@ -523,7 +523,7 @@ public class NuitrackManager : MonoBehaviour
             nuitrackInitialized = true;
             _threadRunning = false;
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             initException = ex;
             NuitrackErrorSolver.CheckError(ex);
@@ -698,7 +698,7 @@ public class NuitrackManager : MonoBehaviour
 
                 nuitrack.Nuitrack.Update();
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 NuitrackErrorSolver.CheckError(ex, true, false);
                 if (ex.ToString().Contains("LicenseNotAcquiredException"))
@@ -763,7 +763,7 @@ public class NuitrackManager : MonoBehaviour
                     return NuitrackUtils.FromJson<nuitrack.JsonInfo>(json);
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 NuitrackErrorSolver.CheckError(ex);
             }
