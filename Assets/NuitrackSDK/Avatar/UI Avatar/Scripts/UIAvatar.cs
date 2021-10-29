@@ -78,10 +78,7 @@ namespace NuitrackSDK.Avatar
                 {
                     rectTransform.gameObject.SetActive(true);
 
-                    Vector2 newPosition = new Vector2(
-                        parentRect.rect.width * (j.Proj.x - 0.5f),
-                        parentRect.rect.height * (0.5f - j.Proj.y));
-
+                    Vector2 newPosition = j.ScreenPosition(parentRect.rect.width, parentRect.rect.height) - parentRect.rect.size / 2;
                     rectTransform.anchoredPosition = newPosition;
                 }
                 else

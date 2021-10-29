@@ -51,14 +51,10 @@ public class UIFaceInfo : MonoBehaviour
             image.enabled = true;
             infoPanel.SetActive(showInfo);
 
-            Rect faceRect = currentFace.Rect;
+            Rect screenRect = currentFace.AnchoredRect(spawnTransform.rect, frameTransform);
 
-            Vector2 newPosition = new Vector2(
-                spawnTransform.rect.width * (faceRect.x - 0.5f) + frameTransform.rect.width / 2,
-                spawnTransform.rect.height * (0.5f - faceRect.y) - frameTransform.rect.height / 2);
-
-            frameTransform.sizeDelta = new Vector2(faceRect.width * spawnTransform.rect.width, faceRect.height * spawnTransform.rect.height);
-            frameTransform.anchoredPosition = newPosition;
+            frameTransform.sizeDelta = screenRect.size;
+            frameTransform.anchoredPosition = screenRect.position;
 
             ageText.text = currentFace.AgeType.ToString();
             yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);

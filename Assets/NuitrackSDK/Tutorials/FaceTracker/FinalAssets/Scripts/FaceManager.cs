@@ -32,10 +32,10 @@ public class FaceManager : MonoBehaviour
 
                 UserData.SkeletonData.Joint head = user.Skeleton.GetJoint(nuitrack.JointType.Head);
 
-                faceControllers[i].transform.position = new Vector2(head.Proj.x * Screen.width, Screen.height - head.Proj.y * Screen.height);
+                faceControllers[i].transform.position = head.ScreenPosition(Screen.width, Screen.height);
                 //stretch the face to fit the rectangle
 
-                faceControllers[i].transform.localScale = new Vector2(user.Face.Rect.width * Screen.width, user.Face.Rect.height * Screen.height);
+                faceControllers[i].transform.localScale = user.Face.ScreenRect(Screen.width, Screen.height).size;
             }
             else
             {

@@ -44,7 +44,7 @@ public class FaceAnimController : MonoBehaviour
 
     public void UpdateFace(Face face, UserData.SkeletonData.Joint headJoint)
     {
-        faceRaw.transform.position = new Vector2(headJoint.Proj.x * Screen.width, Screen.height - headJoint.Proj.y * Screen.height);
+        faceRaw.transform.position = headJoint.ScreenPosition(Screen.width, Screen.height);
 
         headRoot.localPosition = new Vector3(0, 0, -headJoint.Position.z);
 

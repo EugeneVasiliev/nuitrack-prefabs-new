@@ -97,29 +97,32 @@ namespace NuitrackSDK.Face
                 return;
             }
 
-            targerRect = userData.Face.Rect;
+            targerRect = userData.Face.ScreenRect(frame.width, frame.height);
 
             if (faceRect.Equals(default))
                 faceRect = targerRect;
 
-            float deltaW = faceRect.width * margin;
-            float deltaH = faceRect.height * margin;
+            Vector2 deltaSize = new Vector2(targerRect.width * (1 + margin), targerRect.height * (1 + margin));
 
-            int faceX = (int)(frame.width * Mathf.Clamp01(faceRect.x - deltaW * 0.5f));
-            int faceY = (int)(frame.height * Mathf.Clamp01(faceRect.y - deltaH * 0.5f));
-            int faceWidth = (int)(frame.width * Mathf.Clamp01(faceRect.width + deltaW));
-            int faceHeight = (int)(frame.height * Mathf.Clamp01(faceRect.height + deltaH));
+            targerRect.position -= deltaSize * 0.5f;
+            targerRect.size += deltaSize;
+
+            targerRect.xMin = Mathf.Clamp(targerRect.xMin, 0, frame.width);
+            targerRect.xMax = Mathf.Clamp(targerRect.xMax, 0, frame.width);
+
+            targerRect.yMin = Mathf.Clamp(targerRect.yMin, 0, frame.height);
+            targerRect.yMax = Mathf.Clamp(targerRect.yMax, 0, frame.height);
 
             if (croppedTexture != null)
                 Destroy(croppedTexture);
 
-            croppedTexture = new Texture2D(faceWidth, faceHeight, TextureFormat.RGBA32, false);
+            croppedTexture = new Texture2D((int)faceRect.width, (int)faceRect.height, TextureFormat.RGBA32, false);
 
             if (useGPUCrop)
-                Graphics.CopyTexture(frame, 0, 0, faceX, faceY, faceWidth, faceHeight, croppedTexture, 0, 0, 0, 0);
+                Graphics.CopyTexture(frame, 0, 0, (int)faceRect.x, (int)faceRect.y, (int)faceRect.width, (int)faceRect.height, croppedTexture, 0, 0, 0, 0);
             else
             {
-                Color[] pixels = frame.GetPixels(faceX, faceY, faceWidth, faceHeight);
+                Color[] pixels = frame.GetPixels((int)faceRect.x, (int)faceRect.y, (int)faceRect.width, (int)faceRect.height);
                 croppedTexture.SetPixels(pixels);
                 croppedTexture.Apply();
             }
