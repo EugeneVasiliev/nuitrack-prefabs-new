@@ -2,7 +2,6 @@
 using UnityEditor;
 using System.IO;
 using System;
-using NuitrackSDKEditor.Documentation;
 
 using NuitrackSDKEditor.ErrorSolver;
 using NuitrackSDKEditor.Documentation;
