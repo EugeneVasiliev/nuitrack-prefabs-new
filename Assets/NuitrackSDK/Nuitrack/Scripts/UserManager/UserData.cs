@@ -352,7 +352,7 @@ public class UserData : IDisposable
             Face = (face != null && face.IsEmpty) ? null : face;
     }
 
-        internal void AddData(nuitrack.Gesture? gesture)
+    internal void AddData(nuitrack.Gesture? gesture)
     {
         RawGesture = gesture;
     }
