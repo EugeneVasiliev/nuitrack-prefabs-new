@@ -63,6 +63,48 @@ public class Face
         }
     }
 
+    /// <summary>
+    /// Convert Rect to virtual screen Rect
+    /// </summary>
+    /// <param name="width">Width of the virtual screen</param>
+    /// <param name="Height">Width of the virtual screen</param>
+    /// <returns>Virtual screen Rect</returns>
+    public Rect ScreenRect(float width, float height)
+    {
+        Rect faceRect = rectangle;
+
+        return new Rect(
+            faceRect.x * width,
+            faceRect.y * height,
+            faceRect.width * width,
+            faceRect.height * height
+            );
+    }
+
+    /// <summary>
+    /// Get the Rect of the face relative to the parent Rect
+    /// for the corresponding RectTransform taking into account the anchor
+    /// </summary>
+    /// <param name="rectTransform">Parent Rect</param>
+    /// <param name="parentRect">RectTransform reference for current Face</param>
+    /// <returns>Rect of the face relative to the parent Rect</returns>
+    public Rect AnchoredRect(Rect parentRect, RectTransform rectTransform)
+    {
+        Rect projRect = rectangle;
+
+        Vector2 pivot = new Vector2(
+            projRect.width * rectTransform.pivot.x,
+            projRect.height * rectTransform.pivot.y
+            );
+
+        return new Rect(
+            (projRect.x - rectTransform.anchorMin.x + pivot.x) * parentRect.width,
+            (projRect.y - rectTransform.anchorMin.y + pivot.y) * parentRect.height,
+            projRect.width * parentRect.width,
+            projRect.height * parentRect.height
+            );
+    }
+
     public Age.Type AgeType
     {
         get
@@ -103,7 +145,7 @@ public class Rectangle
 
     public static implicit operator Rect(Rectangle rectangle)
     {
-        return new Rect(Mathf.Clamp01(rectangle.left), Mathf.Clamp01(rectangle.top), Mathf.Clamp01(rectangle.width), Mathf.Clamp01(rectangle.height));
+        return new Rect(Mathf.Clamp01(rectangle.left), Mathf.Clamp01(1 - rectangle.top - rectangle.height), Mathf.Clamp01(rectangle.width), Mathf.Clamp01(rectangle.height));
     }
 }
 

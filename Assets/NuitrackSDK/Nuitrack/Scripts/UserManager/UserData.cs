@@ -96,13 +96,26 @@ public class UserData : IDisposable
             }
 
             /// <summary>
+            /// Convert joint coordinates to virtual screen coordinates
+            /// </summary>
+            /// <param name="width">Width of the virtual screen</param>
+            /// <param name="Height">Width of the virtual screen</param>
+            /// <returns>Virtual screen coordinates</returns>
+            public Vector2 ScreenPosition(float width, float height)
+            {
+                Vector2 projPos = Proj;
+
+                return new Vector2(projPos.x * width, projPos.y * height);
+            }
+
+            /// <summary>
             /// Projection and normalized joint coordinates
             /// </summary>
             public Vector2 Proj
             {
                 get
                 {
-                    return new Vector2(Mathf.Clamp01(RawJoint.Proj.X), Mathf.Clamp01(RawJoint.Proj.Y));
+                    return new Vector2(Mathf.Clamp01(RawJoint.Proj.X), Mathf.Clamp01(1 - RawJoint.Proj.Y));
                 }
             }
         }
