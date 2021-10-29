@@ -72,13 +72,12 @@ public class Face
     public Rect ScreenRect(float width, float height)
     {
         Rect faceRect = rectangle;
+        Vector2 screenSize = new Vector2(width, height);
 
-        return new Rect(
-            faceRect.x * width,
-            faceRect.y * height,
-            faceRect.width * width,
-            faceRect.height * height
-            );
+        faceRect.position = Vector2.Scale(faceRect.position, screenSize);
+        faceRect.size = Vector2.Scale(faceRect.size, screenSize);
+
+        return faceRect;
     }
 
     /// <summary>
@@ -87,22 +86,17 @@ public class Face
     /// </summary>
     /// <param name="rectTransform">Parent Rect</param>
     /// <param name="parentRect">RectTransform reference for current Face</param>
-    /// <returns>Rect of the face relative to the parent Rect</returns>
+    /// <returns>Rect of the face relative to the parent Rect (anchoredPosition )</returns>
     public Rect AnchoredRect(Rect parentRect, RectTransform rectTransform)
     {
         Rect projRect = rectangle;
 
-        Vector2 pivot = new Vector2(
-            projRect.width * rectTransform.pivot.x,
-            projRect.height * rectTransform.pivot.y
-            );
+        Vector2 pivot = Vector2.Scale(projRect.size, rectTransform.pivot);
 
-        return new Rect(
-            (projRect.x - rectTransform.anchorMin.x + pivot.x) * parentRect.width,
-            (projRect.y - rectTransform.anchorMin.y + pivot.y) * parentRect.height,
-            projRect.width * parentRect.width,
-            projRect.height * parentRect.height
-            );
+        Vector2 rectPosition = Vector2.Scale(projRect.position - rectTransform.anchorMin + pivot, parentRect.size);
+        Vector2 rectSize = Vector2.Scale(projRect.size, parentRect.size);
+
+        return new Rect(rectPosition, rectSize);
     }
 
     public Age.Type AgeType
