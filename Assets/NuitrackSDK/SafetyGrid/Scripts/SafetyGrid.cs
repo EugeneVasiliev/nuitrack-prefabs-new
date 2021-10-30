@@ -8,6 +8,7 @@ namespace NuitrackSDK.SafetyGrid
         [SerializeField] SpriteRenderer frontGrid, leftGrid, rightGrid;
 
         [SerializeField] float warningDistance = 1.5f;
+        [SerializeField] float sideWidth = 5;
         [SerializeField] float fov = 60;
         [SerializeField] bool autoAdjustingFOV = true;
 
@@ -30,24 +31,26 @@ namespace NuitrackSDK.SafetyGrid
             if (autoAdjustingFOV)
                 angle = NuitrackManager.DepthSensor.GetOutputMode().HFOV * Mathf.Rad2Deg / 2;
 
-            leftGrid.transform.localEulerAngles = new Vector3(0, angle + 90, 0);
-            rightGrid.transform.localEulerAngles = new Vector3(0, -angle + 90, 0);
+            //Set front transforms
             frontGrid.transform.localPosition = new Vector3(frontGrid.transform.localPosition.x, frontGrid.transform.localPosition.y, warningDistance);
-            float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);            
-
+            float sideDistance = warningDistance / Mathf.Cos(angle * Mathf.Deg2Rad);
             float frontWidth = Mathf.Sqrt(-(warningDistance * warningDistance) + sideDistance * sideDistance);
             frontGrid.size = new Vector2(frontWidth * 2 / frontGrid.transform.localScale.x, frontGrid.size.y);
 
-            float sideWidth = leftGrid.size.x * leftGrid.transform.localScale.x;
+            //Set side transforms
             float x = frontWidth + Mathf.Sin(angle * Mathf.Deg2Rad) * sideWidth / 2;
             float z = warningDistance + Mathf.Cos(angle * Mathf.Deg2Rad) * sideWidth / 2;
             leftGrid.transform.localPosition = new Vector3(x, leftGrid.transform.localPosition.y, z);
             rightGrid.transform.localPosition = new Vector3(-x, rightGrid.transform.localPosition.y, z);
+            leftGrid.transform.localEulerAngles = new Vector3(0, angle + 90, 0);
+            rightGrid.transform.localEulerAngles = new Vector3(0, -angle + 90, 0);
+            leftGrid.size = new Vector2(sideWidth / leftGrid.transform.localScale.x, leftGrid.size.y);
+            rightGrid.size = new Vector2(sideWidth / rightGrid.transform.localScale.x, rightGrid.size.y);
         }
 
-        void CheckSkeletonPositions(nuitrack.Skeleton skeleton)
+        void CheckSkeletonPositions(UserData.SkeletonData skeleton)
         {
-            List<nuitrack.Joint> joints = new List<nuitrack.Joint>(10);
+            List<UserData.SkeletonData.Joint> joints = new List<UserData.SkeletonData.Joint>(10);
             joints.Add(skeleton.GetJoint(nuitrack.JointType.Head));
             joints.Add(skeleton.GetJoint(nuitrack.JointType.Torso));
             joints.Add(skeleton.GetJoint(nuitrack.JointType.LeftElbow));
@@ -61,27 +64,27 @@ namespace NuitrackSDK.SafetyGrid
 
             float minZ = float.MaxValue;
             float proximityLeft = 0, proximityRight = 0;
-            foreach (nuitrack.Joint joint in joints)
+            foreach (UserData.SkeletonData.Joint joint in joints)
             {
-                float jointPosX = joint.ToVector3().x / 1000;
-                float posZ = joint.ToVector3().z / 1000; //mm into unityunits
+                float posX = joint.Position.x;
+                float posZ = joint.Position.z;
 
                 float angle = fov / 2;
                 float sideDistance = posZ / Mathf.Cos(angle * Mathf.Deg2Rad);
                 float frontWidth = Mathf.Sqrt(-(posZ * posZ) + sideDistance * sideDistance);
-                float disttoside = jointPosX / frontWidth;
+                float distToSide = posX / frontWidth;
 
-                if (proximityLeft < disttoside)
-                    proximityLeft = disttoside;
+                if (proximityLeft < distToSide)
+                    proximityLeft = distToSide;
 
-                if (proximityRight > disttoside)
-                    proximityRight = disttoside;
+                if (proximityRight > distToSide)
+                    proximityRight = distToSide;
 
                 if (minZ > posZ)
                     minZ = posZ;
             }
 
-            ChangeAlpha(frontGrid, (warningDistance - minZ) / (warningDistance * sensitivity));
+            ChangeAlpha(frontGrid, 1.0f + (warningDistance - minZ) / (warningDistance * sensitivity));
             ChangeAlpha(leftGrid, 1.0f - (1.0f - proximityLeft) / sensitivity);
             ChangeAlpha(rightGrid, 1.0f - (1.0f + proximityRight) / sensitivity);
         }
@@ -97,7 +100,7 @@ namespace NuitrackSDK.SafetyGrid
         {
             UserData userData = NuitrackManager.Users.Current;
             if (userData != null && userData.Skeleton != null)
-                CheckSkeletonPositions(userData.Skeleton.RawSkeleton);
+                CheckSkeletonPositions(userData.Skeleton);
         }
     }
 }
