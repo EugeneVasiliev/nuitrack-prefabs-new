@@ -16,8 +16,6 @@ namespace NuitrackSDK.SafetyGrid
 
         void Start()
         {
-            NuitrackManager.onSkeletonTrackerUpdate += CheckSkeletonPositions;
-
             SetTransform();
 
             ChangeAlpha(frontGrid, 0);
@@ -47,16 +45,8 @@ namespace NuitrackSDK.SafetyGrid
             rightGrid.transform.localPosition = new Vector3(-x, rightGrid.transform.localPosition.y, z);
         }
 
-        void OnDestroy()
+        void CheckSkeletonPositions(nuitrack.Skeleton skeleton)
         {
-            NuitrackManager.onSkeletonTrackerUpdate -= CheckSkeletonPositions;
-        }
-
-        void CheckSkeletonPositions(nuitrack.SkeletonData skeletonData)
-        {
-            nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-            if (skeleton == null)
-                return;
             List<nuitrack.Joint> joints = new List<nuitrack.Joint>(10);
             joints.Add(skeleton.GetJoint(nuitrack.JointType.Head));
             joints.Add(skeleton.GetJoint(nuitrack.JointType.Torso));
@@ -101,6 +91,13 @@ namespace NuitrackSDK.SafetyGrid
             Color gridColor = spriteRenderer.color;
             gridColor.a = alpha;
             spriteRenderer.color = gridColor;
+        }
+
+        private void Update()
+        {
+            UserData userData = NuitrackManager.Users.Current;
+            if (userData != null && userData.Skeleton != null)
+                CheckSkeletonPositions(userData.Skeleton.RawSkeleton);
         }
     }
 }

@@ -96,24 +96,25 @@ public class SimpleSkeletonAvatar : MonoBehaviour
     void Update()
     {
         if (autoProcessing)
-            ProcessSkeleton(CurrentUserTracker.CurrentSkeleton);
+            ProcessSkeleton(NuitrackManager.Users.Current);
     }
 
-    public void ProcessSkeleton(nuitrack.Skeleton skeleton)
+    public void ProcessSkeleton(UserData user)
     {
-        if (skeleton == null)
+        if (user == null || user.Skeleton == null)
             return;
 
         for (int i = 0; i < jointsInfo.Length; i++)
         {
-            nuitrack.Joint j = skeleton.GetJoint(jointsInfo[i]);
+            UserData.SkeletonData.Joint j = user.Skeleton.GetJoint(jointsInfo[i]);
+
             if (j.Confidence > 0.01f)
             {
                 joints[jointsInfo[i]].gameObject.SetActive(true);
 
                 Vector2 newPosition = new Vector2(
-                    parentRect.rect.width * (Mathf.Clamp01(j.Proj.X) - 0.5f),
-                    parentRect.rect.height * (0.5f - Mathf.Clamp01(j.Proj.Y)));
+                    parentRect.rect.width * (j.Proj.x - 0.5f),
+                    parentRect.rect.height * (0.5f - j.Proj.y));
 
                 joints[jointsInfo[i]].anchoredPosition = newPosition;
             }

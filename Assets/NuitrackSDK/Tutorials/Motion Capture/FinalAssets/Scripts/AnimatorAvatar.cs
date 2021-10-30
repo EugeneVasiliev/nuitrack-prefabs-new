@@ -23,16 +23,16 @@ public class AnimatorAvatar : MonoBehaviour
 
     void LateUpdate()
     {
-        if (CurrentUserTracker.CurrentSkeleton != null)
+        if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
         {
-            nuitrack.Skeleton skeleton = CurrentUserTracker.CurrentSkeleton;
-            transform.position = Quaternion.Euler(0f, 180f, 0f) * (0.001f * skeleton.GetJoint(rootJoint).ToVector3());
+            UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
+            transform.position = Quaternion.Euler(0f, 180f, 0f) * skeleton.GetJoint(rootJoint).Position;
 
             foreach (SimpleJoint item in joints)
             {
-                nuitrack.Joint joint = skeleton.GetJoint(item.nuitrackJoint);
+                UserData.SkeletonData.Joint joint = skeleton.GetJoint(item.nuitrackJoint);
 
-                Quaternion rotation = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.ToQuaternionMirrored() * item.Offset;
+                Quaternion rotation = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.RotationMirrored * item.Offset;
                 item.Bone.rotation = rotation;
             }
         }

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using nuitrack;
+﻿using UnityEngine;
+
+using System.Collections.Generic;
+
 
 public class UIFacesManager : MonoBehaviour
 {
@@ -24,28 +25,23 @@ public class UIFacesManager : MonoBehaviour
 
             uiFaces.Add(faceInfo);
         }
-
-        NuitrackManager.onSkeletonTrackerUpdate += OnSkeletonUpdate;
     }
 
-    void OnSkeletonUpdate(SkeletonData skeletonData)
+    void Update()
     {
+        List<UserData> userData = NuitrackManager.Users.GetList();
+
         for (int i = 0; i < uiFaces.Count; i++)
         {
-            if (i < skeletonData.Skeletons.Length)
+            if (i < NuitrackManager.Users.Count)
             {
                 uiFaces[i].gameObject.SetActive(true);
-                uiFaces[i].ProcessFace(skeletonData.Skeletons[i]);
+                uiFaces[i].ProcessFace(userData[i]);
             }
             else
             {
                 uiFaces[i].gameObject.SetActive(false);
             }
         }
-    }
-
-    private void OnDestroy()
-    {
-        NuitrackManager.onSkeletonTrackerUpdate -= OnSkeletonUpdate;
     }
 }

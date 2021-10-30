@@ -67,13 +67,15 @@
 			{
 				v2f o;
 
+				float2 uvPos = float2(v.uv.x, 1 - v.uv.y);
+
 				float3 off = _Offsets[round(v.index.x)]; //offset for current vertex
 				float4 depthCol = tex2Dlod(_DepthTex, float4(v.depthPos, 0, 0));
 
 				//real positions of pixel:
 				float z = depthCol.r * _maxSensorDepth;
 				float x =  z * (v.depthPos.x - 0.5) / fX;
-				float y = -z * (v.depthPos.y - 0.5) / fY;
+				float y = -z * ((1 - v.depthPos.y) - 0.5) / fY;
 
 				float4 newVertexPos = float4(x, y, z, 1) + float4(off, 0) * z;
 
@@ -91,11 +93,11 @@
 
 				o.vertex = UnityObjectToClipPos(newVertexPos);
 				o.uv2 = v.depthPos;
-				o.uv = v.uv;
+				o.uv = uvPos;
 				return o;
 			}
 			
-			fixed4 frag (v2f i) : SV_Target
+			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_RGBTex, i.uv2) * i.diff;
 				fixed4 colCenter = tex2D(_SegmentationTex, i.uv2);

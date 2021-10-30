@@ -2,9 +2,9 @@
 
 public class FaceSwitcher : MonoBehaviour {
 
-    [SerializeField] Gender gender;
-    [SerializeField] AgeType ageType;
-    [SerializeField] EmotionType emotions;
+    [SerializeField] Face.GenderType gender;
+    [SerializeField] Age.Type ageType;
+    [SerializeField] Emotions.Type emotions;
     [SerializeField] GameObject enabledObject;
     [SerializeField] GameObject disabledObject;
 
@@ -18,9 +18,9 @@ public class FaceSwitcher : MonoBehaviour {
 
     void Update()
     {
-        display =   (gender == Gender.any || gender == faceController.genderType) &&
-                    (ageType == AgeType.any || ageType == faceController.ageType) &&
-                    (emotions == EmotionType.any || emotions == faceController.emotions);
+        display =   (gender == Face.GenderType.any || gender == faceController.genderType) &&
+                    (ageType == Age.Type.any || ageType == faceController.ageType) &&
+                    (emotions == Emotions.Type.any || emotions == faceController.emotionType);
 
         SwitchObjects();
     }

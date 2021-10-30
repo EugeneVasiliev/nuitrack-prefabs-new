@@ -12,21 +12,21 @@ namespace NuitrackSDK.Pointer
         // Update is called once per frame
         void LateUpdate()
         {
-            if (CurrentUserTracker.CurrentSkeleton == null)
+            if (NuitrackManager.Users.Current == null && NuitrackManager.Users.Current.Skeleton == null)
                 return;
 
             hand = PointerPassing.hand;
 
-            //transform.rotation = Quaternion.identity;
+            UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
 
             if (hand % 2 == 0)
             {
-                Quaternion targetRot = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.RightHand).ToQuaternion();
+                Quaternion targetRot = skeleton.GetJoint(nuitrack.JointType.RightHand).Rotation;
                 transform.rotation = Quaternion.Lerp(transform.rotation, new Quaternion(targetRot.x * -1, targetRot.y * 1, targetRot.z * -1, targetRot.w * 1), speed * Time.deltaTime);
             }
             else
             {
-                Quaternion targetRot = CurrentUserTracker.CurrentSkeleton.GetJoint(nuitrack.JointType.LeftHand).ToQuaternion();
+                Quaternion targetRot = skeleton.GetJoint(nuitrack.JointType.LeftHand).Rotation;
                 transform.rotation = Quaternion.Lerp(transform.rotation, new Quaternion(targetRot.x * -1, targetRot.y * 1, targetRot.z * -1, targetRot.w * 1), speed * Time.deltaTime);
             }
         }

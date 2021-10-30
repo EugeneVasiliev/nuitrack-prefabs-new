@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+
 using JointType = nuitrack.JointType;
+
 
 namespace NuitrackSDK.Avatar
 {
@@ -207,8 +208,11 @@ namespace NuitrackSDK.Avatar
         /// <summary>
         /// Getting skeleton data from thr sensor and updating transforms of the model bones
         /// </summary>
-        protected override void ProcessSkeleton(nuitrack.Skeleton skeleton)
+        protected override void Process(UserData user)
         {
+            if (user.Skeleton == null)
+                return;
+
             if (!alignmentBoneLength)
             {
                 jointsRigged[rootJoint].bone.position = GetJointLocalPos(GetJoint(rootJoint).Position);
@@ -218,8 +222,9 @@ namespace NuitrackSDK.Avatar
             {
                 //Get joint from the Nuitrack
                 //nuitrack.Joint joint = skeleton.GetJoint(riggedJoint.Key);
-                JointTransform jointTransform = GetJoint(riggedJoint.Key);
-                if (jointTransform.IsActive)
+                UserData.SkeletonData.Joint jointTransform = user.Skeleton.GetJoint(riggedJoint.Key);
+
+                if (jointTransform.Confidence > JointConfidence)
                 {
                     //Get modelJoint
                     ModelJoint modelJoint = riggedJoint.Value;
