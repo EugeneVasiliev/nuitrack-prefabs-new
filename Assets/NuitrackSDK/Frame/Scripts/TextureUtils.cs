@@ -114,7 +114,7 @@ namespace NuitrackSDK.Frame
                 return;
             }
 
-            if (texture == null && mask == null)
+            if (texture == null || mask == null)
                 return;
 
             int kernelIndex = ComputeShader.FindKernel(kernelName);

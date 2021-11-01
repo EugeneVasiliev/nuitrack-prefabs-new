@@ -25,6 +25,9 @@ namespace NuitrackSDK.Tutorials.GPUVisualization
 
         void Update()
         {
+            if (mainTexture == null || altTexture == null)
+                return;
+
             switch (mode)
             {
                 case Mode.Cut:
