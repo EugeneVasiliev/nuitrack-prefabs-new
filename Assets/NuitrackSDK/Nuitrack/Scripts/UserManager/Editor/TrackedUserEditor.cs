@@ -6,8 +6,8 @@ using NuitrackSDK;
 
 namespace NuitrackSDKEditor
 {
-    [CustomEditor(typeof(UserTracker), true)]
-    public class UserTrackerEditor : NuitrackSDKEditor
+    [CustomEditor(typeof(TrackedUser), true)]
+    public class TrackedUserEditor : NuitrackSDKEditor
     {
         public override void OnInspectorGUI()
         {

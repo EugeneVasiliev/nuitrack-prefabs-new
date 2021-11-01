@@ -6,7 +6,7 @@ namespace NuitrackSDK.Avatar
     /// <summary>
     /// The base class of the avatar. Use it to create your own avatars.
     /// </summary>
-    public abstract class BaseAvatar : UserTracker
+    public abstract class BaseAvatar : TrackedUser
     {
         [SerializeField, NuitrackSDKInspector] 
         float jointConfidence = 0.1f;

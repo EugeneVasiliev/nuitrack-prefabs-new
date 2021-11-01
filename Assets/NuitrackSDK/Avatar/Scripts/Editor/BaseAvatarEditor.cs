@@ -7,7 +7,7 @@ using NuitrackSDK.Avatar;
 namespace NuitrackSDKEditor.Avatar
 {
     [CustomEditor(typeof(BaseAvatar), true)]
-    public class BaseAvatarEditor : UserTrackerEditor
+    public class BaseAvatarEditor : TrackedUserEditor
     {
         protected virtual JointType SelectJoint { get; set; } = JointType.None;
 

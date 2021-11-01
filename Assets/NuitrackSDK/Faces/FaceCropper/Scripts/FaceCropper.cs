@@ -7,7 +7,7 @@ using UnityEngine.Events;
 namespace NuitrackSDK.Face
 {
     [AddComponentMenu("NuitrackSDK/Face/Face Cropper/Face Cropper")]
-    public class FaceCropper : UserTracker
+    public class FaceCropper : TrackedUser
     {
         [System.Serializable]
         public class TextureEvent : UnityEvent<Texture> { }

@@ -7,7 +7,7 @@ using NuitrackSDK.Face;
 namespace NuitrackSDKEditor.Face
 {
     [CustomEditor(typeof(FaceCropper), true)]
-    public class FaceCroperEditor : UserTrackerEditor
+    public class FaceCroperEditor : TrackedUserEditor
     {
         SerializedProperty DrawPropertyField(string nameProperty, string label, string toolTip = null)
         {

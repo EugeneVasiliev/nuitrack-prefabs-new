@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace NuitrackSDK.Face
 {
     [AddComponentMenu("NuitrackSDK/Face/Face View/UI Face Info")]
-    public class UIFaceInfo : UserTracker
+    public class UIFaceInfo : TrackedUser
     {
         [Header("Info")]
         [SerializeField] bool showInfo = true;

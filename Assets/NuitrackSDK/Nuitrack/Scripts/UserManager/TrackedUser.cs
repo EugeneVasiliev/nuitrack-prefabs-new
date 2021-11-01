@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace NuitrackSDK
 {
-    public abstract class UserTracker : MonoBehaviour
+    public abstract class TrackedUser : MonoBehaviour
     {
         [SerializeField, NuitrackSDKInspector]
         bool useCurrentUserTracker = true;
