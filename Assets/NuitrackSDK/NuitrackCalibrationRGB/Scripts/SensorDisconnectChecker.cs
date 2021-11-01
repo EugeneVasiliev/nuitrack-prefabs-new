@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using nuitrack;
 
-namespace NuitrackSDK.VicoVRCalibration
+
+namespace NuitrackSDK.Calibration
 {
     public class SensorDisconnectChecker : MonoBehaviour
     {

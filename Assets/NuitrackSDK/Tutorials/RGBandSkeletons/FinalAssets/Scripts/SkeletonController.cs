@@ -1,42 +1,47 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class SkeletonController : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.RGBandSkeletons
 {
-    [Range(0, 6)]
-    public int skeletonCount = 6;         //Max number of skeletons tracked by Nuitrack
-    [SerializeField] SimpleSkeletonAvatar skeletonAvatar;
-
-    List<SimpleSkeletonAvatar> avatars = new List<SimpleSkeletonAvatar>();
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/RGB and Skeletons/Skeleton Controller")]
+    public class SkeletonController : MonoBehaviour
     {
-        for (int i = 0; i < skeletonCount; i++)
+        [Range(0, 6)]
+        public int skeletonCount = 6;         //Max number of skeletons tracked by Nuitrack
+        [SerializeField] SimpleSkeletonAvatar skeletonAvatar;
+
+        List<SimpleSkeletonAvatar> avatars = new List<SimpleSkeletonAvatar>();
+
+        void Start()
         {
-            GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform);
-            SimpleSkeletonAvatar simpleSkeleton = newAvatar.GetComponent<SimpleSkeletonAvatar>();
-            simpleSkeleton.autoProcessing = false;
-            avatars.Add(simpleSkeleton);
+            for (int i = 0; i < skeletonCount; i++)
+            {
+                GameObject newAvatar = Instantiate(skeletonAvatar.gameObject, transform);
+                SimpleSkeletonAvatar simpleSkeleton = newAvatar.GetComponent<SimpleSkeletonAvatar>();
+                simpleSkeleton.autoProcessing = false;
+                avatars.Add(simpleSkeleton);
+            }
+
+            NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
         }
 
-        NuitrackManager.SkeletonTracker.SetNumActiveUsers(skeletonCount);
-    }
-
-    void Update()
-    {
-        for (int i = 0; i < avatars.Count; i++)
+        void Update()
         {
-            int id = i + 1;
-            UserData user = NuitrackManager.Users.GetUser(id);
+            for (int i = 0; i < avatars.Count; i++)
+            {
+                int id = i + 1;
+                UserData user = NuitrackManager.Users.GetUser(id);
 
-            if (user != null && user.Skeleton != null)
-            {
-                avatars[i].gameObject.SetActive(true);
-                avatars[i].ProcessSkeleton(user);
-            }
-            else
-            {
-                avatars[i].gameObject.SetActive(false);
+                if (user != null && user.Skeleton != null)
+                {
+                    avatars[i].gameObject.SetActive(true);
+                    avatars[i].ProcessSkeleton(user);
+                }
+                else
+                {
+                    avatars[i].gameObject.SetActive(false);
+                }
             }
         }
     }

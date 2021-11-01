@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 namespace NuitrackSDK.Face
 {
-    [AddComponentMenu("NuitrackSDK/Face/Face Cropper")]
+    [AddComponentMenu("NuitrackSDK/Face/Face Cropper/Face Cropper")]
     public class FaceCropper : MonoBehaviour
     {
         [System.Serializable]

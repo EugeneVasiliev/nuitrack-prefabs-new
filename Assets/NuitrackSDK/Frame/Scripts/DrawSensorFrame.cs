@@ -2,7 +2,8 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-namespace NuitrackSDK.NuitrackDemos
+
+namespace NuitrackSDK.Frame
 {
     public enum FrameType
     {
