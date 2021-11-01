@@ -92,6 +92,8 @@ namespace NuitrackSDK.ErrorSolver
 
                         if (error.Contains("Can't create DepthSensor"))
                             errorMessage = noSensorMessage + " \n" + nuitrack_sample_test;
+                        else if (error.Contains("nuitrack_SetParam"))
+                            errorMessage = "<color=red><b>" + "Update Nuitrack Runtime https://github.com/3DiVi/nuitrack-sdk/tree/master/Platforms" + "</b></color>";
                         else if (error.Contains("System.DllNotFoundException: libnuitrack"))
                             errorMessage = "<color=red><b>" + "Perhaps installed Nuitrack Runtime version for x86 (nuitrack-windows-x86.exe), in this case, install x64 version (github.com/3DiVi/nuitrack-sdk/blob/master/Platforms/nuitrack-windows-x64.exe)" + "</b></color>";
                         else if (error.Contains("LicenseNotAcquiredException"))
