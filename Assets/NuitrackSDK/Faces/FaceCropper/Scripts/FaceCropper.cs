@@ -7,17 +7,10 @@ using UnityEngine.Events;
 namespace NuitrackSDK.Face
 {
     [AddComponentMenu("NuitrackSDK/Face/Face Cropper/Face Cropper")]
-    public class FaceCropper : MonoBehaviour
+    public class FaceCropper : UserTracker
     {
         [System.Serializable]
         public class TextureEvent : UnityEvent<Texture> { }
-
-        [Header("User track settings")]
-        [SerializeField, NuitrackSDKInspector]
-        bool useCurrentUser = true;
-
-        [SerializeField, NuitrackSDKInspector, Range(1, 6)]
-        int userID = 0;
 
         [SerializeField, NuitrackSDKInspector, Range(0, 5)]
         float loseTime = 0.25f;
@@ -49,62 +42,6 @@ namespace NuitrackSDK.Face
         TextureEvent onFrameUpdate;
 
         /// <summary>
-        /// If True, the current user tracker is used, otherwise the user specified by ID is used <see cref="UserID"/>
-        /// </summary>
-        public bool UseCurrentUserTracker
-        {
-            get
-            {
-                return useCurrentUser;
-            }
-            set
-            {
-                useCurrentUser = value;
-            }
-        }
-
-        /// <summary>
-        /// ID of the current user
-        /// For the case when current user tracker <see cref="UseCurrentUserTracker"/> of is used, the ID of the active user will be returned
-        /// If current user tracker is used and a new ID is set, tracking of the current user will stop
-        /// </summary>
-        public int UserID
-        {
-            get
-            {
-                if (UseCurrentUserTracker)
-                    return ControllerUser != null ? ControllerUser.ID : 0;
-                else
-                    return userID;
-            }
-            set
-            {
-                if (value >= Users.MinID && value <= Users.MaxID)
-                {
-                    userID = value;
-
-                    if (useCurrentUser)
-                        Debug.Log(string.Format("CurrentUserTracker mode was disabled for {0}", gameObject.name));
-
-                    useCurrentUser = false;
-                }
-                else
-                    throw new System.Exception(string.Format("The User ID must be within the bounds of [{0}, {1}]", Users.MinID, Users.MaxID));
-            }
-        }
-
-        public UserData ControllerUser
-        {
-            get
-            {
-                if (useCurrentUser)
-                    return NuitrackManager.Users.Current;
-                else
-                    return NuitrackManager.Users.GetUser(userID);
-            }
-        }
-
-        /// <summary>
         /// Cropped face texture (may be null)
         /// </summary>
         public Texture2D CroppedFaceTexture
@@ -124,7 +61,7 @@ namespace NuitrackSDK.Face
                 Destroy(CroppedFaceTexture);
         }
 
-        void Update()
+        protected override void Update()
         {
             UserData userData = ControllerUser;
 
@@ -140,6 +77,11 @@ namespace NuitrackSDK.Face
             else
                 t = 0;
 
+            base.Update();
+        }
+
+        protected override void Process(UserData userData)
+        {
             Texture2D frame = NuitrackManager.ColorFrame.ToTexture2D();
 
             if (frame == null)

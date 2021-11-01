@@ -1,22 +1,20 @@
 ﻿using UnityEditor;
 
 using nuitrack;
-using NuitrackSDK;
 using NuitrackSDK.Avatar;
 
 
 namespace NuitrackSDKEditor.Avatar
 {
     [CustomEditor(typeof(BaseAvatar), true)]
-    public class BaseAvatarEditor : NuitrackSDKEditor
+    public class BaseAvatarEditor : UserTrackerEditor
     {
         protected virtual JointType SelectJoint { get; set; } = JointType.None;
 
-        public override void OnInspectorGUI()
+        public override void DrawDefaultInspector()
         {
             DrawSkeletonSettings();
-            DrawDefaultInspector();
-
+            base.DrawDefaultInspector();
             DrawAvatarGUI();
         }
 
@@ -25,20 +23,6 @@ namespace NuitrackSDKEditor.Avatar
         /// </summary>
         protected void DrawSkeletonSettings()
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Skeleton settings", EditorStyles.boldLabel);
-
-            SerializedProperty useCurrentUserTracker = serializedObject.FindProperty("useCurrentUserTracker");
-            useCurrentUserTracker.boolValue = EditorGUILayout.Toggle("Use current user tracker", useCurrentUserTracker.boolValue);
-            serializedObject.ApplyModifiedProperties();
-
-            if (!useCurrentUserTracker.boolValue)
-            {
-                SerializedProperty userID = serializedObject.FindProperty("userID");
-                userID.intValue = EditorGUILayout.IntSlider("User ID", userID.intValue, Users.MinID, Users.MaxID);
-                serializedObject.ApplyModifiedProperties();
-            }
-
             SerializedProperty jointConfidence = serializedObject.FindProperty("jointConfidence");
             jointConfidence.floatValue = EditorGUILayout.Slider("Joint confidence", jointConfidence.floatValue, 0, 1);
             serializedObject.ApplyModifiedProperties();
