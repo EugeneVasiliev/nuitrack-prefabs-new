@@ -121,9 +121,6 @@ namespace NuitrackSDK.Avatar
         {
             UserData userData = ControllerUser;
 
-            if (userData == null)
-                return;
-
             if(userData != null)
                 Process(userData);
         }
