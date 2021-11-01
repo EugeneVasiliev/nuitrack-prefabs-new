@@ -58,8 +58,8 @@ namespace NuitrackSDK.Avatar
         Transform spawnedHead;
 
         [Header("Border Grid settings")]
-        [SerializeField] bool needBorderGrid = false;
-        [SerializeField] GameObject borderGrid;
+        [SerializeField, NuitrackSDKInspector] bool needBorderGrid = false;
+        [SerializeField, NuitrackSDKInspector] GameObject borderGrid;
         Transform spawnedBorderGrid;
 
         [Header("Calibration")]

@@ -227,6 +227,17 @@ namespace NuitrackSDKEditor.Avatar
                 EditorGUILayout.ObjectField(headTransformProperty, typeof(Transform));
             }
 
+            SerializedProperty needBorderGrid = serializedObject.FindProperty("needBorderGrid");
+            EditorGUILayout.PropertyField(needBorderGrid, new GUIContent("Need border grid"));
+            serializedObject.ApplyModifiedProperties();
+
+            if (needBorderGrid.boolValue)
+            {
+                SerializedProperty borderGrid = serializedObject.FindProperty("borderGrid");
+                EditorGUILayout.PropertyField(borderGrid);
+                serializedObject.ApplyModifiedProperties();
+            }
+
             DrawSkeletonMap();
         }
 
