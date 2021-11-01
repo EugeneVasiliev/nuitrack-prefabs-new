@@ -67,7 +67,7 @@ public class Face
     /// Convert Rect to virtual screen Rect
     /// </summary>
     /// <param name="width">Width of the virtual screen</param>
-    /// <param name="Height">Width of the virtual screen</param>
+    /// <param name="height">Width of the virtual screen</param>
     /// <returns>Virtual screen Rect</returns>
     public Rect ScreenRect(float width, float height)
     {
@@ -86,7 +86,7 @@ public class Face
     /// </summary>
     /// <param name="rectTransform">Parent Rect</param>
     /// <param name="parentRect">RectTransform reference for current Face</param>
-    /// <returns>Rect of the face relative to the parent Rect (anchoredPosition )</returns>
+    /// <returns>Rect of the face relative to the parent Rect (anchoredPosition)</returns>
     public Rect AnchoredRect(Rect parentRect, RectTransform rectTransform)
     {
         Rect projRect = rectangle;

@@ -99,13 +99,25 @@ public class UserData : IDisposable
             /// Convert joint coordinates to virtual screen coordinates
             /// </summary>
             /// <param name="width">Width of the virtual screen</param>
-            /// <param name="Height">Width of the virtual screen</param>
+            /// <param name="height">Width of the virtual screen</param>
             /// <returns>Virtual screen coordinates</returns>
             public Vector2 ScreenPosition(float width, float height)
             {
                 Vector2 projPos = Proj;
 
                 return new Vector2(projPos.x * width, projPos.y * height);
+            }
+
+            /// <summary>
+            /// Get the Point of the face relative to the parent Rect
+            /// for the corresponding RectTransform taking into account the anchor
+            /// </summary>
+            /// <param name="rectTransform">Parent Rect</param>
+            /// <param name="parentRect">RectTransform reference for current Face</param>
+            /// <returns>Vector2 of the face relative to the parent Rect (anchoredPosition)</returns>
+            public Vector2 AnchoredPoint(Rect parentRect, RectTransform rectTransform)
+            {
+                return Vector2.Scale(Proj - rectTransform.anchorMin, parentRect.size);
             }
 
             /// <summary>
