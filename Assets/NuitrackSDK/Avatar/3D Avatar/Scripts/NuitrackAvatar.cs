@@ -266,7 +266,7 @@ namespace NuitrackSDK.Avatar
 
             CalculateOffset();
             if (needBorderGrid)
-                spawnedBorderGrid.position = GetJointLocalPos(GetJoint(rootJoint).Position) + basePivotOffset;
+                spawnedBorderGrid.position = GetJointLocalPos(GetJoint(rootJoint).Position - basePivotOffset);
         }
 
         void CalculateOffset()
