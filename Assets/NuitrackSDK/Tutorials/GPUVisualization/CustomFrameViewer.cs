@@ -4,6 +4,7 @@ using NuitrackSDK.Frame;
 
 namespace NuitrackSDK.Tutorials.GPUVisualization
 {
+    [AddComponentMenu("NuitrackSDK/Tutorials/GPU Visualization/Custom Frame Viewer")]
     public class CustomFrameViewer : MonoBehaviour
     {
         public enum Mode
@@ -24,6 +25,9 @@ namespace NuitrackSDK.Tutorials.GPUVisualization
 
         void Update()
         {
+            if (mainTexture == null || altTexture == null)
+                return;
+
             switch (mode)
             {
                 case Mode.Cut:

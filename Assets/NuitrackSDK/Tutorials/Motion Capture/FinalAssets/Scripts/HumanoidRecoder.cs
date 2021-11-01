@@ -3,82 +3,86 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class HumanoidRecoder : IRecordable
+
+namespace NuitrackSDK.Tutorials.MotionCapture
 {
-    float time = 0;
-
-    HumanPoseHandler humanPoseHandler;
-    HumanPose humanPose = new HumanPose();  
-
-    Dictionary<int, AnimationCurve> muscleCurves = new Dictionary<int, AnimationCurve>();
-    Dictionary<string, AnimationCurve> rootCurves = new Dictionary<string, AnimationCurve>();
-
-    Vector3 rootOffset;
-
-    public HumanoidRecoder(Animator animator, HumanBodyBones[] humanBodyBones)
+    public class HumanoidRecoder : IRecordable
     {
-        rootOffset = animator.transform.position;
-        humanPoseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
+        float time = 0;
 
-        foreach (HumanBodyBones unityBoneType in humanBodyBones)
+        HumanPoseHandler humanPoseHandler;
+        HumanPose humanPose = new HumanPose();
+
+        Dictionary<int, AnimationCurve> muscleCurves = new Dictionary<int, AnimationCurve>();
+        Dictionary<string, AnimationCurve> rootCurves = new Dictionary<string, AnimationCurve>();
+
+        Vector3 rootOffset;
+
+        public HumanoidRecoder(Animator animator, HumanBodyBones[] humanBodyBones)
         {
-            for (int dofIndex = 0; dofIndex < 3; dofIndex++)
+            rootOffset = animator.transform.position;
+            humanPoseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
+
+            foreach (HumanBodyBones unityBoneType in humanBodyBones)
             {
-                int muscle = HumanTrait.MuscleFromBone((int)unityBoneType, dofIndex);
+                for (int dofIndex = 0; dofIndex < 3; dofIndex++)
+                {
+                    int muscle = HumanTrait.MuscleFromBone((int)unityBoneType, dofIndex);
 
-                if (muscle != -1)
-                    muscleCurves.Add(muscle, new AnimationCurve());
+                    if (muscle != -1)
+                        muscleCurves.Add(muscle, new AnimationCurve());
+                }
             }
+
+            rootCurves.Add("RootT.x", new AnimationCurve());
+            rootCurves.Add("RootT.y", new AnimationCurve());
+            rootCurves.Add("RootT.z", new AnimationCurve());
         }
 
-        rootCurves.Add("RootT.x", new AnimationCurve());
-        rootCurves.Add("RootT.y", new AnimationCurve());
-        rootCurves.Add("RootT.z", new AnimationCurve());
-    }
-
-    public void TakeSnapshot(float deltaTime)
-    {
-        time += deltaTime;
-
-        humanPoseHandler.GetHumanPose(ref humanPose);
-
-        foreach (KeyValuePair<int, AnimationCurve> data in muscleCurves)
+        public void TakeSnapshot(float deltaTime)
         {
-            Keyframe key = new Keyframe(time, humanPose.muscles[data.Key]);
-            data.Value.AddKey(key);
-        }
+            time += deltaTime;
 
-        Vector3 rootPosition = humanPose.bodyPosition - rootOffset;
-
-        AddRootKey("RootT.x", rootPosition.x);
-        AddRootKey("RootT.y", rootPosition.y);
-        AddRootKey("RootT.z", rootPosition.z);
-    }
-
-    void AddRootKey(string property, float value)
-    {
-        Keyframe key = new Keyframe(time, value);
-        rootCurves[property].AddKey(key);
-    }
-
-    public AnimationClip GetClip
-    {
-        get
-        {
-            AnimationClip clip = new AnimationClip();
+            humanPoseHandler.GetHumanPose(ref humanPose);
 
             foreach (KeyValuePair<int, AnimationCurve> data in muscleCurves)
             {
-                clip.SetCurve("", typeof(Animator), HumanTrait.MuscleName[data.Key], data.Value);
+                Keyframe key = new Keyframe(time, humanPose.muscles[data.Key]);
+                data.Value.AddKey(key);
             }
 
-            foreach (KeyValuePair<string, AnimationCurve> data in rootCurves)
+            Vector3 rootPosition = humanPose.bodyPosition - rootOffset;
+
+            AddRootKey("RootT.x", rootPosition.x);
+            AddRootKey("RootT.y", rootPosition.y);
+            AddRootKey("RootT.z", rootPosition.z);
+        }
+
+        void AddRootKey(string property, float value)
+        {
+            Keyframe key = new Keyframe(time, value);
+            rootCurves[property].AddKey(key);
+        }
+
+        public AnimationClip GetClip
+        {
+            get
             {
-                clip.SetCurve("", typeof(Animator), data.Key, data.Value);
-            }
+                AnimationClip clip = new AnimationClip();
 
-            return clip;
+                foreach (KeyValuePair<int, AnimationCurve> data in muscleCurves)
+                {
+                    clip.SetCurve("", typeof(Animator), HumanTrait.MuscleName[data.Key], data.Value);
+                }
+
+                foreach (KeyValuePair<string, AnimationCurve> data in rootCurves)
+                {
+                    clip.SetCurve("", typeof(Animator), data.Key, data.Value);
+                }
+
+                return clip;
+            }
         }
     }
-}
 #endif
+}

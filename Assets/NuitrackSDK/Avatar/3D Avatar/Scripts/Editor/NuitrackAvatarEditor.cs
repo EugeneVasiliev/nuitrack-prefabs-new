@@ -5,6 +5,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 using JointType = nuitrack.JointType;
+
+using NuitrackSDK;
 using NuitrackSDK.Avatar;
 
 

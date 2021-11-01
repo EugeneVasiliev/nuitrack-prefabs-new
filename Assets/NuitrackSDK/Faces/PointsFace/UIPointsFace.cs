@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace NuitrackSDK.Face
 {
-    [AddComponentMenu("NuitrackSDK/Face/UIPointFace")]
+    [AddComponentMenu("NuitrackSDK/Face/UI Point Face")]
     public class UIPointsFace : MonoBehaviour
     {
         [SerializeField] GameObject pointPrefab;

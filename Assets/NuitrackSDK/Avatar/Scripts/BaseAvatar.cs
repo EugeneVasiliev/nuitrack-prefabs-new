@@ -63,6 +63,7 @@ namespace NuitrackSDK.Avatar
             }
         }
 
+
         /// <summary>
         /// Confidence threshold for detected joints
         /// </summary>

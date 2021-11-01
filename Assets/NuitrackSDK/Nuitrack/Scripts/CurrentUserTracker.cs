@@ -5,29 +5,32 @@
 //in current case it's an ID of first found skeleton from skeleton tracker
 //and reset only if we have a frame with no current skeleton ID
 
-[Obsolete ("This class will be removed in the future. The functionality has been moved to Use NuitrackManager.Users")]
-public class CurrentUserTracker
+namespace NuitrackSDK
 {
-    [Obsolete("Use NuitrackManager.Users.CurrentUserID", false)]
-    public static int CurrentUser
+    [Obsolete("This class will be removed in the future. The functionality has been moved to Use NuitrackManager.Users")]
+    public class CurrentUserTracker
     {
-        get
+        [Obsolete("Use NuitrackManager.Users.CurrentUserID", false)]
+        public static int CurrentUser
         {
-            return NuitrackManager.Users.CurrentUserID;
+            get
+            {
+                return NuitrackManager.Users.CurrentUserID;
+            }
         }
-    }
 
-    [Obsolete("Use NuitrackManager.Users.Current.Skeleton", false)]
-    public static nuitrack.Skeleton CurrentSkeleton
-    {
-        get
+        [Obsolete("Use NuitrackManager.Users.Current.Skeleton", false)]
+        public static nuitrack.Skeleton CurrentSkeleton
         {
-            UserData user = NuitrackManager.Users.Current;
+            get
+            {
+                UserData user = NuitrackManager.Users.Current;
 
-            if (user != null && user.Skeleton != null)
-                return user.Skeleton.RawSkeleton;
-            else
-                return null;
+                if (user != null && user.Skeleton != null)
+                    return user.Skeleton.RawSkeleton;
+                else
+                    return null;
+            }
         }
     }
 }

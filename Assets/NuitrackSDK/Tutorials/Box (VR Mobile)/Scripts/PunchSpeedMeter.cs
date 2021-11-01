@@ -1,40 +1,46 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
+using NuitrackSDK.Calibration;
 
-public class PunchSpeedMeter : MonoBehaviour {
 
-    [SerializeField] Text speedMeterText;
-    [SerializeField] GameObject dummy;
-    [SerializeField] Transform transformTarget;
-
-    float maximumPunchSpeed = 0;
-
-    void Awake()
+namespace NuitrackSDK.Tutorials.BoxVR
+{
+    [AddComponentMenu("NuitrackSDK/Tutorials/Box (VR Mobile)/Punch Speed Meter")]
+    public class PunchSpeedMeter : MonoBehaviour
     {
-        dummy.SetActive(false);
-    }
+        [SerializeField] Text speedMeterText;
+        [SerializeField] GameObject dummy;
+        [SerializeField] Transform transformTarget;
 
-    void OnEnable()
-    {
-        TPoseCalibration.Instance.onSuccess += OnSuccessCalibration;
-    }
+        float maximumPunchSpeed = 0;
 
-    void OnSuccessCalibration(Quaternion rotation)
-    {
-        dummy.SetActive(true);
-        transform.position = transformTarget.position + new Vector3(0, -1, 1);
-    }
+        void Awake()
+        {
+            dummy.SetActive(false);
+        }
 
-    public void CalculateMaxPunchSpeed(float speed)
-    {
-        if (maximumPunchSpeed < speed)
-            maximumPunchSpeed = speed;
-        speedMeterText.text = maximumPunchSpeed.ToString("f2") + " m/s";
-    }
+        void OnEnable()
+        {
+            TPoseCalibration.Instance.onSuccess += OnSuccessCalibration;
+        }
 
-    void OnDisable()
-    {
-        if(TPoseCalibration.Instance)
-            TPoseCalibration.Instance.onSuccess -= OnSuccessCalibration;
+        void OnSuccessCalibration(Quaternion rotation)
+        {
+            dummy.SetActive(true);
+            transform.position = transformTarget.position + new Vector3(0, -1, 1);
+        }
+
+        public void CalculateMaxPunchSpeed(float speed)
+        {
+            if (maximumPunchSpeed < speed)
+                maximumPunchSpeed = speed;
+            speedMeterText.text = maximumPunchSpeed.ToString("f2") + " m/s";
+        }
+
+        void OnDisable()
+        {
+            if (TPoseCalibration.Instance)
+                TPoseCalibration.Instance.onSuccess -= OnSuccessCalibration;
+        }
     }
 }
