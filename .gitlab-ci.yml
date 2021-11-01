@@ -14,6 +14,7 @@ build_unity_package:
 build_apk:
   tags:
     - w10vbox
+  when: manual
   script:
     - dir
     - chmod +x ./deploy_apk.cmd
@@ -27,6 +28,7 @@ build_apk:
 build_aab:
   tags:
     - w10vbox
+  when: manual
   script:
     - dir
     - chmod +x ./deploy_abb.cmd
@@ -40,6 +42,7 @@ build_aab:
 build_linux:
   tags:
     - w10vbox
+  when: manual
   script:
     - dir
     - chmod +x ./deploy_linux.cmd
