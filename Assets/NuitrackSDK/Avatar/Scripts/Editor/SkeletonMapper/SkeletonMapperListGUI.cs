@@ -3,6 +3,7 @@ using UnityEditor;
 
 using System.Collections.Generic;
 
+using NuitrackSDK;
 using nuitrack;
 
 

@@ -1,67 +1,72 @@
 ﻿using UnityEngine;
 
-public class GameColliders : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.SegmentExample
 {
-    [SerializeField]
-    Transform parentObject;
-
-    [SerializeField]
-    GameObject userPixelPrefab;
-    [SerializeField]
-    GameObject bottomLinePrefab;
-
-    GameObject[,] colliderObjects;
-
-    int cols = 0;
-    int rows = 0;
-
-
-    [Range (0.1f, 1)]
-    [SerializeField]
-    float colliderDetails = 1f;
-
-
-    public void CreateColliders(int colsImage, int imageRows)
+    [AddComponentMenu("NuitrackSDK/Tutorials/Segment Example/Game Colliders")]
+    public class GameColliders : MonoBehaviour
     {
-        cols = (int)(colliderDetails * colsImage);
-        rows = (int)(colliderDetails * imageRows);
+        [SerializeField]
+        Transform parentObject;
 
-        colliderObjects = new GameObject[cols, rows];
+        [SerializeField]
+        GameObject userPixelPrefab;
+        [SerializeField]
+        GameObject bottomLinePrefab;
 
-        float imageScale = Mathf.Min((float)Screen.width / cols, (float)Screen.height / rows);
+        GameObject[,] colliderObjects;
 
-        for (int c = 0; c < cols; c++)
+        int cols = 0;
+        int rows = 0;
+
+
+        [Range(0.1f, 1)]
+        [SerializeField]
+        float colliderDetails = 1f;
+
+
+        public void CreateColliders(int colsImage, int imageRows)
         {
-            for (int r = 0; r < rows; r++)
+            cols = (int)(colliderDetails * colsImage);
+            rows = (int)(colliderDetails * imageRows);
+
+            colliderObjects = new GameObject[cols, rows];
+
+            float imageScale = Mathf.Min((float)Screen.width / cols, (float)Screen.height / rows);
+
+            for (int c = 0; c < cols; c++)
             {
-                GameObject currentCollider = Instantiate(userPixelPrefab);
+                for (int r = 0; r < rows; r++)
+                {
+                    GameObject currentCollider = Instantiate(userPixelPrefab);
 
-                currentCollider.transform.SetParent(parentObject, false);
-                currentCollider.transform.localPosition = new Vector3((cols / 2 - c) * imageScale, (rows / 2 - r) * imageScale, 0);
-                currentCollider.transform.localScale = Vector3.one * imageScale;
+                    currentCollider.transform.SetParent(parentObject, false);
+                    currentCollider.transform.localPosition = new Vector3((cols / 2 - c) * imageScale, (rows / 2 - r) * imageScale, 0);
+                    currentCollider.transform.localScale = Vector3.one * imageScale;
 
-                colliderObjects[c, r] = currentCollider;
+                    colliderObjects[c, r] = currentCollider;
+                }
             }
+
+            GameObject bottomLine = Instantiate(bottomLinePrefab);
+            bottomLine.transform.SetParent(parentObject, false);
+            bottomLine.transform.localPosition = new Vector3(0, -(rows / 2) * imageScale, 0);
+            bottomLine.transform.localScale = new Vector3(imageScale * cols, imageScale, imageScale);
         }
 
-        GameObject bottomLine = Instantiate(bottomLinePrefab);
-        bottomLine.transform.SetParent(parentObject, false);
-        bottomLine.transform.localPosition = new Vector3(0, -(rows / 2) * imageScale, 0);
-        bottomLine.transform.localScale = new Vector3(imageScale * cols, imageScale, imageScale);
-    }
-
-    public void UpdateFrame(nuitrack.UserFrame frame)
-    {
-        for (int c = 0; c < cols; c++)
+        public void UpdateFrame(nuitrack.UserFrame frame)
         {
-            for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++)
             {
-                ushort userId = frame[(int)(r / colliderDetails), (int)(c / colliderDetails)];
+                for (int r = 0; r < rows; r++)
+                {
+                    ushort userId = frame[(int)(r / colliderDetails), (int)(c / colliderDetails)];
 
-                if (userId == 0)
-                    colliderObjects[c, r].SetActive(false);
-                else
-                    colliderObjects[c, r].SetActive(true);
+                    if (userId == 0)
+                        colliderObjects[c, r].SetActive(false);
+                    else
+                        colliderObjects[c, r].SetActive(true);
+                }
             }
         }
     }

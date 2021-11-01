@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 
 using nuitrack;
+using NuitrackSDK;
 using NuitrackSDK.Avatar;
 
 

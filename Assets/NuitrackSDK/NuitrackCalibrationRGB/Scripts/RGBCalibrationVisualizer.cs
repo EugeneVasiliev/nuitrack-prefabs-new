@@ -2,7 +2,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace NuitrackSDK.VicoVRCalibration
+
+namespace NuitrackSDK.Calibration
 {
     public class RGBCalibrationVisualizer : MonoBehaviour
     {

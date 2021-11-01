@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class SimpleSkeletonAvatar : MonoBehaviour
-{
-    public bool autoProcessing = true;
-    [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
-    RectTransform parentRect;
 
-    nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
+namespace NuitrackSDK.Tutorials.RGBandSkeletons
+{
+    [AddComponentMenu("NuitrackSDK/Tutorials/RGB and Skeletons/Simple Skeleton Avatar")]
+    public class SimpleSkeletonAvatar : MonoBehaviour
     {
+        public bool autoProcessing = true;
+        [SerializeField] GameObject jointPrefab = null, connectionPrefab = null;
+        RectTransform parentRect;
+
+        nuitrack.JointType[] jointsInfo = new nuitrack.JointType[]
+        {
         nuitrack.JointType.Head,
         nuitrack.JointType.Neck,
         nuitrack.JointType.LeftCollar,
@@ -28,10 +32,10 @@ public class SimpleSkeletonAvatar : MonoBehaviour
         nuitrack.JointType.RightKnee,
         nuitrack.JointType.LeftAnkle,
         nuitrack.JointType.RightAnkle
-    };
+        };
 
-    nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
-    { //Right and left collars are currently located at the same point, that's why we use only 1 collar,
+        nuitrack.JointType[,] connectionsInfo = new nuitrack.JointType[,]
+        { //Right and left collars are currently located at the same point, that's why we use only 1 collar,
         //it's easy to add rightCollar, if it ever changes
         {nuitrack.JointType.Neck,           nuitrack.JointType.Head},
         {nuitrack.JointType.LeftCollar,     nuitrack.JointType.Neck},
@@ -51,96 +55,97 @@ public class SimpleSkeletonAvatar : MonoBehaviour
         {nuitrack.JointType.LeftKnee,       nuitrack.JointType.LeftAnkle},
         {nuitrack.JointType.RightHip,       nuitrack.JointType.RightKnee},
         {nuitrack.JointType.RightKnee,      nuitrack.JointType.RightAnkle}
-    };
+        };
 
-    List<RectTransform> connections;
-    Dictionary<nuitrack.JointType, RectTransform> joints;
+        List<RectTransform> connections;
+        Dictionary<nuitrack.JointType, RectTransform> joints;
 
-    void Start()
-    {
-        CreateSkeletonParts();
-        parentRect = GetComponent<RectTransform>();
-    }
-
-    void CreateSkeletonParts()
-    {
-        joints = new Dictionary<nuitrack.JointType, RectTransform>();
-
-        for (int i = 0; i < jointsInfo.Length; i++)
+        void Start()
         {
-            if (jointPrefab != null)
-            {
-                GameObject joint = Instantiate(jointPrefab, transform);
-                joint.SetActive(false);
+            CreateSkeletonParts();
+            parentRect = GetComponent<RectTransform>();
+        }
 
-                RectTransform jointRectTransform = joint.GetComponent<RectTransform>();
-                joints.Add(jointsInfo[i], jointRectTransform);
+        void CreateSkeletonParts()
+        {
+            joints = new Dictionary<nuitrack.JointType, RectTransform>();
+
+            for (int i = 0; i < jointsInfo.Length; i++)
+            {
+                if (jointPrefab != null)
+                {
+                    GameObject joint = Instantiate(jointPrefab, transform);
+                    joint.SetActive(false);
+
+                    RectTransform jointRectTransform = joint.GetComponent<RectTransform>();
+                    joints.Add(jointsInfo[i], jointRectTransform);
+                }
+            }
+
+            connections = new List<RectTransform>();
+
+            for (int i = 0; i < connectionsInfo.GetLength(0); i++)
+            {
+                if (connectionPrefab != null)
+                {
+                    GameObject connection = Instantiate(connectionPrefab, transform);
+                    connection.SetActive(false);
+
+                    RectTransform connectionRectTransform = connection.GetComponent<RectTransform>();
+                    connections.Add(connectionRectTransform);
+                }
             }
         }
 
-        connections = new List<RectTransform>();
-
-        for (int i = 0; i < connectionsInfo.GetLength(0); i++)
+        void Update()
         {
-            if (connectionPrefab != null)
-            {
-                GameObject connection = Instantiate(connectionPrefab, transform);
-                connection.SetActive(false);
-
-                RectTransform connectionRectTransform = connection.GetComponent<RectTransform>();
-                connections.Add(connectionRectTransform);
-            }
-        }
-    }
-
-    void Update()
-    {
-        if (autoProcessing)
-            ProcessSkeleton(NuitrackManager.Users.Current);
-    }
-
-    public void ProcessSkeleton(UserData user)
-    {
-        if (user == null || user.Skeleton == null)
-            return;
-
-        for (int i = 0; i < jointsInfo.Length; i++)
-        {
-            UserData.SkeletonData.Joint j = user.Skeleton.GetJoint(jointsInfo[i]);
-
-            if (j.Confidence > 0.01f)
-            {
-                joints[jointsInfo[i]].gameObject.SetActive(true);
-
-                Vector2 newPosition = new Vector2(
-                    parentRect.rect.width * (j.Proj.x - 0.5f),
-                    parentRect.rect.height * (0.5f - j.Proj.y));
-
-                joints[jointsInfo[i]].anchoredPosition = newPosition;
-            }
-            else
-            {
-                joints[jointsInfo[i]].gameObject.SetActive(false);
-            }
+            if (autoProcessing)
+                ProcessSkeleton(NuitrackManager.Users.Current);
         }
 
-        for (int i = 0; i < connectionsInfo.GetLength(0); i++)
+        public void ProcessSkeleton(UserData user)
         {
-            RectTransform startJoint = joints[connectionsInfo[i, 0]];
-            RectTransform endJoint = joints[connectionsInfo[i, 1]];
+            if (user == null || user.Skeleton == null)
+                return;
 
-            if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
+            for (int i = 0; i < jointsInfo.Length; i++)
             {
-                connections[i].gameObject.SetActive(true);
+                UserData.SkeletonData.Joint j = user.Skeleton.GetJoint(jointsInfo[i]);
 
-                connections[i].anchoredPosition = startJoint.anchoredPosition;
-                connections[i].transform.right = endJoint.position - startJoint.position;
-                float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
-                connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
+                if (j.Confidence > 0.01f)
+                {
+                    joints[jointsInfo[i]].gameObject.SetActive(true);
+
+                    Vector2 newPosition = new Vector2(
+                        parentRect.rect.width * (j.Proj.x - 0.5f),
+                        parentRect.rect.height * (0.5f - j.Proj.y));
+
+                    joints[jointsInfo[i]].anchoredPosition = newPosition;
+                }
+                else
+                {
+                    joints[jointsInfo[i]].gameObject.SetActive(false);
+                }
             }
-            else
+
+            for (int i = 0; i < connectionsInfo.GetLength(0); i++)
             {
-                connections[i].gameObject.SetActive(false);
+                RectTransform startJoint = joints[connectionsInfo[i, 0]];
+                RectTransform endJoint = joints[connectionsInfo[i, 1]];
+
+                if (startJoint.gameObject.activeSelf && endJoint.gameObject.activeSelf)
+                {
+                    connections[i].gameObject.SetActive(true);
+
+                    connections[i].anchoredPosition = startJoint.anchoredPosition;
+                    connections[i].transform.right = endJoint.position - startJoint.position;
+                    float distance = Vector3.Distance(endJoint.anchoredPosition, startJoint.anchoredPosition);
+                    connections[i].transform.localScale = new Vector3(distance, 1f, 1f);
+                }
+                else
+                {
+                    connections[i].gameObject.SetActive(false);
+                }
             }
         }
     }
