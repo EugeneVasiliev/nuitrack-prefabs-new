@@ -1,24 +1,29 @@
 ﻿using UnityEngine;
 
-public class FallingObject : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.SegmentExample
 {
-    [SerializeField]
-    int scoreValue = 5;
-
-    bool active = true;
-
-    private void OnCollisionEnter(Collision collision)
+    [AddComponentMenu("NuitrackSDK/Tutorials/Segment Example/Falling Object")]
+    public class FallingObject : MonoBehaviour
     {
-        if (!active)
-            return;
+        [SerializeField]
+        int scoreValue = 5;
 
-        active = false;
+        bool active = true;
 
-        Destroy(gameObject);
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (!active)
+                return;
 
-        if (collision.transform.tag == "UserPixel")
-            GameProgress.instance.AddScore(scoreValue);
-        else if (collision.transform.tag == "BottomLine")
-            GameProgress.instance.RemoveScore(scoreValue);
+            active = false;
+
+            Destroy(gameObject);
+
+            if (collision.transform.tag == "UserPixel")
+                GameProgress.instance.AddScore(scoreValue);
+            else if (collision.transform.tag == "BottomLine")
+                GameProgress.instance.RemoveScore(scoreValue);
+        }
     }
 }

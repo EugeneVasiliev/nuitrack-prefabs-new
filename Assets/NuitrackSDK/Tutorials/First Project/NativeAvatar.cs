@@ -8,50 +8,52 @@
 
 using UnityEngine;
 
-
-[AddComponentMenu("NuitrackSDK/Tutorials/First Project/NativeAvatar")]
-public class NativeAvatar : MonoBehaviour
+namespace NuitrackSDK.Tutorials.FirstProject
 {
-    string message = "";
-
-    public nuitrack.JointType[] typeJoint;
-    GameObject[] CreatedJoint;
-    public GameObject PrefabJoint;
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/First Project/Native Avatar")]
+    public class NativeAvatar : MonoBehaviour
     {
-        CreatedJoint = new GameObject[typeJoint.Length];
-        for (int q = 0; q < typeJoint.Length; q++)
-        {
-            CreatedJoint[q] = Instantiate(PrefabJoint);
-            CreatedJoint[q].transform.SetParent(transform);
-        }
-        message = "Skeleton created";
-    }
+        string message = "";
 
-    void Update()
-    {
-        if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
-        {
-            message = "Skeleton found";
+        public nuitrack.JointType[] typeJoint;
+        GameObject[] CreatedJoint;
+        public GameObject PrefabJoint;
 
+        void Start()
+        {
+            CreatedJoint = new GameObject[typeJoint.Length];
             for (int q = 0; q < typeJoint.Length; q++)
             {
-                UserData.SkeletonData.Joint joint = NuitrackManager.Users.Current.Skeleton.GetJoint(typeJoint[q]);
-                CreatedJoint[q].transform.localPosition = joint.Position;
+                CreatedJoint[q] = Instantiate(PrefabJoint);
+                CreatedJoint[q].transform.SetParent(transform);
+            }
+            message = "Skeleton created";
+        }
+
+        void Update()
+        {
+            if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
+            {
+                message = "Skeleton found";
+
+                for (int q = 0; q < typeJoint.Length; q++)
+                {
+                    UserData.SkeletonData.Joint joint = NuitrackManager.Users.Current.Skeleton.GetJoint(typeJoint[q]);
+                    CreatedJoint[q].transform.localPosition = joint.Position;
+                }
+            }
+            else
+            {
+                message = "Skeleton not found";
             }
         }
-        else
-        {
-            message = "Skeleton not found";
-        }
-    }
 
-    // Display the message on the screen
-    void OnGUI()
-    {
-        GUI.color = Color.red;
-        GUI.skin.label.fontSize = 50;
-        GUILayout.Label(message);
+        // Display the message on the screen
+        void OnGUI()
+        {
+            GUI.color = Color.red;
+            GUI.skin.label.fontSize = 50;
+            GUILayout.Label(message);
+        }
     }
 }

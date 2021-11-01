@@ -3,22 +3,27 @@ using UnityEngine.UI;
 
 using NuitrackSDK.Frame;
 
-public class DrawColorFrame : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.RGBandSkeletons
 {
-    [SerializeField] RawImage background;
-
-    void Start()
+    [AddComponentMenu("NuitrackSDK/Tutorials/RGB and Skeletons/Draw Color Frame")]
+    public class DrawColorFrame : MonoBehaviour
     {
-        NuitrackManager.onColorUpdate += DrawColor;
-    }
+        [SerializeField] RawImage background;
 
-    void DrawColor(nuitrack.ColorFrame frame)
-    {
-        background.texture = frame.ToTexture2D();
-    }
+        void Start()
+        {
+            NuitrackManager.onColorUpdate += DrawColor;
+        }
 
-    void OnDestroy()
-    {
-        NuitrackManager.onColorUpdate -= DrawColor;
+        void DrawColor(nuitrack.ColorFrame frame)
+        {
+            background.texture = frame.ToTexture2D();
+        }
+
+        void OnDestroy()
+        {
+            NuitrackManager.onColorUpdate -= DrawColor;
+        }
     }
 }

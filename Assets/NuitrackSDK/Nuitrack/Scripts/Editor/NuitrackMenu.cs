@@ -2,14 +2,17 @@
 using UnityEditor;
 using System.IO;
 using System;
+
+using NuitrackSDKEditor.ErrorSolver;
 using NuitrackSDKEditor.Documentation;
+
 
 namespace NuitrackSDKEditor
 {
     [InitializeOnLoad]
-    public class NuitrackMenu : MonoBehaviour
+    public static class NuitrackMenu
     {
-        static string nuitrackScriptsPath = "Assets/NuitrackSDK/Nuitrack/Prefabs/NuitrackScripts.prefab";
+        static readonly string nuitrackScriptsPath = "Assets/NuitrackSDK/Nuitrack/Prefabs/NuitrackScripts.prefab";
 
         [MenuItem("Nuitrack/Prepare The Scene")]
         public static void AddNuitrackToScene()
@@ -20,7 +23,7 @@ namespace NuitrackSDKEditor
                 Debug.LogAssertion(string.Format("Prefab NuitrackScripts was not found at {0}", nuitrackScriptsPath));
             else
             {
-                NuitrackManager nuitrackManager = FindObjectOfType<NuitrackManager>();
+                NuitrackManager nuitrackManager = UnityEngine.Object.FindObjectOfType<NuitrackManager>();
 
                 if (nuitrackManager != null)
                 {

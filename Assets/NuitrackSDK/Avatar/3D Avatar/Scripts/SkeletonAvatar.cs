@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using JointType = nuitrack.JointType;
 
+using NuitrackSDK.Calibration;
+
+
 namespace NuitrackSDK.Avatar
 {
     [AddComponentMenu("NuitrackSDK/Avatar/3D/SkeletonAvatar")]

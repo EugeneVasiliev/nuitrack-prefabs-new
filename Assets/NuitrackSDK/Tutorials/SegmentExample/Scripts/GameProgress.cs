@@ -1,38 +1,43 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class GameProgress : MonoBehaviour
+
+namespace NuitrackSDK.Tutorials.SegmentExample
 {
-    public static GameProgress instance = null;
-
-    [SerializeField]
-    Text scoreText;
-
-    int currentScore = 0;
-
-    void Awake()
+    [AddComponentMenu("NuitrackSDK/Tutorials/Segment Example/Game Progress")]
+    public class GameProgress : MonoBehaviour
     {
-        if (instance == null)
-            instance = this;
-        else if (instance != this)
-            Destroy(gameObject);
-    }
+        public static GameProgress instance = null;
 
-    void UpdateScoreText()
-    {
-        scoreText.text = "Your score: " + currentScore;
-    }
+        [SerializeField]
+        Text scoreText;
 
-    public void AddScore(int val)
-    {
-        currentScore += val;
-        UpdateScoreText();
-    }
+        int currentScore = 0;
 
-    public void RemoveScore(int val)
-    {
-        currentScore -= val;
-        UpdateScoreText();
-    }
+        void Awake()
+        {
+            if (instance == null)
+                instance = this;
+            else if (instance != this)
+                Destroy(gameObject);
+        }
 
+        void UpdateScoreText()
+        {
+            scoreText.text = "Your score: " + currentScore;
+        }
+
+        public void AddScore(int val)
+        {
+            currentScore += val;
+            UpdateScoreText();
+        }
+
+        public void RemoveScore(int val)
+        {
+            currentScore -= val;
+            UpdateScoreText();
+        }
+
+    }
 }

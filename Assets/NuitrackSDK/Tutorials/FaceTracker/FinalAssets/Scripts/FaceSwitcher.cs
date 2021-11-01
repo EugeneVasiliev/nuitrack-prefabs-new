@@ -1,36 +1,41 @@
 ﻿using UnityEngine;
 
-public class FaceSwitcher : MonoBehaviour {
 
-    [SerializeField] Face.GenderType gender;
-    [SerializeField] Age.Type ageType;
-    [SerializeField] Emotions.Type emotions;
-    [SerializeField] GameObject enabledObject;
-    [SerializeField] GameObject disabledObject;
-
-    FaceController faceController;
-    bool display = false;
-
-    void Start ()
+namespace NuitrackSDK.Tutorials.FaceTracker
+{
+    [AddComponentMenu("NuitrackSDK/Tutorials/Face Tracker/Face Switcher")]
+    public class FaceSwitcher : MonoBehaviour
     {
-        faceController = GetComponentInParent<FaceController>();
-    }
+        [SerializeField] nuitrack.Face.GenderType gender;
+        [SerializeField] nuitrack.Age.Type ageType;
+        [SerializeField] nuitrack.Emotions.Type emotions;
+        [SerializeField] GameObject enabledObject;
+        [SerializeField] GameObject disabledObject;
 
-    void Update()
-    {
-        display =   (gender == Face.GenderType.any || gender == faceController.genderType) &&
-                    (ageType == Age.Type.any || ageType == faceController.ageType) &&
-                    (emotions == Emotions.Type.any || emotions == faceController.emotionType);
+        FaceController faceController;
+        bool display = false;
 
-        SwitchObjects();
-    }
+        void Start()
+        {
+            faceController = GetComponentInParent<FaceController>();
+        }
 
-    void SwitchObjects()
-    {
-        if (enabledObject)
-            enabledObject.SetActive(display);
+        void Update()
+        {
+            display = (gender == nuitrack.Face.GenderType.any || gender == faceController.genderType) &&
+                        (ageType == nuitrack.Age.Type.any || ageType == faceController.ageType) &&
+                        (emotions == nuitrack.Emotions.Type.any || emotions == faceController.emotionType);
 
-        if (disabledObject)
-            disabledObject.SetActive(!display);
+            SwitchObjects();
+        }
+
+        void SwitchObjects()
+        {
+            if (enabledObject)
+                enabledObject.SetActive(display);
+
+            if (disabledObject)
+                disabledObject.SetActive(!display);
+        }
     }
 }
