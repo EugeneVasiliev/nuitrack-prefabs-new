@@ -5,10 +5,9 @@ using UnityEngine.UI;
 namespace NuitrackSDK.Face
 {
     [AddComponentMenu("NuitrackSDK/Face/Face View/UI Face Info")]
-    public class UIFaceInfo : MonoBehaviour
+    public class UIFaceInfo : UserTracker
     {
         [Header("Info")]
-        public bool autoProcessing;
         [SerializeField] bool showInfo = true;
         [SerializeField] GameObject infoPanel;
         [SerializeField] Text ageText;
@@ -31,15 +30,7 @@ namespace NuitrackSDK.Face
             image = frameTransform.GetComponent<Image>();
         }
 
-        void Update()
-        {
-            if (autoProcessing)
-            {
-                ProcessFace(NuitrackManager.Users.Current);
-            }
-        }
-
-        public void ProcessFace(UserData userData)
+        protected override void Process(UserData userData)
         {
             if (!NuitrackManager.Instance.UseFaceTracking)
                 Debug.Log("Attention: Face tracking disabled! Enable it on the Nuitrack Manager component");

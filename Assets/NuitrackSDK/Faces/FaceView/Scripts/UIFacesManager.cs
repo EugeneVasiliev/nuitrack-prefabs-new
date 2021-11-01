@@ -8,22 +8,22 @@ namespace NuitrackSDK.Face
     public class UIFacesManager : MonoBehaviour
     {
         [SerializeField] RectTransform spawnRectTransform;
-
-        [SerializeField, Range(0, 6)] int faceCount = 6;         //Max number of skeletons tracked by Nuitrack
         [SerializeField] UIFaceInfo faceFrame;
 
         List<UIFaceInfo> uiFaces = new List<UIFaceInfo>();
 
         void Start()
         {
-            for (int i = 0; i < faceCount; i++)
+            for (int i = Users.MinID; i <= Users.MaxID; i++)
             {
                 GameObject newFrame = Instantiate(faceFrame.gameObject, spawnRectTransform);
                 newFrame.SetActive(false);
 
                 UIFaceInfo faceInfo = newFrame.GetComponent<UIFaceInfo>();
                 faceInfo.Initialize(spawnRectTransform);
-                faceInfo.autoProcessing = false;
+
+                faceInfo.UseCurrentUserTracker = false;
+                faceInfo.UserID = i;
 
                 uiFaces.Add(faceInfo);
             }
@@ -31,19 +31,10 @@ namespace NuitrackSDK.Face
 
         void Update()
         {
-            List<UserData> userData = NuitrackManager.Users.GetList();
-
-            for (int i = 0; i < uiFaces.Count; i++)
+            foreach(UIFaceInfo faceInfo in uiFaces)
             {
-                if (i < NuitrackManager.Users.Count)
-                {
-                    uiFaces[i].gameObject.SetActive(true);
-                    uiFaces[i].ProcessFace(userData[i]);
-                }
-                else
-                {
-                    uiFaces[i].gameObject.SetActive(false);
-                }
+                bool isActive = faceInfo.ControllerUser != null;
+                faceInfo.gameObject.SetActive(isActive);
             }
         }
     }
