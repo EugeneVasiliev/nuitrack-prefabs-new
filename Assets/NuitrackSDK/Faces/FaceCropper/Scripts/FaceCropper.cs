@@ -13,40 +13,85 @@ namespace NuitrackSDK.Face
         public class TextureEvent : UnityEvent<Texture> { }
 
         [Header("User track settings")]
-        [SerializeField, NuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector]
         bool useCurrentUser = true;
 
-        [SerializeField, NuitrackSDKInspector, Range(1, 6)] 
+        [SerializeField, NuitrackSDKInspector, Range(1, 6)]
         int userID = 0;
 
-        [SerializeField, NuitrackSDKInspector, Range(0, 5)] 
+        [SerializeField, NuitrackSDKInspector, Range(0, 5)]
         float loseTime = 0.25f;
 
         float t = 0;
 
         [Header("Visualisation")]
-        [SerializeField, NuitrackSDKInspector, Range(0, 1)] 
+        [SerializeField, NuitrackSDKInspector, Range(0, 1)]
         float margin = 0.1f;
 
-        [SerializeField, NuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector]
         Texture2D noUserImage;
 
-        [SerializeField, NuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector]
         bool smoothMove = true;
 
-        [SerializeField, NuitrackSDKInspector, Range(0.1f, 24f)] 
+        [SerializeField, NuitrackSDKInspector, Range(0.1f, 24f)]
         float smoothSpeed = 4f;
 
         [Header("Advanced")]
-        [SerializeField, NuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector]
         bool useGPUCrop = true;
 
         Rect faceRect;
         Rect targerRect;
 
         [Header("Output")]
-        [SerializeField, NuitrackSDKInspector] 
+        [SerializeField, NuitrackSDKInspector]
         TextureEvent onFrameUpdate;
+
+        /// <summary>
+        /// If True, the current user tracker is used, otherwise the user specified by ID is used <see cref="UserID"/>
+        /// </summary>
+        public bool UseCurrentUserTracker
+        {
+            get
+            {
+                return useCurrentUser;
+            }
+            set
+            {
+                useCurrentUser = value;
+            }
+        }
+
+        /// <summary>
+        /// ID of the current user
+        /// For the case when current user tracker <see cref="UseCurrentUserTracker"/> of is used, the ID of the active user will be returned
+        /// If current user tracker is used and a new ID is set, tracking of the current user will stop
+        /// </summary>
+        public int UserID
+        {
+            get
+            {
+                if (UseCurrentUserTracker)
+                    return ControllerUser != null ? ControllerUser.ID : 0;
+                else
+                    return userID;
+            }
+            set
+            {
+                if (value >= Users.MinID && value <= Users.MaxID)
+                {
+                    userID = value;
+
+                    if (useCurrentUser)
+                        Debug.Log(string.Format("CurrentUserTracker mode was disabled for {0}", gameObject.name));
+
+                    useCurrentUser = false;
+                }
+                else
+                    throw new System.Exception(string.Format("The User ID must be within the bounds of [{0}, {1}]", Users.MinID, Users.MaxID));
+            }
+        }
 
         public UserData ControllerUser
         {
@@ -59,18 +104,24 @@ namespace NuitrackSDK.Face
             }
         }
 
+        /// <summary>
+        /// Cropped face texture (may be null)
+        /// </summary>
+        public Texture2D CroppedFaceTexture
+        {
+            get; private set;
+        }
+
         void ResetFrame()
         {
             onFrameUpdate.Invoke(noUserImage);
             faceRect = default;
-        }
-
-        Texture2D croppedTexture;
+        }  
 
         void OnDestroy()
         {
-            if (croppedTexture != null)
-                Destroy(croppedTexture);
+            if (CroppedFaceTexture != null)
+                Destroy(CroppedFaceTexture);
         }
 
         void Update()
@@ -102,7 +153,7 @@ namespace NuitrackSDK.Face
             if (faceRect.Equals(default))
                 faceRect = targerRect;
 
-            Vector2 deltaSize = new Vector2(targerRect.width * (1 + margin), targerRect.height * (1 + margin));
+            Vector2 deltaSize = targerRect.size * margin;
 
             targerRect.position -= deltaSize * 0.5f;
             targerRect.size += deltaSize;
@@ -113,21 +164,21 @@ namespace NuitrackSDK.Face
             targerRect.yMin = Mathf.Clamp(targerRect.yMin, 0, frame.height);
             targerRect.yMax = Mathf.Clamp(targerRect.yMax, 0, frame.height);
 
-            if (croppedTexture != null)
-                Destroy(croppedTexture);
+            if (CroppedFaceTexture != null)
+                Destroy(CroppedFaceTexture);
 
-            croppedTexture = new Texture2D((int)faceRect.width, (int)faceRect.height, TextureFormat.RGBA32, false);
+            CroppedFaceTexture = new Texture2D((int)faceRect.width, (int)faceRect.height, TextureFormat.RGBA32, false);
 
             if (useGPUCrop)
-                Graphics.CopyTexture(frame, 0, 0, (int)faceRect.x, (int)faceRect.y, (int)faceRect.width, (int)faceRect.height, croppedTexture, 0, 0, 0, 0);
+                Graphics.CopyTexture(frame, 0, 0, (int)faceRect.x, (int)faceRect.y, (int)faceRect.width, (int)faceRect.height, CroppedFaceTexture, 0, 0, 0, 0);
             else
             {
                 Color[] pixels = frame.GetPixels((int)faceRect.x, (int)faceRect.y, (int)faceRect.width, (int)faceRect.height);
-                croppedTexture.SetPixels(pixels);
-                croppedTexture.Apply();
+                CroppedFaceTexture.SetPixels(pixels);
+                CroppedFaceTexture.Apply();
             }
 
-            onFrameUpdate.Invoke(croppedTexture);
+            onFrameUpdate.Invoke(CroppedFaceTexture);
 
             if (smoothMove)
             {
