@@ -32,9 +32,6 @@ namespace NuitrackSDK.Face
 
         protected override void Process(UserData userData)
         {
-            if (!NuitrackManager.Instance.UseFaceTracking)
-                Debug.Log("Attention: Face tracking disabled! Enable it on the Nuitrack Manager component");
-
             if (userData == null)
                 return;
 

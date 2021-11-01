@@ -284,12 +284,20 @@ namespace NuitrackSDK
             }
         }
 
+        nuitrack.Face face = null;
+
         /// <summary>
         /// User face. Maybe null.
         /// </summary>
         public nuitrack.Face Face
         {
-            get; private set;
+            get
+            {
+                if (!NuitrackManager.Instance.UseFaceTracking)
+                    Debug.LogWarning("Face tracking disabled! Enable it on the Nuitrack Manager component");
+
+                return face;
+            }
         }
 
         public UserData(int id)
@@ -375,7 +383,7 @@ namespace NuitrackSDK
 
         internal void AddData(nuitrack.Face face)
         {
-            Face = (face != null && face.IsEmpty) ? null : face;
+            this.face = (face != null && face.IsEmpty) ? null : face;
         }
 
         internal void AddData(nuitrack.Gesture? gesture)
@@ -388,7 +396,7 @@ namespace NuitrackSDK
             Skeleton = null;
             RawUserHands = null;
             RawGesture = null;
-            Face = null;
+            face = null;
 
             RightHand = null;
             LeftHand = null;
