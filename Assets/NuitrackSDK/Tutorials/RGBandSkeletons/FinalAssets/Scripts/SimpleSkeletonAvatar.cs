@@ -111,9 +111,7 @@ public class SimpleSkeletonAvatar : MonoBehaviour
             if (j.Confidence > 0.01f)
             {
                 joints[jointsInfo[i]].gameObject.SetActive(true);
-
-                Vector2 newPosition = j.ScreenPosition(parentRect.rect.width, parentRect.rect.height) - parentRect.rect.size / 2;
-                joints[jointsInfo[i]].anchoredPosition = newPosition;
+                joints[jointsInfo[i]].anchoredPosition = j.AnchoredPoint(parentRect.rect, joints[jointsInfo[i]]);
             }
             else
             {

@@ -77,9 +77,7 @@ namespace NuitrackSDK.Avatar
                 if (j.Confidence > JointConfidence)
                 {
                     rectTransform.gameObject.SetActive(true);
-
-                    Vector2 newPosition = j.ScreenPosition(parentRect.rect.width, parentRect.rect.height) - parentRect.rect.size / 2;
-                    rectTransform.anchoredPosition = newPosition;
+                    rectTransform.anchoredPosition = j.AnchoredPoint(parentRect.rect, rectTransform);
                 }
                 else
                 {
