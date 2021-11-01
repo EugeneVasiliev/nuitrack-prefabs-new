@@ -142,7 +142,11 @@ namespace nuitrack
 
         public static implicit operator Rect(Rectangle rectangle)
         {
-            return new Rect(Mathf.Clamp01(rectangle.left), Mathf.Clamp01(rectangle.top), Mathf.Clamp01(rectangle.width), Mathf.Clamp01(rectangle.height));
+            return new Rect(
+                Mathf.Clamp01(rectangle.left),
+                Mathf.Clamp01(1 - rectangle.top - rectangle.height),
+                Mathf.Clamp01(rectangle.width),
+                Mathf.Clamp01(rectangle.height));
         }
     }
 
