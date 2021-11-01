@@ -261,7 +261,7 @@ namespace NuitrackSDK
         /// <summary>
         /// User face. Maybe null.
         /// </summary>
-            public nuitrack.Face Face
+        public nuitrack.Face Face
         {
             get; private set;
         }
@@ -347,9 +347,9 @@ namespace NuitrackSDK
                 RightHand = new Hand(userHands.RightHand.Value);
         }
 
-            internal void AddData(nuitrack.Face face)
+        internal void AddData(nuitrack.Face face)
         {
-                Face = (face != null && face.IsEmpty) ? null : face;
+            Face = (face != null && face.IsEmpty) ? null : face;
         }
 
         internal void AddData(nuitrack.Gesture? gesture)
