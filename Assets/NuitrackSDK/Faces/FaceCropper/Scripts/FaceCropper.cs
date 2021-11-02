@@ -100,11 +100,11 @@ namespace NuitrackSDK.Face
             targerRect.position -= deltaSize * 0.5f;
             targerRect.size += deltaSize;
 
-            targerRect.xMin = Mathf.Clamp(targerRect.xMin, 0, frame.width);
-            targerRect.xMax = Mathf.Clamp(targerRect.xMax, 0, frame.width);
+            faceRect.xMin = Mathf.Clamp(faceRect.xMin, 0, frame.width);
+            faceRect.xMax = Mathf.Clamp(faceRect.xMax, 0, frame.width);
 
-            targerRect.yMin = Mathf.Clamp(targerRect.yMin, 0, frame.height);
-            targerRect.yMax = Mathf.Clamp(targerRect.yMax, 0, frame.height);
+            faceRect.yMin = Mathf.Clamp(faceRect.yMin, 0, frame.height);
+            faceRect.yMax = Mathf.Clamp(faceRect.yMax, 0, frame.height);
 
             if (CroppedFaceTexture != null)
                 Destroy(CroppedFaceTexture);
