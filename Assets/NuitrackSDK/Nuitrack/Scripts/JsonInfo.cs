@@ -159,7 +159,7 @@ namespace nuitrack
 
         public static implicit operator Quaternion(Angles ang)
         {
-            return Quaternion.Euler(ang.yaw, -ang.pitch, ang.roll);
+            return Quaternion.Euler(-ang.pitch, ang.yaw, ang.roll);
         }
     }
 
