@@ -22,6 +22,9 @@ namespace NuitrackSDKEditor.ErrorSolver
 
         static void PingNuitrack()
         {
+            if (!TBBReplacer.Ready)
+                return;
+
             try
             {
                 nuitrack.Nuitrack.Init();
