@@ -114,5 +114,5 @@ namespace NuitrackSDK.Tutorials.MotionCapture
             Debug.Log("Save to: " + path);
         }
     }
-#endif
 }
+#endif
