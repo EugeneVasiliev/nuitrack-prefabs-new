@@ -8,7 +8,7 @@ using NuitrackSDK.Frame;
 namespace NuitrackSDKEditor.Frame
 {
     [CustomEditor(typeof(SensorSpace), true)]
-    public class SensorSpace_Editor : Editor
+    public class SensorSpace_Editor : NuitrackSDKEditor
     {
         SerializedProperty viewCanvasProperty;
 
@@ -17,34 +17,61 @@ namespace NuitrackSDKEditor.Frame
             viewCanvasProperty = serializedObject.FindProperty("viewCanvas");
         }
 
+        SerializedProperty DrawProperty(string nameProperty)
+        {
+            SerializedProperty property = serializedObject.FindProperty(nameProperty);
+            EditorGUILayout.PropertyField(property);
+            serializedObject.ApplyModifiedProperties();
+
+            return property;
+        }
+
         public override void OnInspectorGUI()
         {
-            base.OnInspectorGUI();
+            //base.OnInspectorGUI();
 
             if (FindObjectOfType<NuitrackManager>(true) == null)
                 NuitrackSDKGUI.NuitrackNotExistMessage();
 
-            SensorSpace sensorSpace = serializedObject.targetObject as SensorSpace;
-            Canvas canvas = viewCanvasProperty.objectReferenceValue as Canvas;
+            SerializedProperty cameraFovAlign = DrawProperty("cameraFovAlign");
 
-            if (canvas != null)
+            if (cameraFovAlign.boolValue)
             {
-                if (canvas.renderMode == RenderMode.WorldSpace || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                SensorSpace sensorSpace = serializedObject.targetObject as SensorSpace;
+                Canvas canvas = viewCanvasProperty.objectReferenceValue as Canvas;
+
+                if (canvas != null)
                 {
-                    string message = string.Format("The canvas rendering mode is specified: {0}.\nIt is recommended to use: {1}",
-                       canvas.renderMode, RenderMode.ScreenSpaceCamera);
+                    if (canvas.renderMode == RenderMode.WorldSpace || canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                    {
+                        string message = string.Format("The canvas rendering mode is specified: {0}.\nIt is recommended to use: {1}",
+                           canvas.renderMode, RenderMode.ScreenSpaceCamera);
 
-                    string buttonLabel = string.Format("Switch to {0}", RenderMode.ScreenSpaceCamera);
+                        string buttonLabel = string.Format("Switch to {0}", RenderMode.ScreenSpaceCamera);
 
-                    UnityAction fixAction = delegate { FixCanvasRenderMode(canvas, sensorSpace); };
+                        UnityAction fixAction = delegate { FixCanvasRenderMode(canvas, sensorSpace); };
 
-                    NuitrackSDKGUI.DrawMessage(message, LogType.Warning, fixAction, buttonLabel);
+                        NuitrackSDKGUI.DrawMessage(message, LogType.Warning, fixAction, buttonLabel);
+                    }
                 }
+                else
+                {
+                    string message = "View Canvas is not set. The screen size will be used to align the camera's fov.";
+                    NuitrackSDKGUI.DrawMessage(message, LogType.Log);
+                }
+
+                DrawProperty("viewCanvas");
             }
-            else
+
+            SerializedProperty floorTracking = DrawProperty("floorTracking");
+
+            if(floorTracking.boolValue)
             {
-                string message = "View Canvas is not set. The screen size will be used to align the camera's fov.";
-                NuitrackSDKGUI.DrawMessage(message, LogType.Log);
+                DrawProperty("sensorSpace");
+
+                DrawProperty("deltaHeight");
+                DrawProperty("deltaAngle");
+                DrawProperty("floorCorrectionSpeed");
             }
         }
 

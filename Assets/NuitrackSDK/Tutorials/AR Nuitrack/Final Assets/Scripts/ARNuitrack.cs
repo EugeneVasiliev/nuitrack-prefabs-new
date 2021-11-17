@@ -23,22 +23,13 @@ namespace NuitrackSDK.Tutorials.ARNuitrack
         ComputeBuffer depthDataBuffer;
         byte[] depthDataArray = null;
 
-        [Header("Floor")]
-        [SerializeField] Transform sensorSpace;
-
-        Plane floorPlane;
-
-        [SerializeField, Range(0.001f, 1f)] float deltaHeight = 0.1f;
-        [SerializeField, Range(0.1f, 90f)] float deltaAngle = 3f;
-        [SerializeField, Range(0.1f, 32f)] float floorCorrectionSpeed = 8f;
 
         void Update()
         {
             nuitrack.ColorFrame colorFrame = NuitrackManager.ColorFrame;
             nuitrack.DepthFrame depthFrame = NuitrackManager.DepthFrame;
-            nuitrack.UserFrame userFrame = NuitrackManager.UserFrame;
 
-            if (colorFrame == null || depthFrame == null || userFrame == null || frameTimestamp == depthFrame.Timestamp)
+            if (colorFrame == null || depthFrame == null || frameTimestamp == depthFrame.Timestamp)
                 return;
 
             frameTimestamp = depthFrame.Timestamp;
@@ -49,8 +40,6 @@ namespace NuitrackSDK.Tutorials.ARNuitrack
             UpdateRGB(colorFrame);
             UpdateHieghtMap(depthFrame);
             FitMeshIntoFrame(depthFrame);
-
-            UpdateFloor();
         }
 
         void UpdateRGB(nuitrack.ColorFrame frame)
@@ -99,34 +88,6 @@ namespace NuitrackSDK.Tutorials.ARNuitrack
 
             Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(camera.transform.position);
             meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
-        }
-
-        void UpdateFloor()
-        {
-            if (NuitrackManager.Floor == null)
-                return;
-
-            Plane newFloor = (Plane)NuitrackManager.Floor;
-
-            if (floorPlane.Equals(default(Plane)))
-                floorPlane = newFloor;
-
-            Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(Vector3.zero);
-            Vector3 floorSensor = floorPlane.ClosestPointOnPlane(Vector3.zero);
-
-            if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAngle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHeight)
-                floorPlane = newFloor;
-
-            Vector3 reflectNormal = Vector3.Reflect(-floorPlane.normal, Vector3.up);
-            Vector3 forward = sensorSpace.forward;
-            Vector3.OrthoNormalize(ref reflectNormal, ref forward);
-
-            Quaternion targetRotation = Quaternion.LookRotation(forward, reflectNormal);
-            camera.transform.localRotation = Quaternion.Lerp(camera.transform.localRotation, targetRotation, Time.deltaTime * floorCorrectionSpeed);
-
-            Vector3 localRoot = camera.transform.localPosition;
-            localRoot.y = -floorSensor.y;
-            camera.transform.localPosition = Vector3.Lerp(camera.transform.localPosition, localRoot, Time.deltaTime * floorCorrectionSpeed);
         }
 
         private void OnDestroy()

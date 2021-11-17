@@ -5,14 +5,28 @@ namespace NuitrackSDK.Frame
     [RequireComponent (typeof(Camera))]
     [AddComponentMenu("NuitrackSDK/SensorEnvironment/Sensor Space")]
     public class SensorSpace : MonoBehaviour
-    { 
+    {
+        new Camera camera;
+
+        [Header("Camera")]
+        [SerializeField] bool cameraFovAlign = true;
+
         [Tooltip ("(optional) If not specified, the screen size is used.")]
         [SerializeField] Canvas viewCanvas;
-
-        new Camera camera;
         RectTransform canvasRect;
 
         ulong lastTimeStamp = 0;
+
+        [Header("Floor")]
+        [SerializeField] bool floorTracking = false;
+
+        [SerializeField] Transform sensorSpace;
+
+        [SerializeField, Range(0.001f, 1f)] float deltaHeight = 0.1f;
+        [SerializeField, Range(0.1f, 90f)] float deltaAngle = 3f;
+        [SerializeField, Range(0.1f, 32f)] float floorCorrectionSpeed = 8f;
+
+        Plane floorPlane;
 
         public Camera Camera
         {
@@ -38,12 +52,18 @@ namespace NuitrackSDK.Frame
 
         void Update()
         {
-            if (NuitrackManager.ColorFrame == null || NuitrackManager.ColorFrame.Timestamp == lastTimeStamp)
-                return;
+            if (cameraFovAlign)
+            {
+                if (NuitrackManager.ColorFrame == null || NuitrackManager.ColorFrame.Timestamp == lastTimeStamp)
+                    return;
 
-            lastTimeStamp = NuitrackManager.ColorFrame.Timestamp;
+                lastTimeStamp = NuitrackManager.ColorFrame.Timestamp;
 
-            NuitrackManager_onColorUpdate(NuitrackManager.ColorFrame);
+                NuitrackManager_onColorUpdate(NuitrackManager.ColorFrame);
+            }
+
+            if (floorTracking)
+                UpdateFloor();
         }
 
         float ViewWidth
@@ -86,6 +106,34 @@ namespace NuitrackSDK.Frame
             float vFOV = 2 * Mathf.Atan(Mathf.Tan(mode.HFOV * 0.5f) * targetAspectRatio);
 
             Camera.fieldOfView = vFOV * Mathf.Rad2Deg;
+        }
+
+        void UpdateFloor()
+        {
+            if (NuitrackManager.Floor == null)
+                return;
+
+            Plane newFloor = (Plane)NuitrackManager.Floor;
+
+            if (floorPlane.Equals(default(Plane)))
+                floorPlane = newFloor;
+
+            Vector3 newFloorSensor = newFloor.ClosestPointOnPlane(Vector3.zero);
+            Vector3 floorSensor = floorPlane.ClosestPointOnPlane(Vector3.zero);
+
+            if (Vector3.Angle(newFloor.normal, floorPlane.normal) >= deltaAngle || Mathf.Abs(newFloorSensor.y - floorSensor.y) >= deltaHeight)
+                floorPlane = newFloor;
+
+            Vector3 reflectNormal = Vector3.Reflect(-floorPlane.normal, Vector3.up);
+            Vector3 forward = sensorSpace.forward;
+            Vector3.OrthoNormalize(ref reflectNormal, ref forward);
+
+            Quaternion targetRotation = Quaternion.LookRotation(forward, reflectNormal);
+            camera.transform.localRotation = Quaternion.Lerp(camera.transform.localRotation, targetRotation, Time.deltaTime * floorCorrectionSpeed);
+
+            Vector3 localRoot = camera.transform.localPosition;
+            localRoot.y = -floorSensor.y;
+            camera.transform.localPosition = Vector3.Lerp(camera.transform.localPosition, localRoot, Time.deltaTime * floorCorrectionSpeed);
         }
     }
 }
