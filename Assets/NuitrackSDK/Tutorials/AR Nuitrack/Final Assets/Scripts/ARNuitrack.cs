@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Runtime.InteropServices;
 
+using NuitrackSDK.Frame;
+
 
 namespace NuitrackSDK.Tutorials.ARNuitrack
 {
@@ -16,13 +18,8 @@ namespace NuitrackSDK.Tutorials.ARNuitrack
         [SerializeField] MeshGenerator meshGenerator;
         [SerializeField] new Camera camera;
 
-        [Header("Sensor params")]
-        [SerializeField, Range(0.1f, 32f), Tooltip("Check the specification of your sensor on the manufacturer's website")]
-        float maxDepthSensor = 8;
-
         ComputeBuffer depthDataBuffer;
         byte[] depthDataArray = null;
-
 
         void Update()
         {
@@ -83,8 +80,8 @@ namespace NuitrackSDK.Tutorials.ARNuitrack
             Marshal.Copy(frame.Data, depthDataArray, 0, depthDataArray.Length);
             depthDataBuffer.SetData(depthDataArray);
 
-            meshGenerator.Material.SetFloat("_maxDepthSensor", maxDepthSensor);
-            meshGenerator.transform.localPosition = Vector3.forward * maxDepthSensor;
+            meshGenerator.Material.SetFloat("_maxDepthSensor", FrameUtils.DepthToTexture.MaxSensorDepth);
+            meshGenerator.transform.localPosition = Vector3.forward * FrameUtils.DepthToTexture.MaxSensorDepth;
 
             Vector3 localCameraPosition = meshGenerator.transform.InverseTransformPoint(camera.transform.position);
             meshGenerator.Material.SetVector("_CameraPosition", localCameraPosition);
