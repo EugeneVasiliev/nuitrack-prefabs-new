@@ -3,6 +3,7 @@
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
+        _DepthTex ("Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -31,28 +32,21 @@
             };
 
             sampler2D _MainTex;
+            sampler2D _DepthTex;
+
 			float4 _CameraPosition;
             float4 _MainTex_ST;
+            float4 _DepthTex_ST;
 
-			uniform StructuredBuffer<uint> _DepthFrame : register(t1);
-			int _textureWidth;
-			int _textureHeight;
-			float _maxDepthSensor;
+            float _Clamp;
 
             v2f vert (appdata v)
             {
                 v2f o;
 
-				uint rawIndex = _textureWidth * (v.uv.y * _textureHeight) + (v.uv.x * _textureWidth);
-				
-				// (rawIndex >> 1) == (rawIndex / 2). Because one buffer value contains depth values for two pixels
-				uint depthPairVal = _DepthFrame[rawIndex >> 1];
+                float2 coord = float2(v.uv.x, 1 - v.uv.y);
 
-				// Shift trick, because in the Shader we read two values (Int16) as one (Int32)
-				uint depthVal = rawIndex % 2 != 0 ? depthPairVal >> 16 : (depthPairVal << 16) >> 16;
-
-				// *1000 because the depth is in millimeters
-				float depth = 1 - (float(depthVal) / (_maxDepthSensor * 1000));
+                float depth = 1 - tex2Dlod(_DepthTex, float4(coord, 0, 0)).r;
 
 				if (depth == 1)
 					depth = 0;
@@ -63,13 +57,13 @@
 
                 o.vertex = UnityObjectToClipPos(newVertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                UNITY_TRANSFER_FOG(o,o.vertex);
+                UNITY_TRANSFER_FOG(o, o.vertex);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-                return tex2D(_MainTex, i.uv).bgra;
+                return tex2D(_MainTex, float2(i.uv.x, 1 - i.uv.y));
             }
             ENDCG
         }
