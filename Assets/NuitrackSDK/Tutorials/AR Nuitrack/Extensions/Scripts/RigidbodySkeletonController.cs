@@ -12,6 +12,7 @@ namespace NuitrackSDK.Tutorials.ARNuitrack.Extensions
         [Header("Rigidbody")]
         [SerializeField] List<nuitrack.JointType> targetJoints;
         [SerializeField] GameObject rigidBodyJoint;
+        [SerializeField] Rigidbody leftGlove, rightGlove;
 
         [SerializeField, Range(0.1f, 64f)] float smoothSpeed = 24f;
 
@@ -69,6 +70,18 @@ namespace NuitrackSDK.Tutorials.ARNuitrack.Extensions
                 Vector3 lerpPosition = Vector3.Lerp(rigidbodyJoint.Value.position, spacePostion, Time.deltaTime * smoothSpeed);
 
                 rigidbodyJoint.Value.MovePosition(lerpPosition);
+
+                if(rigidbodyJoint.Key == nuitrack.JointType.LeftHand)
+                {
+                    leftGlove.MovePosition(spacePostion);
+                    leftGlove.MoveRotation(user.Skeleton.GetJoint(rigidbodyJoint.Key).Rotation);
+                }
+
+                if (rigidbodyJoint.Key == nuitrack.JointType.RightHand)
+                {
+                    rightGlove.MovePosition(spacePostion);
+                    rightGlove.MoveRotation(user.Skeleton.GetJoint(rigidbodyJoint.Key).Rotation);
+                }
             }
         }
     }
