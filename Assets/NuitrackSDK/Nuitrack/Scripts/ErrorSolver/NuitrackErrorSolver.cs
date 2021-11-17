@@ -39,7 +39,6 @@ namespace NuitrackSDK.ErrorSolver
 #if UNITY_EDITOR_WIN
                 string unityTbbPath = UnityEditor.EditorApplication.applicationPath.Replace("Unity.exe", "") + "tbb.dll";
                 errorMessage = "<color=red><b>You need to replace the file " + unityTbbPath + " with Nuitrack compatible file " + nuitrackTbbPath + " (Don't forget to close the editor first)</b></color>";
-                NuitrackSDKEditor.ErrorSolver.TBBReplacer.ShowMessage();
 #else
             errorMessage = "<color=red><b>Problem with the file tbb.dll in the Nuitrack folder " + nuitrackTbbPath + ". Reinstall Nuitrack</b></color>";
 #endif
