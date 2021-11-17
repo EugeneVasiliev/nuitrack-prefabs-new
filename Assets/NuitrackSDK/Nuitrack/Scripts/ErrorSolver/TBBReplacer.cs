@@ -44,7 +44,6 @@ namespace NuitrackSDKEditor.ErrorSolver
             }
         }
 
-
         static TBBReplacer()
         {
             Start();
