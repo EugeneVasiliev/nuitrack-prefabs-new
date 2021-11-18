@@ -60,7 +60,7 @@ namespace NuitrackSDK.NuitrackDemos
             {
                 hands[userID][sideID].enabled = true;
 
-                Vector2 pos = hand.ProjPosition;
+                Vector2 pos = hand.Proj;
 
                 hands[userID][sideID].rectTransform.anchorMin = pos;
                 hands[userID][sideID].rectTransform.anchorMax = pos;

@@ -115,12 +115,7 @@ namespace NuitrackSDK.Tutorials.RGBandSkeletons
                 if (j.Confidence > 0.01f)
                 {
                     joints[jointsInfo[i]].gameObject.SetActive(true);
-
-                    Vector2 newPosition = new Vector2(
-                        parentRect.rect.width * (j.Proj.x - 0.5f),
-                        parentRect.rect.height * (0.5f - j.Proj.y));
-
-                    joints[jointsInfo[i]].anchoredPosition = newPosition;
+                    joints[jointsInfo[i]].anchoredPosition = j.AnchoredPoint(parentRect.rect, joints[jointsInfo[i]]);
                 }
                 else
                 {

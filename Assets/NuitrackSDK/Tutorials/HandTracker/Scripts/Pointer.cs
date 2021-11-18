@@ -60,9 +60,7 @@ namespace NuitrackSDK.Tutorials.HandTracker
                 if (handContent != null)
                 {
                     Vector3 lastPosition = baseRect.position;
-                    Vector2 handPosition = handContent.ProjPosition * parentRectTransform.rect.size;
-                    handPosition.y = -(parentRectTransform.rect.height - handPosition.y);
-                    baseRect.anchoredPosition = handPosition;
+                    baseRect.anchoredPosition = handContent.AnchoredPoint(parentRectTransform.rect, baseRect);
 
                     float velocity = (baseRect.position - lastPosition).magnitude / Time.deltaTime;
 

@@ -1,18 +1,19 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+
 using NuitrackSDK.Calibration;
+using NuitrackSDK.Avatar;
 
 
 namespace NuitrackSDK.Tutorials.MotionCapture
 {
     [AddComponentMenu("NuitrackSDK/Tutorials/Motion Capture/Animator Avatar")]
-    public class AnimatorAvatar : MonoBehaviour
+    public class AnimatorAvatar : BaseAvatar
     {
         [SerializeField] Animator animator;
         [SerializeField] List<SimpleJoint> joints = new List<SimpleJoint>();
-        [SerializeField]
-        nuitrack.JointType rootJoint = nuitrack.JointType.LeftCollar;
+        [SerializeField] nuitrack.JointType rootJoint = nuitrack.JointType.LeftCollar;
 
         void Start()
         {
@@ -26,20 +27,20 @@ namespace NuitrackSDK.Tutorials.MotionCapture
             }
         }
 
-        void LateUpdate()
+        protected override void Process(UserData userData)
         {
-            if (NuitrackManager.Users.Current != null && NuitrackManager.Users.Current.Skeleton != null)
+            if (userData.Skeleton == null)
+                return;
+
+            UserData.SkeletonData skeleton = userData.Skeleton;
+            transform.position = Quaternion.Euler(0f, 180f, 0f) * skeleton.GetJoint(rootJoint).Position;
+
+            foreach (SimpleJoint item in joints)
             {
-                UserData.SkeletonData skeleton = NuitrackManager.Users.Current.Skeleton;
-                transform.position = Quaternion.Euler(0f, 180f, 0f) * skeleton.GetJoint(rootJoint).Position;
+                UserData.SkeletonData.Joint joint = skeleton.GetJoint(item.nuitrackJoint);
 
-                foreach (SimpleJoint item in joints)
-                {
-                    UserData.SkeletonData.Joint joint = skeleton.GetJoint(item.nuitrackJoint);
-
-                    Quaternion rotation = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.RotationMirrored * item.Offset;
-                    item.Bone.rotation = rotation;
-                }
+                Quaternion rotation = Quaternion.Inverse(CalibrationInfo.SensorOrientation) * joint.RotationMirrored * item.Offset;
+                item.Bone.rotation = rotation;
             }
         }
 

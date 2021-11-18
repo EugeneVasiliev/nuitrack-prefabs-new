@@ -6,6 +6,8 @@ Avatar class structure
 		Base type providing simple functions for obtaining data about the skeleton.
 		If you want to write your own Avatar controller, it is recommended to inherit all avatars from it.
 
+		Inherits TrackedUser.
+
 	* NuitrackAvatar
 		Avatar for 3D models.
 		Supports alignment of bone length to the real skeleton and customization for use in VR.

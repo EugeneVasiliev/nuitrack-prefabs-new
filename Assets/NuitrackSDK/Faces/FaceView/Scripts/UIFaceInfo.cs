@@ -5,10 +5,9 @@ using UnityEngine.UI;
 namespace NuitrackSDK.Face
 {
     [AddComponentMenu("NuitrackSDK/Face/Face View/UI Face Info")]
-    public class UIFaceInfo : MonoBehaviour
+    public class UIFaceInfo : TrackedUser
     {
         [Header("Info")]
-        public bool autoProcessing;
         [SerializeField] bool showInfo = true;
         [SerializeField] GameObject infoPanel;
         [SerializeField] Text ageText;
@@ -31,19 +30,8 @@ namespace NuitrackSDK.Face
             image = frameTransform.GetComponent<Image>();
         }
 
-        void Update()
+        protected override void Process(UserData userData)
         {
-            if (autoProcessing)
-            {
-                ProcessFace(NuitrackManager.Users.Current);
-            }
-        }
-
-        public void ProcessFace(UserData userData)
-        {
-            if (!NuitrackManager.Instance.UseFaceTracking)
-                Debug.Log("Attention: Face tracking disabled! Enable it on the Nuitrack Manager component");
-
             if (userData == null)
                 return;
 
@@ -54,14 +42,10 @@ namespace NuitrackSDK.Face
                 image.enabled = true;
                 infoPanel.SetActive(showInfo);
 
-                Rect faceRect = currentFace.Rect;
+                Rect screenRect = currentFace.AnchoredRect(spawnTransform.rect, frameTransform);
 
-                Vector2 newPosition = new Vector2(
-                    spawnTransform.rect.width * (faceRect.x - 0.5f) + frameTransform.rect.width / 2,
-                    spawnTransform.rect.height * (0.5f - faceRect.y) - frameTransform.rect.height / 2);
-
-                frameTransform.sizeDelta = new Vector2(faceRect.width * spawnTransform.rect.width, faceRect.height * spawnTransform.rect.height);
-                frameTransform.anchoredPosition = newPosition;
+                frameTransform.sizeDelta = screenRect.size;
+                frameTransform.anchoredPosition = screenRect.position;
 
                 ageText.text = currentFace.AgeType.ToString();
                 yearsText.text = string.Format("Years: {0:F1}", currentFace.age.years);
