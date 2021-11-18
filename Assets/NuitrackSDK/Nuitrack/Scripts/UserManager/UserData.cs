@@ -104,8 +104,32 @@ namespace NuitrackSDK
                 {
                     get
                     {
-                        return new Vector2(Mathf.Clamp01(RawJoint.Proj.X), Mathf.Clamp01(RawJoint.Proj.Y));
+                        return new Vector2(Mathf.Clamp01(RawJoint.Proj.X), Mathf.Clamp01(1 - RawJoint.Proj.Y));
                     }
+                }
+
+                /// Convert joint coordinates to virtual screen coordinates
+                /// </summary>
+                /// <param name="width">Width of the virtual screen</param>
+                /// <param name="height">Width of the virtual screen</param>
+                /// <returns>Virtual screen coordinates</returns>
+                public Vector2 ScreenPosition(float width, float height)
+                {
+                    Vector2 projPos = Proj;
+
+                    return new Vector2(projPos.x * width, projPos.y * height);
+                }
+
+                /// <summary>
+                /// Get the Point of the joint relative to the parent Rect
+                /// for the corresponding RectTransform taking into account the anchor
+                /// </summary>
+                /// <param name="rectTransform">Parent Rect</param>
+                /// <param name="parentRect">RectTransform reference for current Joint</param>
+                /// <returns>Vector2 of the joint relative to the parent Rect (anchoredPosition)</returns>
+                public Vector2 AnchoredPoint(Rect parentRect, RectTransform rectTransform)
+                {
+                    return Vector2.Scale(Proj - rectTransform.anchorMin, parentRect.size);
                 }
             }
 
@@ -160,11 +184,11 @@ namespace NuitrackSDK
             /// <summary>
             /// Projection coordinates of the hand with the starting point in the upper left corner.
             /// </summary>
-            public Vector2 ProjPosition
+            public Vector2 Proj
             {
                 get
                 {
-                    return new Vector2(RawHandContent.X, 1 - RawHandContent.Y);
+                    return new Vector2(Mathf.Clamp01(RawHandContent.X), Mathf.Clamp01(1 - RawHandContent.Y));
                 }
             }
 
@@ -191,6 +215,8 @@ namespace NuitrackSDK
             }
 
             /// <summary>
+            /// <summary>
+            /// Projection and normalized joint coordinates
             /// Compression of the hand (in percent), where 0 - corresponds to an open palm, 1- a clenched fist
             /// </summary>
             public int Pressure
@@ -199,6 +225,30 @@ namespace NuitrackSDK
                 {
                     return RawHandContent.Pressure;
                 }
+            }
+
+            /// Convert hand coordinates to virtual screen coordinates
+            /// </summary>
+            /// <param name="width">Width of the virtual screen</param>
+            /// <param name="height">Width of the virtual screen</param>
+            /// <returns>Virtual screen coordinates</returns>
+            public Vector2 ScreenPosition(float width, float height)
+            {
+                Vector2 projPos = Proj;
+
+                return new Vector2(projPos.x * width, projPos.y * height);
+            }
+
+            /// <summary>
+            /// Get the Point of the hand relative to the parent Rect
+            /// for the corresponding RectTransform taking into account the anchor
+            /// </summary>
+            /// <param name="rectTransform">Parent Rect</param>
+            /// <param name="parentRect">RectTransform reference for current Hand</param>
+            /// <returns>Vector2 of the hand relative to the parent Rect (anchoredPosition)</returns>
+            public Vector2 AnchoredPoint(Rect parentRect, RectTransform rectTransform)
+            {
+                return Vector2.Scale(Proj - rectTransform.anchorMin, parentRect.size);
             }
 
             public Hand(nuitrack.HandContent handContent)
@@ -258,12 +308,20 @@ namespace NuitrackSDK
             }
         }
 
+        nuitrack.Face face = null;
+
         /// <summary>
         /// User face. Maybe null.
         /// </summary>
         public nuitrack.Face Face
         {
-            get; private set;
+            get
+            {
+                if (!NuitrackManager.Instance.UseFaceTracking)
+                    Debug.LogWarning("Face tracking disabled! Enable it on the Nuitrack Manager component");
+
+                return face;
+            }
         }
 
         public UserData(int id)
@@ -349,7 +407,7 @@ namespace NuitrackSDK
 
         internal void AddData(nuitrack.Face face)
         {
-            Face = (face != null && face.IsEmpty) ? null : face;
+            this.face = (face != null && face.IsEmpty) ? null : face;
         }
 
         internal void AddData(nuitrack.Gesture? gesture)
@@ -362,7 +420,7 @@ namespace NuitrackSDK
             Skeleton = null;
             RawUserHands = null;
             RawGesture = null;
-            Face = null;
+            face = null;
 
             RightHand = null;
             LeftHand = null;

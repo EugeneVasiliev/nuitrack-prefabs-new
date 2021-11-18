@@ -65,6 +65,7 @@ namespace nuitrack
             }
         }
 
+
         public Age.Type AgeType
         {
             get
@@ -93,6 +94,42 @@ namespace nuitrack
                 return angles;
             }
         }
+
+        /// <summary>
+        /// Convert Rect to virtual screen Rect
+        /// </summary>
+        /// <param name="width">Width of the virtual screen</param>
+        /// <param name="height">Width of the virtual screen</param>
+        /// <returns>Virtual screen Rect</returns>
+        public Rect ScreenRect(float width, float height)
+        {
+            Rect faceRect = rectangle;
+            Vector2 screenSize = new Vector2(width, height);
+
+            faceRect.position = Vector2.Scale(faceRect.position, screenSize);
+            faceRect.size = Vector2.Scale(faceRect.size, screenSize);
+
+            return faceRect;
+        }
+
+        /// <summary>
+        /// Get the Rect of the face relative to the parent Rect
+        /// for the corresponding RectTransform taking into account the anchor
+        /// </summary>
+        /// <param name="rectTransform">Parent Rect</param>
+        /// <param name="parentRect">RectTransform reference for current Face</param>
+        /// <returns>Rect of the face relative to the parent Rect (anchoredPosition)</returns>
+        public Rect AnchoredRect(Rect parentRect, RectTransform rectTransform)
+        {
+            Rect projRect = rectangle;
+
+            Vector2 pivot = Vector2.Scale(projRect.size, rectTransform.pivot);
+
+            Vector2 rectPosition = Vector2.Scale(projRect.position - rectTransform.anchorMin + pivot, parentRect.size);
+            Vector2 rectSize = Vector2.Scale(projRect.size, parentRect.size);
+
+            return new Rect(rectPosition, rectSize);
+        }
     }
 
     [System.Serializable]
@@ -105,7 +142,11 @@ namespace nuitrack
 
         public static implicit operator Rect(Rectangle rectangle)
         {
-            return new Rect(Mathf.Clamp01(rectangle.left), Mathf.Clamp01(rectangle.top), Mathf.Clamp01(rectangle.width), Mathf.Clamp01(rectangle.height));
+            return new Rect(
+                Mathf.Clamp01(rectangle.left),
+                Mathf.Clamp01(1 - rectangle.top - rectangle.height),
+                Mathf.Clamp01(rectangle.width),
+                Mathf.Clamp01(rectangle.height));
         }
     }
 

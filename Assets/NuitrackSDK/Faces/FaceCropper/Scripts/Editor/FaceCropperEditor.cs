@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -9,7 +7,7 @@ using NuitrackSDK.Face;
 namespace NuitrackSDKEditor.Face
 {
     [CustomEditor(typeof(FaceCropper), true)]
-    public class FaceCroperEditor : NuitrackSDKEditor
+    public class FaceCroperEditor : TrackedUserEditor
     {
         SerializedProperty DrawPropertyField(string nameProperty, string label, string toolTip = null)
         {
@@ -22,20 +20,15 @@ namespace NuitrackSDKEditor.Face
             return property;
         }
 
-        public override void OnInspectorGUI()
+        public override void DrawDefaultInspector()
         {
-            SerializedProperty useCurrentUser = DrawPropertyField("useCurrentUser", "Use current user tracker");
-
-            if (!useCurrentUser.boolValue)
-                DrawPropertyField("userID", "User ID");
-
             EditorGUILayout.Space();
 
             DrawPropertyField("loseTime", "Loss time", "Reset time after the loss of the tracked user");
 
             DrawPropertyField("noUserImage", "Empty image", "The image that will be returned if the user is not detected");
             DrawPropertyField("margin", "Margin", "Adds an indentation proportional to the size of the face");
-            
+
             SerializedProperty useSmoothMove = DrawPropertyField("smoothMove", "Use motion smoothing");
 
             if (useSmoothMove.boolValue)
@@ -45,7 +38,7 @@ namespace NuitrackSDKEditor.Face
 
             DrawPropertyField("onFrameUpdate", "On frame update action");
 
-            DrawDefaultInspector();
+            base.DrawDefaultInspector();
         }
     }
 }
