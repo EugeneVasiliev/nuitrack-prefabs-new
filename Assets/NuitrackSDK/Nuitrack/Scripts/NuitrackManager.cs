@@ -398,6 +398,16 @@ public class NuitrackManager : MonoBehaviour
     {
         try
         {
+
+#if UNITY_EDITOR
+            if (!NuitrackSDKEditor.ErrorSolver.TBBReplacer.Ready)
+            {
+                UnityEditor.EditorApplication.isPlaying = false;
+                NuitrackSDKEditor.ErrorSolver.TBBReplacer.Start();
+                return;
+            }
+#endif
+
             if (nuitrackInitialized)
                 return;
 

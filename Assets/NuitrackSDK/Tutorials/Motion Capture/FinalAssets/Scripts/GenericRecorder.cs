@@ -113,5 +113,5 @@ namespace NuitrackSDK.Tutorials.MotionCapture
             }
         }
     }
-#endif
 }
+#endif
