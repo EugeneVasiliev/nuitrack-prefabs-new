@@ -4,6 +4,8 @@
 
 !.gitignore
 
+!/Assets.meta
+
 !/Assets/NuitrackSDK
 !/Assets/NuitrackSDK.meta
 
