@@ -7,5 +7,7 @@
 !/Assets/NuitrackSDK
 !/Assets/NuitrackSDK.meta
 
+!/package.json
+!/package.json.meta 
 
 !README.md
