@@ -9,29 +9,28 @@
 	"dependencies": {
 	},
 	"files": [
-		"NuitrackSDK*",
-		"Plugins*"
+		"Assets/NuitrackSDK*"
 	],
 	"samples": [
 		{
 			"displayName": "Tutorials",
 			"description": "All tutorials",
-			"path": "NuitrackSDK/Tutorials"
+			"path": "Assets/NuitrackSDK/Tutorials"
 		},
 		{
 			"displayName": "NuitrackDemos",
 			"description": "All modules demo Scene",
-			"path": "NuitrackSDK/NuitrackDemos"
+			"path": "Assets/NuitrackSDK/NuitrackDemos"
 		},
 		{
 			"displayName": "3D Avatar",
 			"description": "Scenes with avatars",
-			"path": "NuitrackSDK/Avatar/3D Avatar/Scenes"
+			"path": "Assets/NuitrackSDK/Avatar/3D Avatar/Scenes"
 		},
 		{
 			"displayName": "Face cropper",
 			"description": "Crop face texture",
-			"path": "NuitrackSDK/Faces/FaceCropper"
+			"path": "Assets/NuitrackSDK/Faces/FaceCropper"
 		}
 	]
 }
