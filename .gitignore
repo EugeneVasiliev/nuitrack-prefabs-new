@@ -4,13 +4,10 @@
 
 !.gitignore
 
-!.gitlab-ci.yml
-!deploy_package.cmd
-!deploy_apk.cmd
-!deploy_abb.cmd
-!deploy_linux.cmd
-!/Packages
-!/Assets
+!/Assets/NuitrackSDK
+!/Assets/NuitrackSDK.meta
 
-!/ProjectSettings
-!README.md
+
+!/Assets/Plugins
+!/Assets/Plugins.meta
+
